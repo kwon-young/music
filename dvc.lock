@@ -1,0 +1,13 @@
+schema: '2.0'
+stages:
+  verovio:
+    cmd: /home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data
+      -o data/1-verovio.svg data/1.musicxml
+    deps:
+    - path: data/1.musicxml
+      md5: 1cd08ce2f4e83450642b62307995a031
+      size: 885
+    outs:
+    - path: data/1-verovio.svg
+      md5: 7247bf873024e731d3ebca0a87bd254f
+      size: 10114

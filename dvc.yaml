@@ -1,0 +1,8 @@
+stages:
+  verovio:
+    cmd: /home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data
+      -o data/1-verovio.svg data/1.musicxml
+    deps:
+    - data/1.musicxml
+    outs:
+    - data/1-verovio.svg
