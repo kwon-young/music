@@ -5,9 +5,25 @@ stages:
       -o data/1-verovio.svg data/1.musicxml
     deps:
     - path: data/1.musicxml
-      md5: 1cd08ce2f4e83450642b62307995a031
-      size: 885
+      md5: a2b049229fe948bf5e33be5ac37dd723
+      size: 880
     outs:
     - path: data/1-verovio.svg
-      md5: 7247bf873024e731d3ebca0a87bd254f
-      size: 10114
+      md5: 3aec1d836b028e502a1eecf8a13880f8
+      size: 9794
+  svg2pl:
+    cmd: python svg2pl.py data/1-verovio.svg data/glyphnames.json data/1-verovio.pl
+    deps:
+    - path: data/1-verovio.svg
+      md5: 3aec1d836b028e502a1eecf8a13880f8
+      size: 9794
+    - path: data/glyphnames.json
+      md5: 9529c059c29a2162ee44d35f561b1900
+      size: 301683
+    - path: svg2pl.py
+      md5: 998625179dd8122893fd346fb4b6f86a
+      size: 7357
+    outs:
+    - path: data/1-verovio.pl
+      md5: 04cd09ec7bc1bac4326db260f5406753
+      size: 839

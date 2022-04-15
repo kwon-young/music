@@ -1,0 +1,4 @@
+outs:
+- md5: 9529c059c29a2162ee44d35f561b1900
+  size: 301683
+  path: glyphnames.json

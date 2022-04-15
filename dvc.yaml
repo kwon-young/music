@@ -6,3 +6,11 @@ stages:
     - data/1.musicxml
     outs:
     - data/1-verovio.svg
+  svg2pl:
+    cmd: python svg2pl.py data/1-verovio.svg data/glyphnames.json data/1-verovio.pl
+    deps:
+    - data/1-verovio.svg
+    - data/glyphnames.json
+    - svg2pl.py
+    outs:
+    - data/1-verovio.pl

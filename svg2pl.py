@@ -160,11 +160,13 @@ def parse_path(node, transforms, defs, scopes):
     p = Path(**node.attrib)
     p = apply_transforms(p, transforms)
     p.reify()
-    if scopes[-1] in ['staff', 'barLine']:
+    h_lines = ['staff', 'ledgerLines below']
+    v_lines = ['barLine']
+    if scopes[-1] in h_lines + v_lines:
         points = [point for point in p.as_points()]
-        if scopes[-1] == 'staff':
+        if scopes[-1] in h_lines:
             start, end = seg_swap('h', points[0], points[-1])
-        elif scopes[-1] == 'barLine':
+        elif scopes[-1] in v_lines:
             start, end = seg_swap('v', points[0], points[-1])
         return Seg(start, end, scopes[-1:], p.stroke_width)
     else:
