@@ -1,6 +1,17 @@
 schema: '2.0'
 stages:
-  verovio:
+  verovio@2:
+    cmd: /home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data
+      -o data/2-verovio.svg data/2.musicxml
+    deps:
+    - path: data/2.musicxml
+      md5: a2b049229fe948bf5e33be5ac37dd723
+      size: 880
+    outs:
+    - path: data/2-verovio.svg
+      md5: 53f11f74356ef988ea1cf14b415e7be6
+      size: 9794
+  verovio@1:
     cmd: /home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data
       -o data/1-verovio.svg data/1.musicxml
     deps:
@@ -11,7 +22,7 @@ stages:
     - path: data/1-verovio.svg
       md5: 3aec1d836b028e502a1eecf8a13880f8
       size: 9794
-  svg2pl:
+  svg2pl@1:
     cmd: python svg2pl.py data/1-verovio.svg data/glyphnames.json data/1-verovio.pl
     deps:
     - path: data/1-verovio.svg
@@ -21,9 +32,25 @@ stages:
       md5: 9529c059c29a2162ee44d35f561b1900
       size: 301683
     - path: svg2pl.py
-      md5: 998625179dd8122893fd346fb4b6f86a
-      size: 7357
+      md5: de3afeec085f7ed2ba1c0a64dd0f4c51
+      size: 7388
     outs:
     - path: data/1-verovio.pl
+      md5: 04cd09ec7bc1bac4326db260f5406753
+      size: 839
+  svg2pl@2:
+    cmd: python svg2pl.py data/2-verovio.svg data/glyphnames.json data/2-verovio.pl
+    deps:
+    - path: data/2-verovio.svg
+      md5: 53f11f74356ef988ea1cf14b415e7be6
+      size: 9794
+    - path: data/glyphnames.json
+      md5: 9529c059c29a2162ee44d35f561b1900
+      size: 301683
+    - path: svg2pl.py
+      md5: de3afeec085f7ed2ba1c0a64dd0f4c51
+      size: 7388
+    outs:
+    - path: data/2-verovio.pl
       md5: 04cd09ec7bc1bac4326db260f5406753
       size: 839

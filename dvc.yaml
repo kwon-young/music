@@ -1,16 +1,20 @@
 stages:
   verovio:
-    cmd: /home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data
-      -o data/1-verovio.svg data/1.musicxml
-    deps:
-    - data/1.musicxml
-    outs:
-    - data/1-verovio.svg
+    foreach: ${samples}
+    do:
+      cmd: /home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data
+        -o data/${item}-verovio.svg data/${item}.musicxml
+      deps:
+      - data/${item}.musicxml
+      outs:
+      - data/${item}-verovio.svg
   svg2pl:
-    cmd: python svg2pl.py data/1-verovio.svg data/glyphnames.json data/1-verovio.pl
-    deps:
-    - data/1-verovio.svg
-    - data/glyphnames.json
-    - svg2pl.py
-    outs:
-    - data/1-verovio.pl
+    foreach: ${samples}
+    do:
+      cmd: python svg2pl.py data/${item}-verovio.svg data/glyphnames.json data/${item}-verovio.pl
+      deps:
+      - data/${item}-verovio.svg
+      - data/glyphnames.json
+      - svg2pl.py
+      outs:
+      - data/${item}-verovio.pl
