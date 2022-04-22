@@ -54,3 +54,11 @@ stages:
       - utils.pl
       outs:
       - data/${item}-music.pl
+  diffXml:
+    foreach: ${samples}
+    do:
+      cmd: swipl -t halt -s diffxml.pl -g "diffXml('data/${item}.musicxml', 'data/${item}-verovio.musicxml')."
+      deps:
+      - data/${item}.musicxml
+      - data/${item}-verovio.musicxml
+      - diffxml.pl

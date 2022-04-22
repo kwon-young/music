@@ -1,8 +1,12 @@
-:- module(cond, [ccxEtiqsCond/2, ccxOnSegCond/3, horizontalCond/1, verticalCond/1]).
+:- module(cond, [ccxEtiqsCond/2, ccxEtiqsCond/3, ccxOnSegCond/3,
+                 horizontalCond/1, verticalCond/1]).
 
 ccxEtiqsCond(Ccx, Etiq) :-
   ccxEtiqs(Ccx, Etiqs),
-  memberchk(Etiq, Etiqs).
+  nth0(0, Etiqs, Etiq).
+ccxEtiqsCond(Ccx, N, Etiq) :-
+  ccxEtiqs(Ccx, Etiqs),
+  nth0(N, Etiqs, Etiq).
 
 ccxOnSegCond(Seg, Ccx, Eps) :-
   ccxOrigin(Ccx, point(OriginX, OriginY)),

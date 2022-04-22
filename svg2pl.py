@@ -34,7 +34,7 @@ class Seg:
 
     def topl(self):
         return f"seg({pointtopl(self.start)}, {pointtopl(self.end)}, " \
-               f"{self.etiq}, {self.thickness})"
+                f"{self.etiq[::-1]}, {self.thickness})"
 
 
 @dataclass
@@ -46,7 +46,7 @@ class Ccx:
 
     def topl(self):
         return f"ccx({pointtopl(self.lefttop)}, " \
-               f"{pointtopl(self.rightbottom)}, {self.etiq}, " \
+                f"{pointtopl(self.rightbottom)}, {self.etiq[::-1]}, " \
                f"{pointtopl(self.origin)})"
 
 
@@ -168,7 +168,7 @@ def parse_path(node, transforms, defs, scopes):
             start, end = seg_swap('h', points[0], points[-1])
         elif scopes[-1] in v_lines:
             start, end = seg_swap('v', points[0], points[-1])
-        return Seg(start, end, scopes[-1:], p.stroke_width)
+        return Seg(start, end, scopes.copy(), p.stroke_width)
     else:
         left, top, right, bottom = p.bbox()
         return Ccx(Point(left, top), Point(right, bottom), [])
@@ -189,7 +189,7 @@ def parse_use(node, transforms, defs, scopes):
     [ccx] = parse_node(symbol, transforms, defs, scopes)
     ccx.origin = origin
     glyphcode = href.split('-')[0]
-    ccx.etiq.append(glyphcode)
+    ccx.etiq.extend(scopes.copy() + [glyphcode])
     return [ccx]
 
 
@@ -207,7 +207,7 @@ def parse_rect(node, transforms, defs, scopes):
     if scopes[-1] == 'stem':
         x, y, w, h = r.x, r.y, r.width, r.height
         x = x + (w / 2)
-        return Seg(Point(x, y), Point(x, y + h), scopes[-1], w)
+        return Seg(Point(x, y), Point(x, y + h), scopes.copy(), w)
 
 
 def parse_node(node, transforms, defs, scopes):

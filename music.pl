@@ -27,7 +27,7 @@ mainGen(XmlFile, StructFile) :-
   load_xml(XmlFile, Xml, [space(remove), number(integer)]),
   phrase(music(Xml), Struct, Rest),
   open(StructFile, write, S),
-  write(S, Struct),
+  print_term(Struct, [output(S)]),
   close(S),
   format("Struct~n", []),
   print_term(Struct, _),
@@ -42,7 +42,11 @@ mainReco(StructFile, XmlFile) :-
   format("Xml~n", []),
   print_term(Xml, _),
   open(XmlFile, write, XmlS),
-  xml_write(XmlS, Xml, []),
+  xml_write(XmlS, Xml, [
+    doctype('score-partwise'),
+    public("-//Recordare//DTD MusicXML 4.0 Partwise//EN"),
+    system("http://www.musicxml.org/dtds/partwise.dtd"),
+    net(false)]),
   close(XmlS),
   format("~nRest~n", []),
   print_term(Rest, _).
@@ -160,10 +164,11 @@ key(element(key, [], [element(fifths, [], ['0'])])) --> {true}.
 
 noteCond(Note, element(duration, [], ['4']), element(type, [], ['whole'])) :-
   ccxEtiqsCond(Note, 'noteheadWhole').
+noteCond(Note, element(duration, [], ['2']), element(type, [], ['half'])) :-
+  ccxEtiqsCond(Note, 'noteheadHalf').
 
 note(element(note, [], [Pitch, Duration, Type])), [note(Note)] -->
-  {
-    noteCond(Note, Duration, Type)
-  },
+  { ccxEtiqsCond(Note, 1, 'notehead') },
   term(Note),
+  { noteCond(Note, Duration, Type) },
   notePitch(Note, Pitch).
