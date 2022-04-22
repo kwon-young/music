@@ -18,3 +18,39 @@ stages:
       - svg2pl.py
       outs:
       - data/${item}-verovio.pl
+  musicReco:
+    foreach: ${samples}
+    do:
+      cmd: swipl -t halt -s music.pl -g "mainReco('data/${item}-verovio.pl', 'data/${item}-verovio.musicxml')."
+      deps:
+      - data/${item}-verovio.pl
+      - ccx.pl
+      - cond.pl
+      - epf_geo.pl
+      - epf.pl
+      - geo.pl
+      - music.pl
+      - music_utils.pl
+      - pitch.pl
+      - seg.pl
+      - utils.pl
+      outs:
+      - data/${item}-verovio.musicxml
+  musicGen:
+    foreach: ${samples}
+    do:
+      cmd: swipl -t halt -s music.pl -g "mainGen('data/${item}.musicxml', 'data/${item}-music.pl')."
+      deps:
+      - data/${item}.musicxml
+      - ccx.pl
+      - cond.pl
+      - epf_geo.pl
+      - epf.pl
+      - geo.pl
+      - music.pl
+      - music_utils.pl
+      - pitch.pl
+      - seg.pl
+      - utils.pl
+      outs:
+      - data/${item}-music.pl
