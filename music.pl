@@ -13,7 +13,7 @@
 
 :- use_module(library(settings)).
 :- setting(staff_aligned_eps, number, 0, 'staffline alignement threshold').
-:- setting(staff_interline_eps, number, 0, 'stafflines interline threshold').
+:- setting(staff_interline_eps, number, 0.05, 'stafflines interline threshold').
 :- setting(staff_barline_eps, number, 0.05, 'stafflines and barline threshold').
 :- setting(clef_eps, number, 0, 'Clef position threshold').
 :- setting(beats_eps, number, 0, 'Clef position threshold').
@@ -35,12 +35,7 @@ mainGen(XmlFile, StructFile) :-
   print_term(Rest, _).
 
 mainReco(StructFile, XmlFile) :-
-  open(StructFile, read, S),
-  read(S, Struct),
-  close(S),
-  phrase(music(Xml), Struct, Rest),
-  format("Xml~n", []),
-  print_term(Xml, _),
+  mainReco(StructFile, Struct, Rest, Xml),
   open(XmlFile, write, XmlS),
   xml_write(XmlS, Xml, [
     doctype('score-partwise'),
@@ -48,8 +43,17 @@ mainReco(StructFile, XmlFile) :-
     system("http://www.musicxml.org/dtds/partwise.dtd"),
     net(false)]),
   close(XmlS),
+  format("Xml~n", []),
+  print_term(Xml, _),
+  format("Struct~n", []),
+  print_term(Struct, _),
   format("~nRest~n", []),
   print_term(Rest, _).
+mainReco(StructFile, Struct, Rest, Xml) :-
+  open(StructFile, read, S),
+  read(S, Struct),
+  close(S),
+  phrase(music(Xml), Struct, Rest).
 
 music([element('score-partwise', [version='4.0'], [PartList, Part])]) -->
   partList(PartId, PartList),
@@ -75,6 +79,10 @@ aligned(Getter, Eps, Elements) :-
   convlist(Getter, Elements, [Coord | Coords]),
   maplist(diffEps(Eps, Coord), Coords).
 
+interlineCond(Stafflines, Getter, Eps) :-
+  music_utils:interlineAt(Stafflines, Getter, Interline, Interlines),
+  maplist(diffEps(Eps, Interline), Interlines).
+
 staffCond(Stafflines) :-
   length(Stafflines, 5),
   setting(staff_aligned_eps, AlignedEps),
@@ -85,16 +93,13 @@ staffCond(Stafflines) :-
   convlist(segStartY, Stafflines, Ys),
   % order lines along Y coord starting from the bottom
   maplist2([Y1, Y2]>>([Y1, Y2]::real, {Y2 < Y1}), Ys),
-  % compute interlines
-  convlist2([X, Y, Z]>>([X, Y, Z]::real, {Y - X == Z}), Ys, Interlines),
   setting(staff_interline_eps, InterlineEps),
   % all interlines are similar
-  maplist2({InterlineEps}/[X, Y]>>(diffEps(InterlineEps, X, Y)), Interlines).
+  interlineCond(Stafflines, segStartY, InterlineEps),
+  interlineCond(Stafflines, segEndY, InterlineEps).
 
 staff(), [stafflines(Stafflines)] -->
-  {
-    staffCond(Stafflines)
-  },
+  { staffCond(Stafflines) },
   sequence(horizontalSeg, Stafflines).
 
 barlineCond(Stafflines, Barline) :-
@@ -122,7 +127,7 @@ attributes(element(attributes, [], [element(divisions, [], ['1']), Key, Time, Cl
   time(Time),
   key(Key).
 
-clefCond(Stafflines, Clef, [element(sign, [], ['G']), element(line, [], ['2'])], baseLine(2, BaseLine), basePitch('G', 4)) :-
+clefCond(Stafflines, Clef, [element(sign, [], ['G']), element(line, [], ['2'])], baseLine(2, BaseLine), basePitch('G'-'4')) :-
   setting(clef_eps, ClefEps),
   ccxOnStaffline(Stafflines, Clef, 'gClef', 2, ClefEps),
   nth1(2, Stafflines, BaseLine).
@@ -167,8 +172,8 @@ noteCond(Note, element(duration, [], ['4']), element(type, [], ['whole'])) :-
 noteCond(Note, element(duration, [], ['2']), element(type, [], ['half'])) :-
   ccxEtiqsCond(Note, 'noteheadHalf').
 
-note(element(note, [], [Pitch, Duration, Type])), [note(Note)] -->
-  { ccxEtiqsCond(Note, 1, 'notehead') },
-  term(Note),
-  { noteCond(Note, Duration, Type) },
-  notePitch(Note, Pitch).
+note(element(note, [], [Pitch, Duration, Type])), [note(Notehead)] -->
+  { ccxEtiqsCond(Notehead, 1, 'notehead') },
+  term(Notehead),
+  { noteCond(Notehead, Duration, Type) },
+  notePitch(Notehead, Pitch).

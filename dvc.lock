@@ -76,20 +76,20 @@ stages:
       md5: c275a65d2e5ba61f342ce77db63e37fd
       size: 1291
     - path: music.pl
-      md5: b9132ef7bab01913fb3a668c9b58b541
-      size: 5491
+      md5: cfddbe6dd5b46c49fc2e02fbfaf63499
+      size: 5739
     - path: music_utils.pl
-      md5: 4846dcfd34774523a670980125ed48f1
-      size: 549
+      md5: b565dda97e9bc2e53b4670bb7dc2d679
+      size: 1013
     - path: pitch.pl
-      md5: d394648ec478ae13f935db2fddb70f2b
-      size: 5331
+      md5: 4aac3f3e53a894951330584b7e7c3325
+      size: 4626
     - path: seg.pl
       md5: 5a4766d278a31cc00eb99b5d7cf2b146
       size: 1479
     - path: utils.pl
-      md5: 62656ac9ebc59a5eba559642bfdf1e10
-      size: 464
+      md5: 234c76d9873120fe25fa952a089ab0d8
+      size: 603
     outs:
     - path: data/1-music.pl
       md5: 25736ee9bfeeff719b05af0bc33bfa05
@@ -116,20 +116,20 @@ stages:
       md5: c275a65d2e5ba61f342ce77db63e37fd
       size: 1291
     - path: music.pl
-      md5: b9132ef7bab01913fb3a668c9b58b541
-      size: 5491
+      md5: cfddbe6dd5b46c49fc2e02fbfaf63499
+      size: 5739
     - path: music_utils.pl
-      md5: 4846dcfd34774523a670980125ed48f1
-      size: 549
+      md5: b565dda97e9bc2e53b4670bb7dc2d679
+      size: 1013
     - path: pitch.pl
-      md5: d394648ec478ae13f935db2fddb70f2b
-      size: 5331
+      md5: 4aac3f3e53a894951330584b7e7c3325
+      size: 4626
     - path: seg.pl
       md5: 5a4766d278a31cc00eb99b5d7cf2b146
       size: 1479
     - path: utils.pl
-      md5: 62656ac9ebc59a5eba559642bfdf1e10
-      size: 464
+      md5: 234c76d9873120fe25fa952a089ab0d8
+      size: 603
     outs:
     - path: data/1-verovio.musicxml
       md5: 156e4170498e4020cc8aae3f36d5b97e
@@ -156,20 +156,20 @@ stages:
       md5: c275a65d2e5ba61f342ce77db63e37fd
       size: 1291
     - path: music.pl
-      md5: b9132ef7bab01913fb3a668c9b58b541
-      size: 5491
+      md5: cfddbe6dd5b46c49fc2e02fbfaf63499
+      size: 5739
     - path: music_utils.pl
-      md5: 4846dcfd34774523a670980125ed48f1
-      size: 549
+      md5: b565dda97e9bc2e53b4670bb7dc2d679
+      size: 1013
     - path: pitch.pl
-      md5: d394648ec478ae13f935db2fddb70f2b
-      size: 5331
+      md5: 4aac3f3e53a894951330584b7e7c3325
+      size: 4626
     - path: seg.pl
       md5: 5a4766d278a31cc00eb99b5d7cf2b146
       size: 1479
     - path: utils.pl
-      md5: 62656ac9ebc59a5eba559642bfdf1e10
-      size: 464
+      md5: 234c76d9873120fe25fa952a089ab0d8
+      size: 603
     outs:
     - path: data/2-music.pl
       md5: 25736ee9bfeeff719b05af0bc33bfa05
@@ -196,20 +196,20 @@ stages:
       md5: c275a65d2e5ba61f342ce77db63e37fd
       size: 1291
     - path: music.pl
-      md5: b9132ef7bab01913fb3a668c9b58b541
-      size: 5491
+      md5: cfddbe6dd5b46c49fc2e02fbfaf63499
+      size: 5739
     - path: music_utils.pl
-      md5: 4846dcfd34774523a670980125ed48f1
-      size: 549
+      md5: b565dda97e9bc2e53b4670bb7dc2d679
+      size: 1013
     - path: pitch.pl
-      md5: d394648ec478ae13f935db2fddb70f2b
-      size: 5331
+      md5: 4aac3f3e53a894951330584b7e7c3325
+      size: 4626
     - path: seg.pl
       md5: 5a4766d278a31cc00eb99b5d7cf2b146
       size: 1479
     - path: utils.pl
-      md5: 62656ac9ebc59a5eba559642bfdf1e10
-      size: 464
+      md5: 234c76d9873120fe25fa952a089ab0d8
+      size: 603
     outs:
     - path: data/2-verovio.musicxml
       md5: 156e4170498e4020cc8aae3f36d5b97e
@@ -236,20 +236,20 @@ stages:
       md5: c275a65d2e5ba61f342ce77db63e37fd
       size: 1291
     - path: music.pl
-      md5: b9132ef7bab01913fb3a668c9b58b541
-      size: 5491
+      md5: cfddbe6dd5b46c49fc2e02fbfaf63499
+      size: 5739
     - path: music_utils.pl
-      md5: 4846dcfd34774523a670980125ed48f1
-      size: 549
+      md5: b565dda97e9bc2e53b4670bb7dc2d679
+      size: 1013
     - path: pitch.pl
-      md5: d394648ec478ae13f935db2fddb70f2b
-      size: 5331
+      md5: 4aac3f3e53a894951330584b7e7c3325
+      size: 4626
     - path: seg.pl
       md5: 5a4766d278a31cc00eb99b5d7cf2b146
       size: 1479
     - path: utils.pl
-      md5: 62656ac9ebc59a5eba559642bfdf1e10
-      size: 464
+      md5: 234c76d9873120fe25fa952a089ab0d8
+      size: 603
     outs:
     - path: data/1-C9-music.pl
       md5: dd7b20310bf413fe228a170f229d0e0d
@@ -303,20 +303,20 @@ stages:
       md5: c275a65d2e5ba61f342ce77db63e37fd
       size: 1291
     - path: music.pl
-      md5: b9132ef7bab01913fb3a668c9b58b541
-      size: 5491
+      md5: cfddbe6dd5b46c49fc2e02fbfaf63499
+      size: 5739
     - path: music_utils.pl
-      md5: 4846dcfd34774523a670980125ed48f1
-      size: 549
+      md5: b565dda97e9bc2e53b4670bb7dc2d679
+      size: 1013
     - path: pitch.pl
-      md5: d394648ec478ae13f935db2fddb70f2b
-      size: 5331
+      md5: 4aac3f3e53a894951330584b7e7c3325
+      size: 4626
     - path: seg.pl
       md5: 5a4766d278a31cc00eb99b5d7cf2b146
       size: 1479
     - path: utils.pl
-      md5: 62656ac9ebc59a5eba559642bfdf1e10
-      size: 464
+      md5: 234c76d9873120fe25fa952a089ab0d8
+      size: 603
     outs:
     - path: data/1-C9-verovio.musicxml
       md5: 5e2856cc8d11e6c546439f96f65257f5
@@ -343,20 +343,20 @@ stages:
       md5: c275a65d2e5ba61f342ce77db63e37fd
       size: 1291
     - path: music.pl
-      md5: b9132ef7bab01913fb3a668c9b58b541
-      size: 5491
+      md5: cfddbe6dd5b46c49fc2e02fbfaf63499
+      size: 5739
     - path: music_utils.pl
-      md5: 4846dcfd34774523a670980125ed48f1
-      size: 549
+      md5: b565dda97e9bc2e53b4670bb7dc2d679
+      size: 1013
     - path: pitch.pl
-      md5: d394648ec478ae13f935db2fddb70f2b
-      size: 5331
+      md5: 4aac3f3e53a894951330584b7e7c3325
+      size: 4626
     - path: seg.pl
       md5: 5a4766d278a31cc00eb99b5d7cf2b146
       size: 1479
     - path: utils.pl
-      md5: 62656ac9ebc59a5eba559642bfdf1e10
-      size: 464
+      md5: 234c76d9873120fe25fa952a089ab0d8
+      size: 603
     outs:
     - path: data/1-F4-music.pl
       md5: 734350d9beb895865677cff4936d6996
@@ -437,20 +437,20 @@ stages:
       md5: c275a65d2e5ba61f342ce77db63e37fd
       size: 1291
     - path: music.pl
-      md5: b9132ef7bab01913fb3a668c9b58b541
-      size: 5491
+      md5: cfddbe6dd5b46c49fc2e02fbfaf63499
+      size: 5739
     - path: music_utils.pl
-      md5: 4846dcfd34774523a670980125ed48f1
-      size: 549
+      md5: b565dda97e9bc2e53b4670bb7dc2d679
+      size: 1013
     - path: pitch.pl
-      md5: d394648ec478ae13f935db2fddb70f2b
-      size: 5331
+      md5: 4aac3f3e53a894951330584b7e7c3325
+      size: 4626
     - path: seg.pl
       md5: 5a4766d278a31cc00eb99b5d7cf2b146
       size: 1479
     - path: utils.pl
-      md5: 62656ac9ebc59a5eba559642bfdf1e10
-      size: 464
+      md5: 234c76d9873120fe25fa952a089ab0d8
+      size: 603
     outs:
     - path: data/1-C0-verovio.musicxml
       md5: 6de5cbea61cc8bda4981d1d092370f59
@@ -477,20 +477,20 @@ stages:
       md5: c275a65d2e5ba61f342ce77db63e37fd
       size: 1291
     - path: music.pl
-      md5: b9132ef7bab01913fb3a668c9b58b541
-      size: 5491
+      md5: cfddbe6dd5b46c49fc2e02fbfaf63499
+      size: 5739
     - path: music_utils.pl
-      md5: 4846dcfd34774523a670980125ed48f1
-      size: 549
+      md5: b565dda97e9bc2e53b4670bb7dc2d679
+      size: 1013
     - path: pitch.pl
-      md5: d394648ec478ae13f935db2fddb70f2b
-      size: 5331
+      md5: 4aac3f3e53a894951330584b7e7c3325
+      size: 4626
     - path: seg.pl
       md5: 5a4766d278a31cc00eb99b5d7cf2b146
       size: 1479
     - path: utils.pl
-      md5: 62656ac9ebc59a5eba559642bfdf1e10
-      size: 464
+      md5: 234c76d9873120fe25fa952a089ab0d8
+      size: 603
     outs:
     - path: data/1-C0-music.pl
       md5: 5ada2118a3eb526efdf2272cfb2673e5
@@ -544,20 +544,20 @@ stages:
       md5: c275a65d2e5ba61f342ce77db63e37fd
       size: 1291
     - path: music.pl
-      md5: b9132ef7bab01913fb3a668c9b58b541
-      size: 5491
+      md5: cfddbe6dd5b46c49fc2e02fbfaf63499
+      size: 5739
     - path: music_utils.pl
-      md5: 4846dcfd34774523a670980125ed48f1
-      size: 549
+      md5: b565dda97e9bc2e53b4670bb7dc2d679
+      size: 1013
     - path: pitch.pl
-      md5: d394648ec478ae13f935db2fddb70f2b
-      size: 5331
+      md5: 4aac3f3e53a894951330584b7e7c3325
+      size: 4626
     - path: seg.pl
       md5: 5a4766d278a31cc00eb99b5d7cf2b146
       size: 1479
     - path: utils.pl
-      md5: 62656ac9ebc59a5eba559642bfdf1e10
-      size: 464
+      md5: 234c76d9873120fe25fa952a089ab0d8
+      size: 603
     outs:
     - path: data/1-D5-verovio.musicxml
       md5: e5de157e04f25806d4fb41f5762c9543
@@ -584,20 +584,20 @@ stages:
       md5: c275a65d2e5ba61f342ce77db63e37fd
       size: 1291
     - path: music.pl
-      md5: b9132ef7bab01913fb3a668c9b58b541
-      size: 5491
+      md5: cfddbe6dd5b46c49fc2e02fbfaf63499
+      size: 5739
     - path: music_utils.pl
-      md5: 4846dcfd34774523a670980125ed48f1
-      size: 549
+      md5: b565dda97e9bc2e53b4670bb7dc2d679
+      size: 1013
     - path: pitch.pl
-      md5: d394648ec478ae13f935db2fddb70f2b
-      size: 5331
+      md5: 4aac3f3e53a894951330584b7e7c3325
+      size: 4626
     - path: seg.pl
       md5: 5a4766d278a31cc00eb99b5d7cf2b146
       size: 1479
     - path: utils.pl
-      md5: 62656ac9ebc59a5eba559642bfdf1e10
-      size: 464
+      md5: 234c76d9873120fe25fa952a089ab0d8
+      size: 603
     outs:
     - path: data/1-D5-music.pl
       md5: 734350d9beb895865677cff4936d6996
@@ -624,20 +624,20 @@ stages:
       md5: c275a65d2e5ba61f342ce77db63e37fd
       size: 1291
     - path: music.pl
-      md5: b9132ef7bab01913fb3a668c9b58b541
-      size: 5491
+      md5: cfddbe6dd5b46c49fc2e02fbfaf63499
+      size: 5739
     - path: music_utils.pl
-      md5: 4846dcfd34774523a670980125ed48f1
-      size: 549
+      md5: b565dda97e9bc2e53b4670bb7dc2d679
+      size: 1013
     - path: pitch.pl
-      md5: d394648ec478ae13f935db2fddb70f2b
-      size: 5331
+      md5: 4aac3f3e53a894951330584b7e7c3325
+      size: 4626
     - path: seg.pl
       md5: 5a4766d278a31cc00eb99b5d7cf2b146
       size: 1479
     - path: utils.pl
-      md5: 62656ac9ebc59a5eba559642bfdf1e10
-      size: 464
+      md5: 234c76d9873120fe25fa952a089ab0d8
+      size: 603
     outs:
     - path: data/1-F4-verovio.musicxml
       md5: 96d121dabef67984ff112d4913d8250c
@@ -763,20 +763,20 @@ stages:
       md5: c275a65d2e5ba61f342ce77db63e37fd
       size: 1291
     - path: music.pl
-      md5: b9132ef7bab01913fb3a668c9b58b541
-      size: 5491
+      md5: cfddbe6dd5b46c49fc2e02fbfaf63499
+      size: 5739
     - path: music_utils.pl
-      md5: 4846dcfd34774523a670980125ed48f1
-      size: 549
+      md5: b565dda97e9bc2e53b4670bb7dc2d679
+      size: 1013
     - path: pitch.pl
-      md5: d394648ec478ae13f935db2fddb70f2b
-      size: 5331
+      md5: 4aac3f3e53a894951330584b7e7c3325
+      size: 4626
     - path: seg.pl
       md5: 5a4766d278a31cc00eb99b5d7cf2b146
       size: 1479
     - path: utils.pl
-      md5: 62656ac9ebc59a5eba559642bfdf1e10
-      size: 464
+      md5: 234c76d9873120fe25fa952a089ab0d8
+      size: 603
     outs:
     - path: data/1-half-verovio.musicxml
       md5: aa99d5b5921afdff754cb3395b5edeeb
@@ -803,20 +803,20 @@ stages:
       md5: c275a65d2e5ba61f342ce77db63e37fd
       size: 1291
     - path: music.pl
-      md5: b9132ef7bab01913fb3a668c9b58b541
-      size: 5491
+      md5: cfddbe6dd5b46c49fc2e02fbfaf63499
+      size: 5739
     - path: music_utils.pl
-      md5: 4846dcfd34774523a670980125ed48f1
-      size: 549
+      md5: b565dda97e9bc2e53b4670bb7dc2d679
+      size: 1013
     - path: pitch.pl
-      md5: d394648ec478ae13f935db2fddb70f2b
-      size: 5331
+      md5: 4aac3f3e53a894951330584b7e7c3325
+      size: 4626
     - path: seg.pl
       md5: 5a4766d278a31cc00eb99b5d7cf2b146
       size: 1479
     - path: utils.pl
-      md5: 62656ac9ebc59a5eba559642bfdf1e10
-      size: 464
+      md5: 234c76d9873120fe25fa952a089ab0d8
+      size: 603
     outs:
     - path: data/1-half-music.pl
       md5: 4bf0385b199e298a3d300f443e30e94f
