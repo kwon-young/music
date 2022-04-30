@@ -1,4 +1,4 @@
-:- module(utils, [convlist2/3, maplist2/2, range/2, arange/3]).
+:- module(utils, [convlist2/3, maplist2/2, arange/2, arange/3]).
 
 :- meta_predicate convlist2(3, ?, ?).
 :- meta_predicate maplist2(2, ?).

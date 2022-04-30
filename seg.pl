@@ -7,6 +7,8 @@
     segCorner/4
   ]).
 
+:- use_module(library(clpBNR)).
+
 segArgs(seg(Start, End, Etiqs, Thickness), [Start, End, Etiqs, Thickness]).
 
 segStart(Seg, Start) :-

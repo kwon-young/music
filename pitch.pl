@@ -4,6 +4,7 @@
 :- use_module(ccx).
 :- use_module(geo).
 :- use_module(epf).
+:- use_module(epf_geo).
 :- use_module(cond).
 :- use_module(utils).
 :- use_module(music_utils).
