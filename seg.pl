@@ -4,7 +4,13 @@
     segEnd/2, segEndX/2, segEndY/2,
     segStartEnd/3,
     segThickness/2,
-    segCorner/4
+    segCorner/4,
+    segTop/3,
+    segBottom/3,
+    segLeft/3,
+    segRight/3,
+    segHeight/3,
+    segWidth/3
   ]).
 
 :- use_module(library(clpBNR)).
@@ -60,3 +66,21 @@ segCorner(Dir, H-V, Seg, Corner) :-
   segCornerOp(Dir, V, VOp),
   segThickness(Seg, Thickness),
   segCornerApply(Dir, Seg, Thickness, HOp, VOp, Corner).
+
+segTop(v, Seg, Top) :-
+  segStartY(Seg, Top).
+segBottom(v, Seg, Bottom) :-
+  segEndY(Seg, Bottom).
+segLeft(v, Seg, Left) :-
+  segStartX(Seg, Left).
+segRight(v, Seg, Right) :-
+  segEndX(Seg, Right).
+
+segHeight(v, Seg, Height) :-
+  segTop(v, Seg, Top),
+  segBottom(v, Seg, Bottom),
+  { Height == Bottom - Top }.
+segWidth(v, Seg, Width) :-
+  segLeft(v, Seg, Left),
+  segRight(v, Seg, Right),
+  { Width == Right - Left }.

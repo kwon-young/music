@@ -5,4 +5,7 @@ samples:
   - 1-D5
   - 1-F4
   - 1-half
+  - 1-stemdown
+  - 1-quarter
+  - 1-eighth
   - 2

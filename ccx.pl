@@ -1,7 +1,11 @@
 :- module(
   ccx, [
-    ccxEtiqs/2, ccxOrigin/2
+    ccxEtiqs/2, ccxOrigin/2, ccxLeftTop/2, ccxRightBottom/2,
+    ccxLeftTopRightBottom/3, ccxTopBottom/3, ccxLeftRight/3,
+    ccxRight/2, ccxLeft/2, ccxTop/2, ccxBottom/2, ccxWidth/2, ccxHeight/2
   ]).
+
+:- use_module(library(clpBNR)).
 
 ccxArgs(ccx(LeftTop, RightBottom, Etiqs, Origin), [LeftTop, RightBottom, Etiqs, Origin]).
 
@@ -11,5 +15,42 @@ ccxEtiqs(Ccx, Etiqs) :-
 ccxOrigin(Ccx, Origin) :-
   ccxArgs(Ccx, [_, _, _, Origin]).
 
+ccxLeftTop(Ccx, LeftTop) :-
+  ccxArgs(Ccx, [LeftTop | _]).
+
+ccxRightBottom(Ccx, RightBottom) :-
+  ccxArgs(Ccx, [_, RightBottom | _]).
+
+ccxLeftTopRightBottom(Ccx, LeftTop, RightBottom) :-
+  ccxLeftTop(Ccx, LeftTop),
+  ccxRightBottom(Ccx, RightBottom).
+
 ccxTopBottom(Ccx, Top, Bottom) :-
-  ccxArgs(Ccx, [point(_, Top), point(_, Bottom) | _]).
+  ccxTop(Ccx, Top),
+  ccxBottom(Ccx, Bottom).
+
+ccxLeftRight(Ccx, Left, Right) :-
+  ccxLeft(Ccx, Left),
+  ccxRight(Ccx, Right).
+
+ccxRight(Ccx, Right) :-
+  ccxRightBottom(Ccx, point(Right, _)).
+
+ccxBottom(Ccx, Bottom) :-
+  ccxRightBottom(Ccx, point(_, Bottom)).
+
+ccxLeft(Ccx, Left) :-
+  ccxLeftTop(Ccx, point(Left, _)).
+
+ccxTop(Ccx, Top) :-
+  ccxLeftTop(Ccx, point(_, Top)).
+
+ccxWidth(Ccx, Width) :-
+  ccxRight(Ccx, Right),
+  ccxLeft(Ccx, Left),
+  { Width == Right - Left }.
+
+ccxHeight(Ccx, Height) :-
+  ccxBottom(Ccx, Bottom),
+  ccxTop(Ccx, Top),
+  { Height == Bottom - Top }.

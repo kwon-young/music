@@ -18,7 +18,10 @@ def make_args():
 
 
 def pointtopl(point: Point):
-    return f"point({point.x}, {point.y})"
+    if point:
+        return f"point({point.x}, {point.y})"
+    else:
+        return "_"
 
 
 def listtopl(els):
@@ -162,7 +165,7 @@ def parse_path(node, transforms, defs, scopes):
     p.reify()
     h_lines = ['staff', 'ledgerLines below', 'ledgerLines above']
     v_lines = ['barLine']
-    if scopes[-1] in h_lines + v_lines:
+    if scopes and scopes[-1] in h_lines + v_lines:
         points = [point for point in p.as_points()]
         if scopes[-1] in h_lines:
             start, end = seg_swap('h', points[0], points[-1])
@@ -210,6 +213,11 @@ def parse_rect(node, transforms, defs, scopes):
         return Seg(Point(x, y), Point(x, y + h), scopes.copy(), w)
 
 
+# def parse_text(node, transforms, defs, scopes):
+#     __import__('ipdb').set_trace()
+#     return
+
+
 def parse_node(node, transforms, defs, scopes):
     tag = get_tag(node)
     res = None
@@ -227,6 +235,8 @@ def parse_node(node, transforms, defs, scopes):
         res = parse_symbol(node, transforms, defs, scopes)
     elif tag == "svg:rect":
         res = parse_rect(node, transforms, defs, scopes)
+    # elif tag == "svg:text":
+    #     res = parse_text(node, transforms, defs, scopes)
     return res
 
 
