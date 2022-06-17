@@ -1,7 +1,7 @@
 :- module(epf, [term//1, select//1, update//2,
                 termchk//1, selectchk//1, selectchk//2, updatechk//2,
                 state//2, state//3, state//4, state//5, state//6, state//7, state//8,
-                stateAdd//1,
+                state_selectchk//1, state_selectchk//2,
                 add//1]).
 
 term(El) -->
@@ -59,6 +59,15 @@ parseCompound(Compound, StateGoal, Args) :-
   atom(Name),
   !,
   parseCompound_(Name, Arity, StateFunc, StateArity, StateGoal, Args).
+parseCompound(Compound, StateGoal, AllArgs) :-
+  compound_name_arguments(Compound, Op, [SubCompound]),
+  parseOp(Op, StateFunc, StateArity),
+  compound_name_arguments(SubCompound, Name, Args),
+  atom(Name),
+  !,
+  length(Args, Arity),
+  parseCompound_(Name, Arity, StateFunc, StateArity, StateGoal, AllArgs),
+  append(_, Args, AllArgs).
 parseCompound(Compound, StateGoal, Args) :-
   compound_name_arguments(Compound, Name, Args),
   atom(Name),
@@ -120,5 +129,9 @@ state(Name1, Name2, Name3, Name4, Name5, Name6, Name7, Goal) -->
 
 identity(_).
 
-stateAdd(Name) -->
-  state(Name, identity).
+state_selectchk(Term) , [state(StateOut)]-->
+  [state(StateIn)],
+  {phrase(selectchk(Term), StateIn, StateOut)}.
+state_selectchk(Term1, Term2) -->
+  state_selectchk(Term1),
+  state_selectchk(Term2).

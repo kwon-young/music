@@ -14,11 +14,11 @@
 
 :- multifile delay:mode/1.
 
-durationCond(DurationAtom, Div, DurationPerQuarter) :-
+durationCond(DurationAtom, Div, DurationPerQuarter, Dots) :-
   delay(atom_number(DurationAtom, Duration)),
   DurationPerQuarter::real(1r256, 8),
   [Duration, Div]::integer(1, _),
-  { Duration == DurationPerQuarter * Div }.
+  { Duration == (DurationPerQuarter + Dots) * Div }.
 
 types(['1024th', '512th', '256th', '128th', '64th', '32nd', '16th',
        'eighth', 'quarter', 'half', 'whole', 'breve']).
@@ -83,9 +83,6 @@ stemFlagCond(Stem, Flag, Duration, Dir) :-
 delay:mode(system:atom_concat(ground , ground , _)).
 delay:mode(system:atom_concat(_      , _      , ground)).
 
-% flagValDir(Flag, Val, Dir) :-
-%   delay(atom_concat('flag', Val, FlagVal)),
-%   delay(atom_concat(FlagVal, Dir, Flag)).
 flagValDir(Flag, Val, Dir) :-
   debug(note, "flagValDir: ~p, ~p, ~p~n", [Flag, Val, Dir]),
   delay(atom_codes(Flag, Codes)),
@@ -179,15 +176,15 @@ notePitchCond(Notehead, Step, Octave,
   numIntervals(PitchIntervals, Step, Octave, BaseStep, BaseOctave),
   debug(note, "PitchIntervals: ~p~n", [PitchIntervals]).
 
-note(element(note, [], [Pitch, Duration, Type])) -->
+note(element(note, [], [Pitch, Duration, Type | NoteAttributes])) -->
   {debug(note, "note: ~p, ~p, ~p~n", [Pitch, Duration, Type])},
   duration(Duration),
   type(Type),
-  noteGraphique,
+  noteGraphique(NoteAttributes),
   notePitch(Pitch).
 
 duration(element(duration, [], [DurationAtom])) -->
-  state(division, duration, durationCond(DurationAtom)).
+  state(division, duration, dots, durationCond(DurationAtom)).
 
 type(element(type, [], [Type])) -->
   state(duration, typeCond(Type)).
@@ -202,7 +199,7 @@ notePitch(element(pitch, [], [Step, Octave])) -->
         notePitchCond).
 
 step(element(step, [], [Step])) -->
-  stateAdd(step(Step)).
+  state_selectchk(step(Step)).
 
 octaveCond(OctaveAtom, Octave) :-
   Octave::integer(0, 9),
@@ -211,11 +208,63 @@ octaveCond(OctaveAtom, Octave) :-
 octave(element(octave, [], [Octave])) -->
   state(octave, octaveCond(Octave)).
 
-noteGraphique() -->
+noteGraphique(Dots) -->
   {debug(note, "noteGraphique~n", [])},
-  term(Notehead),
   state(notehead(Notehead), duration, noteheadCond),
+  term(Notehead),
+  dots(Dots),
   noteStem(Notehead).
+
+dotCond(first, Notehead, Dot, Stafflines) :-
+  debug(note, "dotCond~n", []),
+  ccxRight(Notehead, NoteX),
+  dotCond_(1r2, NoteX, Notehead, Dot, Stafflines).
+dotCond(rest, DotRef, Dot, Stafflines) :-
+  ccxOrigin(DotRef, point(DotX, _)),
+  dotCond_(3r4, DotX, DotRef, Dot, Stafflines).
+dotCond_(Offset, X, Ref, Dot, Stafflines) :-
+  ccxEtiqsCond(Dot, 'dots'),
+  ccxOrigin(Ref, point(_, Y)),
+  ccxOrigin(Dot, DotCenter),
+  interlineAtX(Stafflines, X, Interline),
+  {
+    AbsoluteOffset == Interline * Offset,
+    Right == X + AbsoluteOffset
+  },
+  debug(note, "dotCond: ~p, point(~p, ~p), ~p~n", [DotCenter, Right, Y, Interline]),
+  pointDiffEps(0.01, DotCenter, point(Right, Y)).
+
+dotsDuration([], 0, _).
+dotsDuration([_ | Dots], DotsDur, Dur) :-
+  {
+    HalfDur == Dur / 2,
+    DotsDur == NextDotsDur + HalfDur
+  },
+  dotsDuration(Dots, NextDotsDur, HalfDur).
+
+dots(Dots) -->
+  {debug(note, "dots~n", [])},
+  state_selectchk(notehead(Notehead), dotRef(Notehead)),
+  dots_start(Dots),
+  state(dots, duration, dotsDuration(Dots)).
+dots_start([Dot | Dots]) -->
+  {debug(note, "dots_start~n", [])},
+  dot(Dot, first),
+  dots_end(Dots).
+dots_start([]) -->
+  {true}.
+dots_end([Dot | Dots]) -->
+  {debug(note, "dots_end~n", [])},
+  dot(Dot, rest),
+  dots_end(Dots).
+dots_end([]) -->
+  {true}.
+
+dot(element(dot, [], []), Offset) -->
+  term(Dot),
+  state(-dotRef(Dot), stafflines, dotCond(Offset)),
+  {true}.
+
 noteStem(_) -->
   state(duration, durationNoStem),
   {debug(note, "noteStem: without stem~n", [])}.

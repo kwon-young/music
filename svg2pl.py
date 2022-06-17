@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 import json
 
-from svgelements import Length, Rect, Viewbox, Matrix, Path, Point
+from svgelements import Length, Rect, Viewbox, Matrix, Path, Point, Ellipse
 
 
 def make_args():
@@ -213,6 +213,16 @@ def parse_rect(node, transforms, defs, scopes):
         return Seg(Point(x, y), Point(x, y + h), scopes.copy(), w)
 
 
+def parse_ellipse(node, transforms, defs, scopes):
+    e = Ellipse(**node.attrib)
+    e = apply_transforms(e, transforms)
+    e.reify()
+    if scopes[-1] == 'dots':
+        left, top, right, bottom = e.bbox()
+        return Ccx(Point(left, top), Point(right, bottom), scopes.copy(),
+                   Point(e.cx, e.cy))
+
+
 # def parse_text(node, transforms, defs, scopes):
 #     __import__('ipdb').set_trace()
 #     return
@@ -235,6 +245,8 @@ def parse_node(node, transforms, defs, scopes):
         res = parse_symbol(node, transforms, defs, scopes)
     elif tag == "svg:rect":
         res = parse_rect(node, transforms, defs, scopes)
+    elif tag == "svg:ellipse":
+        res = parse_ellipse(node, transforms, defs, scopes)
     # elif tag == "svg:text":
     #     res = parse_text(node, transforms, defs, scopes)
     return res
