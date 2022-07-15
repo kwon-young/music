@@ -1,8 +1,10 @@
 :- module(epf, [term//1, select//1, update//2,
                 termchk//1, selectchk//1, selectchk//2, updatechk//2,
                 state//2, state//3, state//4, state//5, state//6, state//7, state//8,
+                state//9,
                 state_selectchk//1, state_selectchk//2,
-                add//1]).
+                add//1,
+                sequence2//3]).
 
 term(El) -->
   [El].
@@ -84,8 +86,8 @@ parseCompound_(Name, Arity, StateFunctor, StateArity, StateGoal, Args) :-
 
 :- meta_predicate state_(?, 0, ?, ?, ?).
 
-state_(Compound, Mod:Goal, Mod:NewGoal), [state(StateOut)] -->
-  [state(StateIn)],
+state_(Compound, Mod:Goal, Mod:NewGoal) -->
+  updatechk(state(StateIn), state(StateOut)),
   {
     parseCompound(Compound, StateGoal, Args),
     Goal =.. GoalList,
@@ -102,6 +104,7 @@ state_(Compound, Mod:Goal, Mod:NewGoal), [state(StateOut)] -->
 :- meta_predicate state(?, ?, ?, ?, ?, 5, ?, ?).
 :- meta_predicate state(?, ?, ?, ?, ?, ?, 6, ?, ?).
 :- meta_predicate state(?, ?, ?, ?, ?, ?, ?, 7, ?, ?).
+:- meta_predicate state(?, ?, ?, ?, ?, ?, ?, ?, 8, ?, ?).
 
 state(Goal) -->
   { call(Goal) }.
@@ -126,6 +129,9 @@ state(Name1, Name2, Name3, Name4, Name5, Name6, Goal) -->
 state(Name1, Name2, Name3, Name4, Name5, Name6, Name7, Goal) -->
   state_(Name1, Goal, NewGoal),
   state(Name2, Name3, Name4, Name5, Name6, Name7, NewGoal).
+state(Name1, Name2, Name3, Name4, Name5, Name6, Name7, Name8, Goal) -->
+  state_(Name1, Goal, NewGoal),
+  state(Name2, Name3, Name4, Name5, Name6, Name7, Name8, NewGoal).
 
 identity(_).
 
@@ -135,3 +141,13 @@ state_selectchk(Term) , [state(StateOut)]-->
 state_selectchk(Term1, Term2) -->
   state_selectchk(Term1),
   state_selectchk(Term2).
+
+:- meta_predicate sequence2(6, ?, ?, ?, ?).
+
+sequence2(Element, [Start1 | List1], [Start2 | List2]) -->
+  sequence2_(List1, List2, Start1, Start2, Element).
+sequence2_([B1 | List1], [B2 | List2], A1, A2, P) -->
+  call(P, A1, B1, A2, B2),
+  !,
+  sequence2_(List1, List2, B1, B2, P).
+sequence2_([], [], _, _, _) --> {true}.

@@ -1,6 +1,7 @@
 :- module(
   geo, [
-    diffEps/3, pointDiffEps/3, segYAtX/3, intersect/2
+    diffEps/3, pointDiffEps/3, segYAtX/3, inside/2, intersect/2,
+    boxLeftTopRightBottom/3
   ]).
 
 :- use_module(library(clpBNR)).
@@ -16,6 +17,7 @@ diffEps(Eps, A, B) :-
   },
   debug(diffEps, "Out Eps ~p, A ~p, B ~p~n", [Eps, A, B]).
 pointDiffEps(Eps, point(X1, Y1), point(X2, Y2)) :-
+  debug(pointDiffEps, "In Eps ~p, A ~p, B ~p~n", [Eps, point(X1, Y1), point(X2, Y2)]),
   [Eps, X1, Y1, X2, Y2]::real,
   {
     Eps >= 0,
@@ -69,3 +71,14 @@ intersect(Seg, Ccx) :-
   segEq(Seg, P, 0),
   contour(Ccx, Box),
   boxEq(Box, P).
+
+vdistanceAtX(X, Seg1, Seg2, Distance) :-
+  segYAtX(Seg1, Y1, X),
+  segYAtX(Seg2, Y2, X),
+  {Distance == Y2 - Y1}.
+
+inside(Term, Container) :-
+  contour(Term, box(P1, P2)),
+  contour(Container, Box),
+  boxEq(Box, P1),
+  boxEq(Box, P2).

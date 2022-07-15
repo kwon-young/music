@@ -91,8 +91,10 @@ def apply_transforms(obj, transforms):
 
 def recurse(f):
     def wrapper(node, *args):
-        f(node, *args)
+        node_res = f(node, *args)
         res = []
+        if node_res is not None:
+            res.append(node_res)
         for child in node:
             child_res = parse_node(child, *args)
             if isinstance(child_res, list):
@@ -128,11 +130,18 @@ def backtrack(f):
 @backtrack
 @recurse
 def parse_svgnode(node, transforms, defs, scopes):
+    res = None
     if w := node.attrib.get('width'):
         if h := node.attrib.get('height'):
-            transforms.append(Rect(0, 0, Length(w), Length(h)))
+            scopes.append('page')
+            width = Length(w)
+            height = Length(h)
+            transforms.append(Rect(0, 0, width, height))
+            res = Ccx(Point(0, 0), Point(width.value(), height.value()),
+                      scopes.copy(), Point(0, 0))
     if viewBox := node.attrib.get('viewBox'):
         transforms.append(Viewbox(viewBox))
+    return res
 
 
 def parse_defs(node, transforms, defs, scopes):

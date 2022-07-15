@@ -26,6 +26,7 @@ interlineAtStart(Stafflines, Interline) :-
 interlineAtEnd(Stafflines, Interline) :-
   interlineAt(Stafflines, segEndY, Interline).
 interlineAtX(Stafflines, X, Interline) :-
+  debug(music_utils, "interlineAtX Stafflines ~p~n", [Stafflines]),
   interlineAt(Stafflines, {X}/[Seg, Y]>>(segYAtX(Seg, Y, X)), Interline).
 interlineAt(Stafflines, Getter, Interline) :-
   interlineAt(Stafflines, Getter, Interline, _).

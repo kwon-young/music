@@ -21,7 +21,7 @@ stages:
   musicReco:
     foreach: ${samples}
     do:
-      cmd: swipl -t halt -s music.pl -g "mainReco('data/${item}-verovio.pl', 'data/${item}-verovio.musicxml')."
+      cmd: swipl -t halt -s music.pl -g "mainReco('data/${item}-verovio.pl', 'settings/musicReco.txt', 'data/${item}-verovio.musicxml')."
       deps:
       - data/${item}-verovio.pl
       - ccx.pl
@@ -40,7 +40,7 @@ stages:
   musicGen:
     foreach: ${samples}
     do:
-      cmd: swipl -t halt -s music.pl -g "mainGen('data/${item}.musicxml', 'data/${item}-music.pl')."
+      cmd: swipl -t halt -s music.pl -g "mainGen('data/${item}.musicxml', 'settings/musicGen.txt', 'data/${item}-music.pl')."
       deps:
       - data/${item}.musicxml
       - ccx.pl

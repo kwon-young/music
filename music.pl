@@ -1,3 +1,5 @@
+:- module(music, [mainGen/3, mainGen/4, mainReco/3, mainReco/4]).
+
 :- use_module(library(dcg/basics)).
 :- use_module(library(dcg/high_order)).
 :- use_module(library(clpBNR)).
@@ -14,30 +16,25 @@
 :- use_module(music_utils).
 
 :- use_module(library(settings)).
+
+:- setting(page_width, number, 2100.0, 'page width').
+:- setting(page_height, number, 2970.0, 'page height').
 :- setting(staff_aligned_eps, number, 0, 'staffline alignement threshold').
+:- setting(staff_interline, number, 18, 'stafflines interline height').
 :- setting(staff_interline_eps, number, 0.05, 'stafflines interline threshold').
 :- setting(staff_barline_eps, number, 0.05, 'stafflines and barline threshold').
 :- setting(clef_eps, number, 0, 'Clef position threshold').
 :- setting(beats_eps, number, 0, 'Clef position threshold').
-:- setting(stemEW_eps, number, 0.05, 'stem up/down horizontal note jonction threshold').
-:- setting(stemUp, list(pair), [
-  'noteheadHalf'-0.16,
-  'noteheadBlack'-0.16
-  ], 'stem up vertical note jonction').
-:- setting(stemDown, list(pair), [
-  'noteheadHalf'-(-0.14),
-  'noteheadBlack'-(-0.16)
-  ], 'stem down vertical note jonction').
-:- setting(stemNS_eps, number, 0.01, 'stem up/down vertical note jonction threshold').
 
 ccxOnStaffline(Stafflines, Ccx, Etiq, NumStaffline, Eps) :-
   ccxEtiqsCond(Ccx, Etiq),
   nth1(NumStaffline, Stafflines, Staffline),
   ccxOnSegCond(Staffline, Ccx, Eps).
 
-mainGen(XmlFile, StructFile) :-
-  load_xml(XmlFile, Xml, [space(remove), number(integer)]),
-  phrase(music(Xml), [state(State) | Struct], Rest),
+mainGen(XmlFile, SettingsFile, StructFile) :-
+  load_settings(SettingsFile),
+  mainGen(XmlFile, State, Struct, Rest),
+  save_settings,
   open(StructFile, write, S),
   print_term(Struct, [output(S)]),
   close(S),
@@ -47,9 +44,14 @@ mainGen(XmlFile, StructFile) :-
   print_term(Struct, _),
   format("~nRest~n", []),
   print_term(Rest, _).
+mainGen(XmlFile, State, Struct, Rest) :-
+  load_xml(XmlFile, Xml, [space(remove), number(integer)]),
+  phrase(music(Xml), [state(State) | Struct], Rest).
 
-mainReco(StructFile, XmlFile) :-
+mainReco(StructFile, SettingsFile, XmlFile) :-
+  load_settings(SettingsFile),
   mainReco(StructFile, Struct, Rest, Xml),
+  save_settings,
   open(XmlFile, write, XmlS),
   xml_write(XmlS, Xml, [
     doctype('score-partwise'),
@@ -70,8 +72,19 @@ mainReco(StructFile, Struct, Rest, Xml) :-
   phrase(music(Xml), [state(_) | Struct], Rest).
 
 music([element('score-partwise', [version='4.0'], [PartList, Part])]) -->
+  page,
   partList(PartId, PartList),
   part(PartId, Part).
+
+pageCond(Page) :-
+  setting(page_width, Width),
+  setting(page_height, Height),
+  ccxLeftTopRightBottom(Page, point(0, 0), point(Width, Height)),
+  ccxEtiqsCond(Page, 'page').
+
+page -->
+  state(page(Page), pageCond),
+  term(Page).
 
 partList(PartId, element('part-list', [], [ScorePart])) -->
   scorePart(PartId, ScorePart).
@@ -82,10 +95,16 @@ scorePart(PartId, element('score-part', [id=PartId], [element('part-name', [], [
 part(PartId, element(part, [id=PartId], [Measure])) -->
   { PartId = 'P1' },
   measure(Measure),
+  {debug(music, "part: Measure ~p~n", [Measure])},
+  state_selectchk(division(Div)),
+  {debug(music, "part: Div ~p~n", [Div])},
+  state_selectchk(duration(Dur), dots(Dots)),
+  {debug(music, "part: Dur ~p~n", [Dur])},
+  {debug(music, "part: Dots ~p~n", [Dots])},
   state(division, lower_bound).
 
 measure(element(measure, [number='1'], [Attributes, Note])) -->
-  {debug(music, "measure: ~p, ~p~n", [Attributes, Note])},
+  {debug(music, "measure: In ~p, ~p~n", [Attributes, Note])},
   staff(),
   barline(),
   attributes(Attributes),
@@ -95,9 +114,11 @@ aligned(Getter, Eps, Elements) :-
   convlist(Getter, Elements, [Coord | Coords]),
   maplist(diffEps(Eps, Coord), Coords).
 
-interlineCond(Stafflines, Getter, Eps) :-
-  music_utils:interlineAt(Stafflines, Getter, Interline, Interlines),
-  maplist(diffEps(Eps, Interline), Interlines).
+interlineCond(Stafflines, Getter, Interline, Eps) :-
+  music_utils:interlineAt(Stafflines, Getter, InterlineAverage, Interlines),
+  diffEps(Eps, Interline, InterlineAverage),
+  maplist(diffEps(Eps, Interline), Interlines),
+  debug(music, "interlineCond Interlines: ~p~n", [Interlines]).
 
 staffCond(Stafflines) :-
   length(Stafflines, 5),
@@ -109,10 +130,11 @@ staffCond(Stafflines) :-
   convlist(segStartY, Stafflines, Ys),
   % order lines along Y coord starting from the bottom
   maplist2([Y1, Y2]>>([Y1, Y2]::real, {Y2 < Y1}), Ys),
+  setting(staff_interline, Interline),
   setting(staff_interline_eps, InterlineEps),
   % all interlines are similar
-  interlineCond(Stafflines, segStartY, InterlineEps),
-  interlineCond(Stafflines, segEndY, InterlineEps).
+  interlineCond(Stafflines, segStartY, Interline, InterlineEps),
+  interlineCond(Stafflines, segEndY, Interline, InterlineEps).
 
 staff() -->
   state(stafflines(Stafflines), staffCond),
@@ -158,7 +180,7 @@ clefCond([element(sign, [], ['G']), element(line, [], ['2'])],
 
 clef(element(clef, [], SignLine)) -->
   state(clef(Clef), num, baseLine, baseStep, baseOctave, stafflines, clefCond(SignLine)),
-  term(Clef).
+  termp(Clef).
 
 time(element(time, [], [Beats, BeatType])) -->
   beats(Beats),
@@ -170,7 +192,7 @@ beatsCond('4', Beats, Stafflines) :-
 
 beats(element(beats, [], [BeatsNumber])) -->
   state(beats(Beats), stafflines, beatsCond(BeatsNumber)),
-  term(Beats).
+  termp(Beats).
 
 beatTypeCond('4', BeatType, Stafflines) :-
   setting(beats_eps, BeatsEps),
@@ -178,6 +200,6 @@ beatTypeCond('4', BeatType, Stafflines) :-
 
 beatType(element('beat-type', [], [BeatTypeNumber])) -->
   state(beatType(BeatType), stafflines, beatTypeCond(BeatTypeNumber)),
-  term(BeatType).
+  termp(BeatType).
 
 key(element(key, [], [element(fifths, [], ['0'])])) --> {true}.
