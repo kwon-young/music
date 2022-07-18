@@ -29,6 +29,8 @@ Here is a list of currently supported music notation features by this project:
 
 See the data folders to have an idea of the different supported music notation elements.
 
+See the [documentation](https://kwon-young.github.io/music/) for a list of defined predicates used in this grammar.
+
 ## Why ?
 
 While the origin of this project is quite deep and complicated, the main reason driving this project is the realization that by using a carefully selected set of tools and formalism, the same code __could__ be used to do both music score typesetting __and__ recognition.
