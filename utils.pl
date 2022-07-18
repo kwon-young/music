@@ -1,6 +1,7 @@
-:- module(utils, [convlist2/3, maplist2/2, nth0u/3, nth1u/3]).
+:- module(utils, [convlist2/3, maplist2/2, nth0u/3, nth1u/3, epsGround/3]).
 
 :- use_module(library(delay)).
+:- use_module(library(clpBNR)).
 
 :- multifile delay:mode/1.
 
@@ -81,3 +82,9 @@ join(Vars, Z) :-
   foldl(add, IndexesCoeffs, 0, Expr),
   get_attr(Z, dom, ZIndex-_),
   {ZIndex == Expr}.
+
+epsGround(Eps, X, Y) :-
+  ( delta(X, D), { D =< Eps }
+  ->  Y is midpoint(X)
+  ;   { Y == X }
+  ).

@@ -52,6 +52,8 @@ mainReco(StructFile, SettingsFile, XmlFile) :-
   load_settings(SettingsFile),
   mainReco(StructFile, Struct, Rest, Xml),
   save_settings,
+  format("Xml~n", []),
+  print_term(Xml, _),
   open(XmlFile, write, XmlS),
   xml_write(XmlS, Xml, [
     doctype('score-partwise'),
@@ -59,8 +61,6 @@ mainReco(StructFile, SettingsFile, XmlFile) :-
     system("http://www.musicxml.org/dtds/partwise.dtd"),
     net(false)]),
   close(XmlS),
-  format("Xml~n", []),
-  print_term(Xml, _),
   format("~nStruct~n", []),
   print_term(Struct, _),
   format("~nRest~n", []),

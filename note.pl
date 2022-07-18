@@ -95,17 +95,20 @@ noteheadStemCond(Notehead, Stem, Duration, Division, Dir) :-
 stemDirCond(Dir, Notehead, Stem) :-
   ccxLeftRight(Notehead, NoteLeft, NoteRight),
   segCorner(v, right-bottom, Stem, point(StemBottom, _)),
+  epsGround(0.1, StemBottom, StemBottomG),
   segCorner(v, left-top, Stem, point(StemTop, _)),
-  delay(stemDir(Dir, NoteRight, StemBottom, NoteLeft, StemTop)).
+  epsGround(0.1, StemTop, StemTopG),
+  debug(note, "stemDirCond ~p, ~p, ~p, ~p, ~p~n", [Dir, NoteRight, StemBottom, NoteLeft, StemTop]),
+  delay(stemDir(Dir, NoteRight, StemBottomG, NoteLeft, StemTopG)).
 
 delay:mode(note:stemDir(ground , _      , _      , _      , _)).
 delay:mode(note:stemDir(_      , ground , ground , _      , _)).
 delay:mode(note:stemDir(_      , _      , _      , ground , ground)).
 
 stemDir(up, NoteRight, StemBottom, _, _) :-
-  diffEps(0, NoteRight, StemBottom).
+  diffEps(0.1, NoteRight, StemBottom).
 stemDir(down, _, _, NoteLeft, StemTop) :-
-  diffEps(0, NoteLeft, StemTop).
+  diffEps(0.1, NoteLeft, StemTop).
 
 stemFlagCond(Stem, Flag, Duration, Division, Dir) :-
   debug(note, "stemFlagCond: ~p, ~p, ~p, ~p~n", [Stem, Flag, Duration, Dir]),
@@ -263,9 +266,11 @@ duration(element(duration, [], [DurationAtom])) -->
 type(element(type, [], [Type])) -->
   state(duration, division, typeCond(Type)).
 
-notePitch(element(pitch, [], [Step, Octave])) -->
+notePitch(element(pitch, [], Pitch)) -->
   {debug(note, "notePitch~n", [])},
+  {when((ground(Alter) ; ground(Pitch)), append([[Step], Alter, [Octave]], Pitch))},
   step(Step),
+  alter(Alter),
   octave(Octave),
   state(notehead, step, octave,
         baseLine, baseStep, baseOctave,
@@ -275,6 +280,25 @@ notePitch(element(pitch, [], [Step, Octave])) -->
 step(element(step, [], [Step])) -->
   state_selectchk(step(Step)).
 
+alterCond(Element, Alter) :-
+  delay(alterCond_(Element, Alter)).
+
+delay:mode(note:alterCond_(ground, _)).
+delay:mode(note:alterCond_(_, ground)).
+
+alterCond_([element(alter, [], [AlterAtom])], Alter) :-
+  Alter::real(-2.0, 2.0),
+  NumQuarterTones::integer(-4, 4),
+  {
+    Alter == 0.5 * NumQuarterTones,
+    NumQuarterTones <> 0
+  },
+  delay(atom_number(AlterAtom, Alter)).
+alterCond_([], 0).
+
+alter(Alter) -->
+  state(alter, alterCond(Alter)).
+
 octaveCond(OctaveAtom, Octave) :-
   Octave::integer(0, 9),
   delay(atom_number(OctaveAtom, Octave)).
@@ -282,16 +306,19 @@ octaveCond(OctaveAtom, Octave) :-
 octave(element(octave, [], [Octave])) -->
   state(octave, octaveCond(Octave)).
 
-noteGraphique(Dots) -->
+noteGraphique(Attributes) -->
   {debug(note, "noteGraphique~n", [])},
-  notehead(Dots),
-  noteStem.
+  notehead(NoteheadAttributes),
+  noteStem(Stem),
+  {append(NoteheadAttributes, Stem, Attributes)}.
 
-notehead(Dots) -->
+notehead(Attributes) -->
   state(notehead(Notehead), duration, division, noteheadCond),
   termp(Notehead),
   {debug(note, "notehead: ~p~n", [Notehead])},
   dots(Notehead, Dots),
+  accidental(Accidental),
+  {append(Dots, Accidental, Attributes)},
   ledgerlines.
 
 dots(Notehead, Dots) -->
@@ -304,19 +331,30 @@ dot(_, element(dot, [], []), Ref, Dot) -->
   state(numIntervals, stafflines, dotCond(Ref, Dot)),
   termp(Dot).
 
-ccxAboveSeg(Seg, Ccx) :-
-  ccxOrigin(Ccx, point(CcxX, CcxY)),
-  segYAtX(Seg, SegY, CcxX),
-  { CcxY =< SegY }.
+delay:mode(note:accidAlterName(ground, _, _)).
+delay:mode(note:accidAlterName(_, ground, _)).
+delay:mode(note:accidAlterName(_, _, ground)).
+accidAlterName(accidentalFlat, Alter, flat) :-
+  { Alter == -1 }.
+accidAlterName(accidentalSharp, Alter, sharp) :-
+  { Alter == 1 }.
+noAlterCond(Alter) :-
+  { Alter == 0 }.
 
-ccxBelowSeg(Seg, Ccx) :-
-  ccxOrigin(Ccx, point(CcxX, CcxY)),
-  segYAtX(Seg, SegY, CcxX),
-  { CcxY >= SegY }.
+accidentalCond(AccidentalName, Notehead, Alter, Accidental) :-
+  ccxEtiqsCond(Accidental, AccidentalEtiq),
+  ccxEtiqsCond(Accidental, 1, accid),
+  ccxOrigin(Notehead, point(NoteX, NoteY)),
+  ccxOrigin(Accidental, point(AccidX, AccidY)),
+  diffEps(0, NoteY, AccidY),
+  { AccidX =< NoteX },
+  delay(accidAlterName(AccidentalEtiq, Alter, AccidentalName)).
 
-lineOffset(X, Y, Seg, Offset) :-
-  segYAtX(Seg, SegY, X),
-  { Offset == Y - SegY }.
+accidental([element(accidental, [], [AccidentalName])]) -->
+  state(notehead, alter, accidental(Accidental), accidentalCond(AccidentalName)),
+  term(Accidental).
+accidental([]) -->
+  state(alter, noAlterCond).
 
 ledgerlineCond(LedgerLines, Notehead, Stafflines, Num, PitchIntervals) :-
   length(Stafflines, NumStafflines),
@@ -388,12 +426,12 @@ ledgerlines -->
   state(notehead, stafflines, num, intervals, ledgerlineCond(LedgerLines)),
   sequence(selectp, LedgerLines).
 
-noteStem -->
+noteStem([]) -->
   state(duration, division, durationNoStem),
   {debug(note, "noteStem: without stem~n", [])}.
-noteStem -->
-  state(notehead, stem(Stem), duration, division, dir, noteheadStemCond),
+noteStem([element(stem, [], [Dir])]) -->
   verticalSeg(Stem),
+  state(notehead, stem(Stem), duration, division, dir(Dir), noteheadStemCond),
   {debug(note, "noteStem: with stem~n", [])},
   noteFlag.
 noteFlag -->

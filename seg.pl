@@ -54,7 +54,9 @@ segCornerApply(v, Seg, Thickness, Op, Getter, point(XOffset, Y)) :-
   call(Getter, Seg, point(X, Y)),
   Expr =..[Op, X, (Thickness / 2.0)],
   [XOffset, X, Thickness]::real,
-  {XOffset == Expr}.
+  debug(seg, "segCornerApply v ~p~n", [Expr]),
+  {XOffset == Expr},
+  debug(seg, "segCornerApply v ~p~n", [XOffset]).
 segCornerApply(h, Seg, Thickness, Getter, Op, point(X, YOffset)) :-
   call(Getter, Seg, point(X, Y)),
   Expr =..[Op, Y, (Thickness / 2.0)],

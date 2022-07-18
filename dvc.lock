@@ -74,26 +74,26 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-music.pl
       md5: 0e70eeb01ec9522b202bb056047a190f
@@ -118,26 +118,26 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-verovio.musicxml
       md5: 156e4170498e4020cc8aae3f36d5b97e
@@ -162,26 +162,26 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/2-music.pl
       md5: 0e70eeb01ec9522b202bb056047a190f
@@ -206,26 +206,26 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/2-verovio.musicxml
       md5: 156e4170498e4020cc8aae3f36d5b97e
@@ -250,26 +250,26 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-C9-music.pl
       md5: 0e70eeb01ec9522b202bb056047a190f
@@ -321,26 +321,26 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-C9-verovio.musicxml
       md5: 5e2856cc8d11e6c546439f96f65257f5
@@ -365,26 +365,26 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-F4-music.pl
       md5: 673fc322d6b16f73422470ca47be3fc9
@@ -463,26 +463,26 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-C0-verovio.musicxml
       md5: 6de5cbea61cc8bda4981d1d092370f59
@@ -507,26 +507,26 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-C0-music.pl
       md5: 0e70eeb01ec9522b202bb056047a190f
@@ -578,26 +578,26 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-D5-verovio.musicxml
       md5: e5de157e04f25806d4fb41f5762c9543
@@ -622,26 +622,26 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-D5-music.pl
       md5: 673fc322d6b16f73422470ca47be3fc9
@@ -666,26 +666,26 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-F4-verovio.musicxml
       md5: 96d121dabef67984ff112d4913d8250c
@@ -767,17 +767,17 @@ stages:
       -o data/1-half-verovio.svg data/1-half.musicxml
     deps:
     - path: data/1-half.musicxml
-      md5: 4746641bc53e6cac48a048d84f3f0ac0
-      size: 873
+      md5: 2533448807c517cfb487cb8eab9a34f5
+      size: 897
     outs:
     - path: data/1-half-verovio.svg
-      md5: c2333eb8e71c2cb8ec1a33b9c58d25b1
+      md5: 0ef539ae9b61d667e7f26d2295d4d486
       size: 9835
   svg2pl@1-half:
     cmd: python svg2pl.py data/1-half-verovio.svg data/glyphnames.json data/1-half-verovio.pl
     deps:
     - path: data/1-half-verovio.svg
-      md5: c2333eb8e71c2cb8ec1a33b9c58d25b1
+      md5: 0ef539ae9b61d667e7f26d2295d4d486
       size: 9835
     - path: data/glyphnames.json
       md5: 9529c059c29a2162ee44d35f561b1900
@@ -809,30 +809,30 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-half-verovio.musicxml
-      md5: aa99d5b5921afdff754cb3395b5edeeb
-      size: 730
+      md5: 52f3aa06eb28fac8a452830addaeaf68
+      size: 747
   musicGen@1-half:
     cmd: swipl -t halt -s music.pl -g "mainGen('data/1-half.musicxml', 'settings/musicGen.txt',
       'data/1-half-music.pl')."
@@ -844,8 +844,8 @@ stages:
       md5: 5d3a40c711cb6850d215927f56403fcb
       size: 766
     - path: data/1-half.musicxml
-      md5: 4746641bc53e6cac48a048d84f3f0ac0
-      size: 873
+      md5: 2533448807c517cfb487cb8eab9a34f5
+      size: 897
     - path: epf.pl
       md5: 57772fd9e7cba21a078407acef5605eb
       size: 4857
@@ -853,39 +853,39 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-half-music.pl
-      md5: 6e027872e1b3548a1bdab6233ff105b8
-      size: 628
+      md5: ed7ab92d4630f7e7768c43f3b538a5eb
+      size: 519
   diffXml@1-half:
     cmd: swipl -t halt -s diffxml.pl -g "diffXml('data/1-half.musicxml', 'data/1-half-verovio.musicxml')."
     deps:
     - path: data/1-half-verovio.musicxml
-      md5: aa99d5b5921afdff754cb3395b5edeeb
-      size: 730
+      md5: 52f3aa06eb28fac8a452830addaeaf68
+      size: 747
     - path: data/1-half.musicxml
-      md5: 4746641bc53e6cac48a048d84f3f0ac0
-      size: 873
+      md5: 2533448807c517cfb487cb8eab9a34f5
+      size: 897
     - path: diffxml.pl
       md5: 8bd918916e1ed132dd3247a073ae818e
       size: 107
@@ -894,18 +894,18 @@ stages:
       -o data/1-stemdown-verovio.svg data/1-stemdown.musicxml
     deps:
     - path: data/1-stemdown.musicxml
-      md5: 84b74046bc3cdf5f7290fbd8adc9c5b1
-      size: 873
+      md5: cfbe7d289c9867c49240a57b739a87c8
+      size: 899
     outs:
     - path: data/1-stemdown-verovio.svg
-      md5: 4237f7fd87b9869a292b90d5bd6e2f01
-      size: 9667
+      md5: 729a39f51ff5f80cad5a0de1229bf79a
+      size: 9659
   svg2pl@1-stemdown:
     cmd: python svg2pl.py data/1-stemdown-verovio.svg data/glyphnames.json data/1-stemdown-verovio.pl
     deps:
     - path: data/1-stemdown-verovio.svg
-      md5: 4237f7fd87b9869a292b90d5bd6e2f01
-      size: 9667
+      md5: 729a39f51ff5f80cad5a0de1229bf79a
+      size: 9659
     - path: data/glyphnames.json
       md5: 9529c059c29a2162ee44d35f561b1900
       size: 301683
@@ -936,39 +936,39 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-stemdown-verovio.musicxml
-      md5: 21c9e5445b5475862980336a56e7ef99
-      size: 730
+      md5: e87ab9f4046f16c8e454c01ef78cd56b
+      size: 749
   diffXml@1-stemdown:
     cmd: swipl -t halt -s diffxml.pl -g "diffXml('data/1-stemdown.musicxml', 'data/1-stemdown-verovio.musicxml')."
     deps:
     - path: data/1-stemdown-verovio.musicxml
-      md5: 21c9e5445b5475862980336a56e7ef99
-      size: 730
+      md5: e87ab9f4046f16c8e454c01ef78cd56b
+      size: 749
     - path: data/1-stemdown.musicxml
-      md5: 84b74046bc3cdf5f7290fbd8adc9c5b1
-      size: 873
+      md5: cfbe7d289c9867c49240a57b739a87c8
+      size: 899
     - path: diffxml.pl
       md5: 8bd918916e1ed132dd3247a073ae818e
       size: 107
@@ -983,8 +983,8 @@ stages:
       md5: 5d3a40c711cb6850d215927f56403fcb
       size: 766
     - path: data/1-stemdown.musicxml
-      md5: 84b74046bc3cdf5f7290fbd8adc9c5b1
-      size: 873
+      md5: cfbe7d289c9867c49240a57b739a87c8
+      size: 899
     - path: epf.pl
       md5: 57772fd9e7cba21a078407acef5605eb
       size: 4857
@@ -992,47 +992,47 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-stemdown-music.pl
-      md5: 6e027872e1b3548a1bdab6233ff105b8
-      size: 628
+      md5: ed7ab92d4630f7e7768c43f3b538a5eb
+      size: 519
   verovio@1-quarter:
     cmd: /home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data
       -o data/1-quarter-verovio.svg data/1-quarter.musicxml
     deps:
     - path: data/1-quarter.musicxml
-      md5: 24d787f00923f70bcc4536e887a736f8
-      size: 876
+      md5: c70d42805a588d0970ee77844c75d7a4
+      size: 902
     outs:
     - path: data/1-quarter-verovio.svg
-      md5: 7158d1d4733d0f5d4b33d2ef02156f05
-      size: 9551
+      md5: dc0e7bb8e543c938c586dae317503360
+      size: 9550
   svg2pl@1-quarter:
     cmd: python svg2pl.py data/1-quarter-verovio.svg data/glyphnames.json data/1-quarter-verovio.pl
     deps:
     - path: data/1-quarter-verovio.svg
-      md5: 7158d1d4733d0f5d4b33d2ef02156f05
-      size: 9551
+      md5: dc0e7bb8e543c938c586dae317503360
+      size: 9550
     - path: data/glyphnames.json
       md5: 9529c059c29a2162ee44d35f561b1900
       size: 301683
@@ -1054,8 +1054,8 @@ stages:
       md5: 5d3a40c711cb6850d215927f56403fcb
       size: 766
     - path: data/1-quarter.musicxml
-      md5: 24d787f00923f70bcc4536e887a736f8
-      size: 876
+      md5: c70d42805a588d0970ee77844c75d7a4
+      size: 902
     - path: epf.pl
       md5: 57772fd9e7cba21a078407acef5605eb
       size: 4857
@@ -1063,30 +1063,30 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-quarter-music.pl
-      md5: bd3e3a64f37d6d2f90b5e5f4f187e3bb
-      size: 629
+      md5: 7072b3c9affd349aa1b0da68815998f9
+      size: 520
   musicReco@1-quarter:
     cmd: swipl -t halt -s music.pl -g "mainReco('data/1-quarter-verovio.pl', 'settings/musicReco.txt',
       'data/1-quarter-verovio.musicxml')."
@@ -1107,39 +1107,39 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-quarter-verovio.musicxml
-      md5: 316c11c67c1a8e3cada1e433e2426212
-      size: 733
+      md5: 228b05638a0d4619785fe238bb73889b
+      size: 752
   diffXml@1-quarter:
     cmd: swipl -t halt -s diffxml.pl -g "diffXml('data/1-quarter.musicxml', 'data/1-quarter-verovio.musicxml')."
     deps:
     - path: data/1-quarter-verovio.musicxml
-      md5: 316c11c67c1a8e3cada1e433e2426212
-      size: 733
+      md5: 228b05638a0d4619785fe238bb73889b
+      size: 752
     - path: data/1-quarter.musicxml
-      md5: 24d787f00923f70bcc4536e887a736f8
-      size: 876
+      md5: c70d42805a588d0970ee77844c75d7a4
+      size: 902
     - path: diffxml.pl
       md5: 8bd918916e1ed132dd3247a073ae818e
       size: 107
@@ -1148,17 +1148,17 @@ stages:
       -o data/1-eighth-verovio.svg data/1-eighth.musicxml
     deps:
     - path: data/1-eighth.musicxml
-      md5: 1b406da707207c5904bdc7e039fd4c51
-      size: 875
+      md5: ae0e071c22f4563a59bdffe9cc4ff8cd
+      size: 901
     outs:
     - path: data/1-eighth-verovio.svg
-      md5: a646fd680348f5c2b6c3b4f64674ccf2
+      md5: 18ae18952e5755b9d65445e81c4028a5
       size: 10153
   svg2pl@1-eighth:
     cmd: python svg2pl.py data/1-eighth-verovio.svg data/glyphnames.json data/1-eighth-verovio.pl
     deps:
     - path: data/1-eighth-verovio.svg
-      md5: a646fd680348f5c2b6c3b4f64674ccf2
+      md5: 18ae18952e5755b9d65445e81c4028a5
       size: 10153
     - path: data/glyphnames.json
       md5: 9529c059c29a2162ee44d35f561b1900
@@ -1190,39 +1190,39 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-eighth-verovio.musicxml
-      md5: 242f7bbff36c974cb22f435f758ad005
-      size: 732
+      md5: dbf81e32cc106a992014de1e63d87a3d
+      size: 751
   diffXml@1-eighth:
     cmd: swipl -t halt -s diffxml.pl -g "diffXml('data/1-eighth.musicxml', 'data/1-eighth-verovio.musicxml')."
     deps:
     - path: data/1-eighth-verovio.musicxml
-      md5: 242f7bbff36c974cb22f435f758ad005
-      size: 732
+      md5: dbf81e32cc106a992014de1e63d87a3d
+      size: 751
     - path: data/1-eighth.musicxml
-      md5: 1b406da707207c5904bdc7e039fd4c51
-      size: 875
+      md5: ae0e071c22f4563a59bdffe9cc4ff8cd
+      size: 901
     - path: diffxml.pl
       md5: 8bd918916e1ed132dd3247a073ae818e
       size: 107
@@ -1237,8 +1237,8 @@ stages:
       md5: 5d3a40c711cb6850d215927f56403fcb
       size: 766
     - path: data/1-eighth.musicxml
-      md5: 1b406da707207c5904bdc7e039fd4c51
-      size: 875
+      md5: ae0e071c22f4563a59bdffe9cc4ff8cd
+      size: 901
     - path: epf.pl
       md5: 57772fd9e7cba21a078407acef5605eb
       size: 4857
@@ -1246,46 +1246,46 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-eighth-music.pl
-      md5: aa5c23123fa4a5bd1b6913149e2a9615
-      size: 957
+      md5: 7cbaf191f7c35ae7b223094229e3863f
+      size: 577
   verovio@1-dottednote:
     cmd: /home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data
       -o data/1-dottednote-verovio.svg data/1-dottednote.musicxml
     deps:
     - path: data/1-dottednote.musicxml
-      md5: ad73bb5246acd047d530db7f1036329f
-      size: 896
+      md5: a74d408ef890004ce6c8696f41fd1442
+      size: 920
     outs:
     - path: data/1-dottednote-verovio.svg
-      md5: b39dab47a109e3f8bc4e6082328a42b9
+      md5: e47dae559080fbf2825efaf0b4948616
       size: 9709
   svg2pl@1-dottednote:
     cmd: python svg2pl.py data/1-dottednote-verovio.svg data/glyphnames.json data/1-dottednote-verovio.pl
     deps:
     - path: data/1-dottednote-verovio.svg
-      md5: b39dab47a109e3f8bc4e6082328a42b9
+      md5: e47dae559080fbf2825efaf0b4948616
       size: 9709
     - path: data/glyphnames.json
       md5: 9529c059c29a2162ee44d35f561b1900
@@ -1317,39 +1317,39 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-dottednote-verovio.musicxml
-      md5: 2748367dcf6aab380be9fcabcdb5dcbd
-      size: 746
+      md5: 8945dbd5911ced42ac18d96387f819fd
+      size: 763
   diffXml@1-dottednote:
     cmd: swipl -t halt -s diffxml.pl -g "diffXml('data/1-dottednote.musicxml', 'data/1-dottednote-verovio.musicxml')."
     deps:
     - path: data/1-dottednote-verovio.musicxml
-      md5: 2748367dcf6aab380be9fcabcdb5dcbd
-      size: 746
+      md5: 8945dbd5911ced42ac18d96387f819fd
+      size: 763
     - path: data/1-dottednote.musicxml
-      md5: ad73bb5246acd047d530db7f1036329f
-      size: 896
+      md5: a74d408ef890004ce6c8696f41fd1442
+      size: 920
     - path: diffxml.pl
       md5: 8bd918916e1ed132dd3247a073ae818e
       size: 107
@@ -1364,8 +1364,8 @@ stages:
       md5: 5d3a40c711cb6850d215927f56403fcb
       size: 766
     - path: data/1-dottednote.musicxml
-      md5: ad73bb5246acd047d530db7f1036329f
-      size: 896
+      md5: a74d408ef890004ce6c8696f41fd1442
+      size: 920
     - path: epf.pl
       md5: 57772fd9e7cba21a078407acef5605eb
       size: 4857
@@ -1373,48 +1373,48 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-dottednote-music.pl
-      md5: fd0b2e05178b73b78af1e06a72b425dd
-      size: 679
+      md5: b873f7e6adf21f9cc48aed2a844c86d2
+      size: 570
   verovio@1-multipledottednote:
     cmd: /home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data
       -o data/1-multipledottednote-verovio.svg data/1-multipledottednote.musicxml
     deps:
     - path: data/1-multipledottednote.musicxml
-      md5: e22735d02908c46e83ecefad550df10b
-      size: 916
+      md5: 6ccde851df741d0c77503c1db5738802
+      size: 942
     outs:
     - path: data/1-multipledottednote-verovio.svg
-      md5: 11189e2c116c70560362a884c79775dd
-      size: 9785
+      md5: adf18f01cbb253bedca47f62c77b6872
+      size: 9784
   svg2pl@1-multipledottednote:
     cmd: python svg2pl.py data/1-multipledottednote-verovio.svg data/glyphnames.json
       data/1-multipledottednote-verovio.pl
     deps:
     - path: data/1-multipledottednote-verovio.svg
-      md5: 11189e2c116c70560362a884c79775dd
-      size: 9785
+      md5: adf18f01cbb253bedca47f62c77b6872
+      size: 9784
     - path: data/glyphnames.json
       md5: 9529c059c29a2162ee44d35f561b1900
       size: 301683
@@ -1423,7 +1423,7 @@ stages:
       size: 8388
     outs:
     - path: data/1-multipledottednote-verovio.pl
-      md5: 975a4add9cfacba2364a9c9f875236a9
+      md5: 83d14dc4cf0964f58450242ec7bc142c
       size: 1798
   musicReco@1-multipledottednote:
     cmd: swipl -t halt -s music.pl -g "mainReco('data/1-multipledottednote-verovio.pl',
@@ -1436,7 +1436,7 @@ stages:
       md5: 5d3a40c711cb6850d215927f56403fcb
       size: 766
     - path: data/1-multipledottednote-verovio.pl
-      md5: 975a4add9cfacba2364a9c9f875236a9
+      md5: 83d14dc4cf0964f58450242ec7bc142c
       size: 1798
     - path: epf.pl
       md5: 57772fd9e7cba21a078407acef5605eb
@@ -1445,40 +1445,40 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-multipledottednote-verovio.musicxml
-      md5: fe69a9baa245656619fd7f1f596b224b
-      size: 759
+      md5: 6a763de3ec1be5a9c385b22c23877747
+      size: 778
   diffXml@1-multipledottednote:
     cmd: swipl -t halt -s diffxml.pl -g "diffXml('data/1-multipledottednote.musicxml',
       'data/1-multipledottednote-verovio.musicxml')."
     deps:
     - path: data/1-multipledottednote-verovio.musicxml
-      md5: fe69a9baa245656619fd7f1f596b224b
-      size: 759
+      md5: 6a763de3ec1be5a9c385b22c23877747
+      size: 778
     - path: data/1-multipledottednote.musicxml
-      md5: e22735d02908c46e83ecefad550df10b
-      size: 916
+      md5: 6ccde851df741d0c77503c1db5738802
+      size: 942
     - path: diffxml.pl
       md5: 8bd918916e1ed132dd3247a073ae818e
       size: 107
@@ -1493,8 +1493,8 @@ stages:
       md5: 5d3a40c711cb6850d215927f56403fcb
       size: 766
     - path: data/1-multipledottednote.musicxml
-      md5: e22735d02908c46e83ecefad550df10b
-      size: 916
+      md5: 6ccde851df741d0c77503c1db5738802
+      size: 942
     - path: epf.pl
       md5: 57772fd9e7cba21a078407acef5605eb
       size: 4857
@@ -1502,47 +1502,47 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-multipledottednote-music.pl
-      md5: b2c6172a1657ce83958525f68ed41e80
-      size: 738
+      md5: bf2c463c91eaf6ac11f92d301d1be4d4
+      size: 629
   verovio@1-dottednote2:
     cmd: /home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data
       -o data/1-dottednote2-verovio.svg data/1-dottednote2.musicxml
     deps:
     - path: data/1-dottednote2.musicxml
-      md5: 1ad78cea39a52693b793f63e461ff628
-      size: 896
+      md5: c6390e70a9b6d5fdcce2de86cc06e6c8
+      size: 920
     outs:
     - path: data/1-dottednote2-verovio.svg
-      md5: a61cecfe575f97ef283d9378780d49e6
-      size: 9702
+      md5: 90117e655f55e2b1702825d8761f9cd5
+      size: 9708
   svg2pl@1-dottednote2:
     cmd: python svg2pl.py data/1-dottednote2-verovio.svg data/glyphnames.json data/1-dottednote2-verovio.pl
     deps:
     - path: data/1-dottednote2-verovio.svg
-      md5: a61cecfe575f97ef283d9378780d49e6
-      size: 9702
+      md5: 90117e655f55e2b1702825d8761f9cd5
+      size: 9708
     - path: data/glyphnames.json
       md5: 9529c059c29a2162ee44d35f561b1900
       size: 301683
@@ -1573,39 +1573,39 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-dottednote2-verovio.musicxml
-      md5: 07ba181fb0260247c985d1a7fbd2b749
-      size: 746
+      md5: a42f510fe67f7ef3726e5107fd04aa2b
+      size: 763
   diffXml@1-dottednote2:
     cmd: swipl -t halt -s diffxml.pl -g "diffXml('data/1-dottednote2.musicxml', 'data/1-dottednote2-verovio.musicxml')."
     deps:
     - path: data/1-dottednote2-verovio.musicxml
-      md5: 07ba181fb0260247c985d1a7fbd2b749
-      size: 746
+      md5: a42f510fe67f7ef3726e5107fd04aa2b
+      size: 763
     - path: data/1-dottednote2.musicxml
-      md5: 1ad78cea39a52693b793f63e461ff628
-      size: 896
+      md5: c6390e70a9b6d5fdcce2de86cc06e6c8
+      size: 920
     - path: diffxml.pl
       md5: 8bd918916e1ed132dd3247a073ae818e
       size: 107
@@ -1620,8 +1620,8 @@ stages:
       md5: 5d3a40c711cb6850d215927f56403fcb
       size: 766
     - path: data/1-dottednote2.musicxml
-      md5: 1ad78cea39a52693b793f63e461ff628
-      size: 896
+      md5: c6390e70a9b6d5fdcce2de86cc06e6c8
+      size: 920
     - path: epf.pl
       md5: 57772fd9e7cba21a078407acef5605eb
       size: 4857
@@ -1629,27 +1629,154 @@ stages:
       md5: e59cbac61a84424d80e191f5e1e177f6
       size: 485
     - path: geo.pl
-      md5: 697d899c581642adfc993bff6baef92c
-      size: 2054
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
     - path: music.pl
-      md5: d75651f23723544d3e031e6d681f6273
+      md5: fb3c45353722220810ded92ad3b13369
       size: 6698
     - path: music_utils.pl
-      md5: 0a294605242e97003fc02d0e463201ba
-      size: 1261
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
     - path: note.pl
-      md5: 9b4562a98fdba741c4a773626476b028
-      size: 13504
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
     - path: pitch.pl
       md5: cdae464ecfb0cc8b3c29b9e23551a20b
       size: 4434
     - path: seg.pl
-      md5: b3558fefea27baf8d0d9ecadb88c7a86
-      size: 2026
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
     - path: utils.pl
-      md5: d3045cae395f408fc45a60730bbd643c
-      size: 2205
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
     outs:
     - path: data/1-dottednote2-music.pl
-      md5: fd0b2e05178b73b78af1e06a72b425dd
-      size: 679
+      md5: b873f7e6adf21f9cc48aed2a844c86d2
+      size: 570
+  verovio@1-alterflat:
+    cmd: /home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data
+      -o data/1-alterflat-verovio.svg data/1-alterflat.musicxml
+    deps:
+    - path: data/1-alterflat.musicxml
+      md5: c22ab4ea335684fed4eb18fcda8f58c3
+      size: 940
+    outs:
+    - path: data/1-alterflat-verovio.svg
+      md5: 873ed0b3754201daef3992ad3447a259
+      size: 10368
+  svg2pl@1-alterflat:
+    cmd: python svg2pl.py data/1-alterflat-verovio.svg data/glyphnames.json data/1-alterflat-verovio.pl
+    deps:
+    - path: data/1-alterflat-verovio.svg
+      md5: 873ed0b3754201daef3992ad3447a259
+      size: 10368
+    - path: data/glyphnames.json
+      md5: 9529c059c29a2162ee44d35f561b1900
+      size: 301683
+    - path: svg2pl.py
+      md5: a7f007cfb668444ea0ccfc333caaef44
+      size: 8388
+    outs:
+    - path: data/1-alterflat-verovio.pl
+      md5: 81654a1c66084bc69095c2556196713d
+      size: 1743
+  musicReco@1-alterflat:
+    cmd: swipl -t halt -s music.pl -g "mainReco('data/1-alterflat-verovio.pl', 'settings/musicReco.txt',
+      'data/1-alterflat-verovio.musicxml')."
+    deps:
+    - path: ccx.pl
+      md5: a138b2e4489128f106d3c39287f665bc
+      size: 1331
+    - path: cond.pl
+      md5: 5d3a40c711cb6850d215927f56403fcb
+      size: 766
+    - path: data/1-alterflat-verovio.pl
+      md5: 81654a1c66084bc69095c2556196713d
+      size: 1743
+    - path: epf.pl
+      md5: 57772fd9e7cba21a078407acef5605eb
+      size: 4857
+    - path: epf_geo.pl
+      md5: e59cbac61a84424d80e191f5e1e177f6
+      size: 485
+    - path: geo.pl
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
+    - path: music.pl
+      md5: fb3c45353722220810ded92ad3b13369
+      size: 6698
+    - path: music_utils.pl
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
+    - path: note.pl
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
+    - path: pitch.pl
+      md5: cdae464ecfb0cc8b3c29b9e23551a20b
+      size: 4434
+    - path: seg.pl
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
+    - path: utils.pl
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
+    outs:
+    - path: data/1-alterflat-verovio.musicxml
+      md5: 7c05cde3c0b977e1e2bc560ecad98067
+      size: 783
+  musicGen@1-alterflat:
+    cmd: swipl -t halt -s music.pl -g "mainGen('data/1-alterflat.musicxml', 'settings/musicGen.txt',
+      'data/1-alterflat-music.pl')."
+    deps:
+    - path: ccx.pl
+      md5: a138b2e4489128f106d3c39287f665bc
+      size: 1331
+    - path: cond.pl
+      md5: 5d3a40c711cb6850d215927f56403fcb
+      size: 766
+    - path: data/1-alterflat.musicxml
+      md5: c22ab4ea335684fed4eb18fcda8f58c3
+      size: 940
+    - path: epf.pl
+      md5: 57772fd9e7cba21a078407acef5605eb
+      size: 4857
+    - path: epf_geo.pl
+      md5: e59cbac61a84424d80e191f5e1e177f6
+      size: 485
+    - path: geo.pl
+      md5: 8f3331e54b4d51abb731dbfd2ba67b51
+      size: 2038
+    - path: music.pl
+      md5: fb3c45353722220810ded92ad3b13369
+      size: 6698
+    - path: music_utils.pl
+      md5: dd24f04f35495285e29e019e71da5eac
+      size: 1081
+    - path: note.pl
+      md5: 437000963a0cd4cdbad9f6d6add7e86e
+      size: 14989
+    - path: pitch.pl
+      md5: cdae464ecfb0cc8b3c29b9e23551a20b
+      size: 4434
+    - path: seg.pl
+      md5: 8ae357e27d04438139129fa5086c2492
+      size: 2123
+    - path: utils.pl
+      md5: e1d101ee56c7eada5791bf2c6bd8c02b
+      size: 2350
+    outs:
+    - path: data/1-alterflat-music.pl
+      md5: 65bf6526ee5cd61983350c04a8e0727f
+      size: 568
+  diffXml@1-alterflat:
+    cmd: swipl -t halt -s diffxml.pl -g "diffXml('data/1-alterflat.musicxml', 'data/1-alterflat-verovio.musicxml')."
+    deps:
+    - path: data/1-alterflat-verovio.musicxml
+      md5: 7c05cde3c0b977e1e2bc560ecad98067
+      size: 783
+    - path: data/1-alterflat.musicxml
+      md5: c22ab4ea335684fed4eb18fcda8f58c3
+      size: 940
+    - path: diffxml.pl
+      md5: 8bd918916e1ed132dd3247a073ae818e
+      size: 107
