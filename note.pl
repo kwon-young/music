@@ -217,6 +217,7 @@ dotsDuration([_ | Dots], DotsDur, Dur) :-
   dotsDuration(Dots, NextDotsDur, HalfDur).
 
 note(element(note, [], [Pitch, Duration, Type | NoteAttributes])) -->
+  state2(+duration, +dots, +notehead, +stem, +dir, +step, +octave, +intervals, +alter),
   {debug(note, "note: ~p, ~p, ~p~n", [Pitch, Duration, Type])},
   duration(Duration),
   type(Type),
@@ -241,7 +242,7 @@ notePitch(element(pitch, [], Pitch)) -->
         pitchCondLine).
 
 step(element(step, [], [Step])) -->
-  state_selectchk(step(Step)).
+  state2(step(Step)).
 
 alterCond(Element, Alter) :-
   delay(alterCond_(Element, Alter)).

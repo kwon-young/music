@@ -73,7 +73,7 @@ mainReco(StructFile, Struct, Rest, Xml) :-
   phrase(music(Xml), [state(_) | Struct], Rest).
 
 music([element('score-partwise', [version='4.0'], [PartList, Part])]) -->
-  state_selectchk(keySteps([]), keyAlter(0), accidStepsOctaves([])),
+  state2(keySteps([]), keyAlter(0), accidStepsOctaves([])),
   page,
   partList(PartId, PartList),
   part(PartId, Part).
@@ -98,19 +98,18 @@ part(PartId, element(part, [id=PartId], [Measure])) -->
   { PartId = 'P1' },
   measure(Measure),
   {debug(music, "part: Measure ~p~n", [Measure])},
-  state_selectchk(division(Div)),
+  state2(division(Div), duration(Dur), dots(Dots)),
   {debug(music, "part: Div ~p~n", [Div])},
-  state_selectchk(duration(Dur), dots(Dots)),
   {debug(music, "part: Dur ~p~n", [Dur])},
   {debug(music, "part: Dots ~p~n", [Dots])},
   state(division, lower_bound).
 
-measure(element(measure, [number='1'], [Attributes, Note])) -->
-  {debug(music, "measure: In ~p, ~p~n", [Attributes, Note])},
+measure(element(measure, [number='1'], [Attributes | Notes])) -->
+  {debug(music, "measure: In ~p, ~p~n", [Attributes, Notes])},
   staff(),
   barline(),
   attributes(Attributes),
-  note(Note).
+  sequence(note, Notes).
 
 aligned(Getter, Eps, Elements) :-
   convlist(Getter, Elements, [Coord | Coords]),
@@ -215,7 +214,7 @@ fifthsAlter(Fifths, Alter) :-
     Alter <> 0,
     Alter == Fifths / abs(Fifths)
   }.
-fifthsCond(Accidentals, FifthsAtom, FifthsList, Fifths, _, Steps, _, FifthsAlter) :-
+fifthsCond(Accidentals, FifthsAtom, FifthsList, Fifths, Steps, FifthsAlter) :-
   Fifths::integer(-7, 7),
   delay(atom_number(FifthsAtom, Fifths)),
   {Length == abs(Fifths)},
@@ -261,8 +260,8 @@ fifthsList_([NextFifth | FifthsList], Cpt, Fifth, Fifths, Incr) :-
 
   
 key(element(key, [], [element(fifths, [], [FifthsAtom])])) -->
-  state(fifths, -keySteps(Steps), -keyAlter, fifthsCond(Accidentals, FifthsAtom, FifthsList)),
-  state_selectchk(clef(Clef), baseStep(BaseStep), baseOctave(BaseOctave)),
+  state(fifths, +keySteps(Steps), +keyAlter, fifthsCond(Accidentals, FifthsAtom, FifthsList)),
+  state2(clef(Clef), baseStep(BaseStep), baseOctave(BaseOctave)),
   sequence2(fifths, FifthsList, [Clef | Accidentals], [BaseStep | Steps], [BaseOctave | _]).
 
 fifthCondEtiq(Fifth, Accidental) :-
