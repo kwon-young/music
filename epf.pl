@@ -2,7 +2,7 @@
                 termchk//1, selectchk//1, selectchk//2, updatechk//2,
                 state//2, state//3, state//4, state//5, state//6, state//7, state//8,
                 state//9,
-                state_selectchk//1, state_selectchk//2, state_selectchk//3,
+                state2//1, state2//2, state2//3, state2//9,
                 add//1,
                 sequence2//3, sequence2//5]).
 
@@ -37,51 +37,53 @@ updatechk(In, Out) -->
 add(El), [El] -->
   { true }.
 
-parseOp(-, updatechk, 2).
-parseOp(+, add, 1).
+parseOp(-, updatechk, 2, 2).
+parseOp(+, updatechk, 2, 1).
 parseCompound(Name, StateGoal, Args) :-
   atom(Name),
   !,
-  parseCompound_(Name, 1, selectchk, 1, StateGoal, Args).
+  parseCompound_(Name, 1, selectchk, 1, StateGoal, 1, Args).
 parseCompound(Compound, StateGoal, Args) :-
   compound_name_arguments(Compound, '/', [Name, Arity]),
   atom(Name),
   !,
-  parseCompound_(Name, Arity, selectchk, 1, StateGoal, Args).
+  parseCompound_(Name, Arity, selectchk, 1, StateGoal, 1, Args).
 parseCompound(Compound, StateGoal, Args) :-
   compound_name_arguments(Compound, Op, [Name]),
-  parseOp(Op, StateFunc, StateArity),
+  parseOp(Op, StateFunc, StateArity, GoalArity),
   atom(Name),
   !,
-  parseCompound_(Name, 1, StateFunc, StateArity, StateGoal, Args).
+  parseCompound_(Name, 1, StateFunc, StateArity, StateGoal, GoalArity, Args).
 parseCompound(Compound, StateGoal, Args) :-
   compound_name_arguments(Compound, '/', [SubCompound, Arity]),
   compound_name_arguments(SubCompound, Op, [Name]),
-  parseOp(Op, StateFunc, StateArity),
+  parseOp(Op, StateFunc, StateArity, GoalArity),
   atom(Name),
   !,
-  parseCompound_(Name, Arity, StateFunc, StateArity, StateGoal, Args).
+  parseCompound_(Name, Arity, StateFunc, StateArity, StateGoal, GoalArity, Args).
 parseCompound(Compound, StateGoal, AllArgs) :-
   compound_name_arguments(Compound, Op, [SubCompound]),
-  parseOp(Op, StateFunc, StateArity),
+  parseOp(Op, StateFunc, StateArity, GoalArity),
   compound_name_arguments(SubCompound, Name, Args),
   atom(Name),
   !,
   length(Args, Arity),
-  parseCompound_(Name, Arity, StateFunc, StateArity, StateGoal, AllArgs),
+  parseCompound_(Name, Arity, StateFunc, StateArity, StateGoal, GoalArity, AllArgs),
   append(_, Args, AllArgs).
 parseCompound(Compound, StateGoal, Args) :-
   compound_name_arguments(Compound, Name, Args),
   atom(Name),
   !,
   length(Args, Arity),
-  parseCompound_(Name, Arity, selectchk, 1, StateGoal, Args).
-parseCompound_(Name, Arity, StateFunctor, StateArity, StateGoal, Args) :-
+  parseCompound_(Name, Arity, selectchk, 1, StateGoal, 1, Args).
+parseCompound_(Name, Arity, StateFunctor, StateArity, StateGoal, GoalArity, Args) :-
   length(Compounds, StateArity),
   maplist({Name, Arity}/[Compound, Arg]>>(
     length(Arg, Arity),
     compound_name_arguments(Compound, Name, Arg)), Compounds, ArgsList),
-  append(ArgsList, Args),
+  append(ArgsList, AllArgs),
+  length(Args, GoalArity),
+  append(_, Args, AllArgs),
   compound_name_arguments(StateGoal, StateFunctor, Compounds).
 
 :- meta_predicate state_(?, 0, ?, ?, ?).
@@ -133,18 +135,29 @@ state(Name1, Name2, Name3, Name4, Name5, Name6, Name7, Name8, Goal) -->
   state_(Name1, Goal, NewGoal),
   state(Name2, Name3, Name4, Name5, Name6, Name7, Name8, NewGoal).
 
-identity(_).
-
-state_selectchk(Term) , [state(StateOut)]-->
-  [state(StateIn)],
-  {phrase(selectchk(Term), StateIn, StateOut)}.
-state_selectchk(Term1, Term2) -->
-  state_selectchk(Term1),
-  state_selectchk(Term2).
-state_selectchk(Term1, Term2, Term3) -->
-  state_selectchk(Term1),
-  state_selectchk(Term2),
-  state_selectchk(Term3).
+state2(Compound) -->
+  updatechk(state(StateIn), state(StateOut)),
+  {
+    parseCompound(Compound, StateGoal, _Args),
+    phrase(StateGoal, StateIn, StateOut)
+  }.
+state2(Term1, Term2) -->
+  state2(Term1),
+  state2(Term2).
+state2(Term1, Term2, Term3) -->
+  state2(Term1),
+  state2(Term2),
+  state2(Term3).
+state2(Term1, Term2, Term3, Term4, Term5, Term6, Term7, Term8, Term9) -->
+  state2(Term1),
+  state2(Term2),
+  state2(Term3),
+  state2(Term4),
+  state2(Term5),
+  state2(Term6),
+  state2(Term7),
+  state2(Term8),
+  state2(Term9).
 
 :- meta_predicate sequence2(6, ?, ?, ?, ?).
 
