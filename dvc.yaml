@@ -2,7 +2,7 @@ stages:
   verovio:
     foreach: ${samples}
     do:
-      cmd: /home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data
+      cmd: /home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data --xml-id-checksum
         -o data/${item}-verovio.svg data/${item}.musicxml
       deps:
       - data/${item}.musicxml
@@ -31,7 +31,7 @@ stages:
       - geo.pl
       - music.pl
       - music_utils.pl
-      - pitch.pl
+      - pitch_cond.pl
       - seg.pl
       - utils.pl
       - note.pl
@@ -50,7 +50,7 @@ stages:
       - geo.pl
       - music.pl
       - music_utils.pl
-      - pitch.pl
+      - pitch_cond.pl
       - seg.pl
       - utils.pl
       - note.pl
