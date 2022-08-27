@@ -2,9 +2,9 @@
                 termchk//1, selectchk//1, selectchk//2, updatechk//2,
                 state//2, state//3, state//4, state//5, state//6, state//7, state//8,
                 state//9,
-                state_selectchk//1, state_selectchk//2,
+                state_selectchk//1, state_selectchk//2, state_selectchk//3,
                 add//1,
-                sequence2//3]).
+                sequence2//3, sequence2//5]).
 
 term(El) -->
   [El].
@@ -141,6 +141,10 @@ state_selectchk(Term) , [state(StateOut)]-->
 state_selectchk(Term1, Term2) -->
   state_selectchk(Term1),
   state_selectchk(Term2).
+state_selectchk(Term1, Term2, Term3) -->
+  state_selectchk(Term1),
+  state_selectchk(Term2),
+  state_selectchk(Term3).
 
 :- meta_predicate sequence2(6, ?, ?, ?, ?).
 
@@ -151,3 +155,13 @@ sequence2_([B1 | List1], [B2 | List2], A1, A2, P) -->
   !,
   sequence2_(List1, List2, B1, B2, P).
 sequence2_([], [], _, _, _) --> {true}.
+
+:- meta_predicate sequence2(9, ?, ?, ?, ?, ?, ?).
+
+sequence2(Element, [S1 | L1], [S2 | L2], [S3 | L3], [S4 | L4]) -->
+  sequence2_(L1, L2, L3, L4, S1, S2, S3, S4, Element).
+sequence2_([B1 | L1], [B2 | L2], [B3 | L3], [B4 | L4], A1, A2, A3, A4, P) -->
+  call(P, A1, B1, A2, B2, A3, B3, A4, B4),
+  !,
+  sequence2_(L1, L2, L3, L4, B1, B2, B3, B4, P).
+sequence2_([], [], [], [], _, _, _, _, _) --> {true}.

@@ -1,4 +1,4 @@
-:- module(utils, [convlist2/3, maplist2/2, nth0u/3, nth1u/3, epsGround/3]).
+:- module(utils, [convlist2/3, maplist2/2, maplist2/3, nth0u/3, nth1u/3, epsGround/3]).
 
 :- use_module(library(delay)).
 :- use_module(library(clpBNR)).
@@ -10,6 +10,7 @@ delay:mode(system:atom_number(_, ground)).
 
 :- meta_predicate convlist2(3, ?, ?).
 :- meta_predicate maplist2(2, ?).
+:- meta_predicate maplist2(4, ?, ?).
 
 convlist2(Goal, List, Res) :-
   convlist2_(List, Res, Goal).
@@ -24,6 +25,12 @@ maplist2_([_], _).
 maplist2_([A, B | List], Goal) :-
   call(Goal, A, B),
   maplist2_([B | List], Goal).
+maplist2(Goal, [A1 | L1], [A2 | L2]) :-
+  maplist2_(L1, L2, A1, A2, Goal).
+maplist2_([], [], _, _, _).
+maplist2_([B1 | L1], [B2 | L2], A1, A2, Goal) :-
+  call(Goal, A1, B1, A2, B2),
+  maplist2_(L1, L2, B1, B2, Goal).
 
 product(L1, L2, L3) :-
   product(L2, L1, L1, L3).
@@ -88,3 +95,7 @@ epsGround(Eps, X, Y) :-
   ->  Y is midpoint(X)
   ;   { Y == X }
   ).
+
+delay:mode(pairs:pairs_keys_values(ground, _, _)).
+delay:mode(pairs:pairs_keys_values(_, ground, _)).
+delay:mode(pairs:pairs_keys_values(_, _, ground)).

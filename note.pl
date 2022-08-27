@@ -12,6 +12,7 @@
 :- use_module(epf_geo).
 :- use_module(utils).
 :- use_module(music_utils).
+:- use_module(pitch_cond).
 :- use_module(constraint_math).
 
 :- multifile delay:mode/1.
@@ -174,44 +175,6 @@ flagDir(down, 'Down', FlagOrigin, _, StemBottom) :-
 durationNoFlag(Duration, Division) :-
   { Duration / Division >= 1 }.
 
-delay:mode(note:step(ground, _)).
-delay:mode(note:step(_, ground)).
-step(0, 'C').
-step(1, 'D').
-step(2, 'E').
-step(3, 'F').
-step(4, 'G').
-step(5, 'A').
-step(6, 'B').
-
-numIntervals(N, Step1, Octave1, Step2, Octave2) :-
-  N::integer(-70, 70),
-  [Octave1, Octave2]::integer(0, 9),
-  delay(step(P1, Step1)),
-  delay(step(P2, Step2)),
-  [P1, P2]::integer(0, 6),
-  {
-    NPitch == P2 - P1,
-    N == (Octave2 - Octave1) * 7 + NPitch
-  }.
-
-notePitchCond(Notehead, Step, Octave,
-              BaseLine, BaseStep, BaseOctave,
-              PitchIntervals, Stafflines) :-
-  ccxOrigin(Notehead, point(NoteX, NoteY)),
-  interlineAtX(Stafflines, NoteX, Interline),
-  debug(note, "notePitchCond Interline ~p~n", [Interline]),
-  segYAtX(BaseLine, BaseLineY, NoteX),
-  {
-    HalfInterline == Interline / 2,
-    NoteOffset == NoteY - BaseLineY,
-    GraphicalIntervals == NoteOffset / HalfInterline
-  },
-  debug(note, "GraphicalIntervals: ~p~n", [GraphicalIntervals]),
-  diffEps(0, GraphicalIntervals, PitchIntervals),
-  numIntervals(PitchIntervals, Step, Octave, BaseStep, BaseOctave),
-  debug(note, "PitchIntervals: ~p~n", [PitchIntervals]).
-
 dotCond(Ref, Dot, NumIntervals, Stafflines) :-
   ccxEtiqsCond(Ref, 1, 'notehead'),
   ccxRight(Ref, NoteX),
@@ -275,7 +238,7 @@ notePitch(element(pitch, [], Pitch)) -->
   state(notehead, step, octave,
         baseLine, baseStep, baseOctave,
         intervals, stafflines,
-        notePitchCond).
+        pitchCondLine).
 
 step(element(step, [], [Step])) -->
   state_selectchk(step(Step)).
@@ -331,30 +294,88 @@ dot(_, element(dot, [], []), Ref, Dot) -->
   state(numIntervals, stafflines, dotCond(Ref, Dot)),
   termp(Dot).
 
-delay:mode(note:accidAlterName(ground, _, _)).
-delay:mode(note:accidAlterName(_, ground, _)).
-delay:mode(note:accidAlterName(_, _, ground)).
-accidAlterName(accidentalFlat, Alter, flat) :-
-  { Alter == -1 }.
-accidAlterName(accidentalSharp, Alter, sharp) :-
-  { Alter == 1 }.
-noAlterCond(Alter) :-
-  { Alter == 0 }.
+delay:mode(note:accidName(ground, _)).
+delay:mode(note:accidName(_, ground)).
+accidName(accidentalFlat, flat).
+accidName(accidentalSharp, sharp).
+accidName(accidentalNatural, natural).
 
-accidentalCond(AccidentalName, Notehead, Alter, Accidental) :-
+% accidAlter(flat, -1).
+% accidAlter(sharp, 1).
+% fifthsPitchAlter(0, _Pitch, 0).
+% fifthsPitchAlter(Fifths, Pitch, Alter) :-
+%   {Fifths < 0},
+%   Pattern = ['B', 'E', 'A', 'D', 'G', 'C', 'F'],
+%   nth1(N, Pattern, Pitch),
+%   {N =< abs(Fifths)}.
+% fifthsPitchAlter(Fifths, Pitch, Alter) :-
+%   {Fifths > 0},
+%   reverse(Pattern, ['B', 'E', 'A', 'D', 'G', 'C', 'F']),
+%   nth1(N, Pattern, Pitch),
+%   {N =< abs(Fifths)}.
+% fifthsPitchAlter(_Fifths, _Pitch, 0) :-
+
+% fifthsPitchAlter(-2, E, -1).
+
+% fifthsCond(0, _Pitch, Alter, Accid) :-
+%   accidAlter(Accid, Alter).
+% fifthsCond(1, Pitch, Alter, Accid) :-
+
+noteAlter(0, noKey, noAccid).
+noteAlter(0, sharp, natural).
+noteAlter(0, flat, natural).
+noteAlter(1, sharp, noAccid).
+noteAlter(1, noKey, sharp).
+noteAlter(-1, flat, noAccid).
+noteAlter(-1, noKey, flat).
+
+delay:mode(note:accidAlter(ground, ground, ground, ground, _, ground, ground)).
+delay:mode(note:accidAlter(_, _, ground, ground, ground, ground, ground)).
+accidAlter(0, natural, Step, _, _, KeySteps, _) :-
+  memberchk(Step, KeySteps).
+accidAlter(0, natural, Step, Octave, AccidStepOctaves, _, _) :-
+  memberchk(_-Step-Octave, AccidStepOctaves).
+accidAlter(Alter, Name, Step, _, _, KeySteps, _) :-
+  \+ memberchk(Step, KeySteps),
+  accidAlter_(Alter, Name).
+
+% accidAlter_(0, natural).
+accidAlter_(1, sharp).
+accidAlter_(-1, flat).
+
+accidAlter2_(0, natural).
+accidAlter2_(1, sharp).
+accidAlter2_(-1, flat).
+
+noAccidAlter(Alter, Step, Octave, AccidStepOctaves, KeySteps, Alter) :-
+  memberchk(Step, KeySteps),
+  \+ memberchk(_-Step-Octave, AccidStepOctaves).
+noAccidAlter(Alter, Step, Octave, AccidStepOctaves, _, _) :-
+  memberchk(Accid-Step-Octave, AccidStepOctaves),
+  accidAlter2_(Alter, Accid).
+noAccidAlter(0, Step, Octave, AccidStepOctaves, _, _) :-
+  \+ memberchk(_-Step-Octave, AccidStepOctaves).
+
+accidentalCond(Accidental, AccidentalName, Notehead, Step, Octave,
+               Alter, KeySteps, KeyAlter,
+               AccidStepsOctaves, [AccidentalName-Step-Octave | AccidStepsOctaves]) :-
   ccxEtiqsCond(Accidental, AccidentalEtiq),
   ccxEtiqsCond(Accidental, 1, accid),
   ccxOrigin(Notehead, point(NoteX, NoteY)),
   ccxOrigin(Accidental, point(AccidX, AccidY)),
   diffEps(0, NoteY, AccidY),
   { AccidX =< NoteX },
-  delay(accidAlterName(AccidentalEtiq, Alter, AccidentalName)).
+  delay(accidName(AccidentalEtiq, AccidentalName)),
+  delay(accidAlter(Alter, AccidentalName, Step, Octave,
+                   AccidStepsOctaves, KeySteps, KeyAlter)).
 
 accidental([element(accidental, [], [AccidentalName])]) -->
-  state(notehead, alter, accidental(Accidental), accidentalCond(AccidentalName)),
-  term(Accidental).
+  state(notehead, step, octave,
+        alter, keySteps, keyAlter, -accidStepsOctaves,
+        accidentalCond(Accidental, AccidentalName)),
+  termp(Accidental).
 accidental([]) -->
-  state(alter, noAlterCond).
+  state(alter, step, octave, accidStepsOctaves, keySteps, keyAlter, noAccidAlter).
 
 ledgerlineCond(LedgerLines, Notehead, Stafflines, Num, PitchIntervals) :-
   length(Stafflines, NumStafflines),

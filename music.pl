@@ -14,6 +14,7 @@
 :- use_module(epf_geo).
 :- use_module(note).
 :- use_module(music_utils).
+:- use_module(pitch_cond).
 
 :- use_module(library(settings)).
 
@@ -72,6 +73,7 @@ mainReco(StructFile, Struct, Rest, Xml) :-
   phrase(music(Xml), [state(_) | Struct], Rest).
 
 music([element('score-partwise', [version='4.0'], [PartList, Part])]) -->
+  state_selectchk(keySteps([]), keyAlter(0), accidStepsOctaves([])),
   page,
   partList(PartId, PartList),
   part(PartId, Part).
@@ -202,4 +204,149 @@ beatType(element('beat-type', [], [BeatTypeNumber])) -->
   state(beatType(BeatType), stafflines, beatTypeCond(BeatTypeNumber)),
   termp(BeatType).
 
-key(element(key, [], [element(fifths, [], ['0'])])) --> {true}.
+delay:mode(music:fifthsAlter(ground, _)).
+delay:mode(music:fifthsAlter(_, ground)).
+fifthsAlter(0, 0).
+fifthsAlter(Fifths, Alter) :-
+  Fifths::integer(-7, 7),
+  Alter::integer(-1, 1),
+  {
+    Fifths <> 0,
+    Alter <> 0,
+    Alter == Fifths / abs(Fifths)
+  }.
+fifthsCond(Accidentals, FifthsAtom, FifthsList, Fifths, _, Steps, _, FifthsAlter) :-
+  Fifths::integer(-7, 7),
+  delay(atom_number(FifthsAtom, Fifths)),
+  {Length == abs(Fifths)},
+  delay(length(Accidentals, Length)),
+  fifthsList(Fifths, FifthsList),
+  delay(length(Steps, Length)),
+  delay(fifthsAlter(Fifths, FifthsAlter)).
+
+fifthsStep(1, 'F').
+fifthsStep(2, 'C').
+fifthsStep(3, 'G').
+fifthsStep(4, 'D').
+fifthsStep(5, 'A').
+fifthsStep(6, 'E').
+fifthsStep(7, 'B').
+
+fifthsList(Fifths, FifthsList) :-
+  Fifths::integer(-7, 7),
+  Incr::integer(-1, 1),
+  {
+    Fifths <> 0,
+    Incr <> 0,
+    Incr == Fifths / abs(Fifths),
+    Fifths1 == Fifths + Incr
+  },
+  when(
+    (nonvar(FifthsList) ; ground(Fifths)),
+    fifthsList_(FifthsList, 0, 0, Fifths1, Incr)).
+fifthsList(0, [1]).
+fifthsList_([], _, Fifths, Fifths, _).
+fifthsList_([NextFifth | FifthsList], Cpt, Fifth, Fifths, Incr) :-
+  debug(fifthsList, "~p~n", [Fifth]),
+  NextFifth::integer(-8, 8),
+  {
+    Cpt < 8,
+    NextCpt == Cpt + 1,
+    abs(Fifth) < abs(Fifths),
+    NextFifth == Fifth + Incr
+  },
+  when(
+    (nonvar(FifthsList) ; ground(Fifths)),
+    fifthsList_(FifthsList, NextCpt, NextFifth, Fifths, Incr)).
+
+  
+key(element(key, [], [element(fifths, [], [FifthsAtom])])) -->
+  state(fifths, -keySteps(Steps), -keyAlter, fifthsCond(Accidentals, FifthsAtom, FifthsList)),
+  state_selectchk(clef(Clef), baseStep(BaseStep), baseOctave(BaseOctave)),
+  sequence2(fifths, FifthsList, [Clef | Accidentals], [BaseStep | Steps], [BaseOctave | _]).
+
+fifthCondEtiq(Fifth, Accidental) :-
+  {Fifth >= 1},
+  ccxEtiqsCond(Accidental, 'accidentalSharp').
+fifthCondEtiq(Fifth, Accidental) :-
+  {Fifth =< -1},
+  ccxEtiqsCond(Accidental, 'accidentalFlat').
+
+fifthPattern('G', 2, Fifth, Interval) :-
+  fifthGClef(Fifth, Interval).
+fifthPattern('F', 4, Fifth, Interval) :-
+  fifthFClef(Fifth, Interval).
+fifthPattern('C', Num, Fifth, Interval) :-
+  fifthCClef(Num, Fifth, Interval).
+
+fifthGClef(1, 6).
+fifthGClef(-1, 2).
+fifthGClef(Fifth, Interval) :-
+  ( fifthsSharp(Fifth, Interval)
+  ; fifthsFlat(Fifth, Interval)
+  ).
+
+fifthFClef(1, 0).
+fifthFClef(-1, -4).
+fifthFClef(Fifth, Interval) :-
+  ( fifthsSharp(Fifth, Interval)
+  ; fifthsFlat(Fifth, Interval)
+  ).
+
+fifthCClef(3, Fifth, Interval) :-
+  fifthC3(Fifth, Interval).
+fifthCClef(4, Fifth, Interval) :-
+  fifthC4(Fifth, Interval).
+
+fifthC3(1, 3).
+fifthC3(-1, -1).
+fifthC3(Fifth, Interval) :-
+  ( fifthsSharp(Fifth, Interval)
+  ; fifthsFlat(Fifth, Interval)
+  ).
+
+fifthC4(1, -4).
+fifthC4(-1, -1).
+fifthC4(Fifth, Interval) :-
+  ( fifthsSharpTenor(Fifth, Interval)
+  ; fifthsFlat(Fifth, Interval)
+  ).
+
+fifthsSharp(2, -3).
+fifthsSharp(3,  4).
+fifthsSharp(4, -3).
+fifthsSharp(5, -3).
+fifthsSharp(6,  4).
+fifthsSharp(7, -3).
+
+fifthsSharpTenor(2,  4).
+fifthsSharpTenor(3, -3).
+fifthsSharpTenor(4,  4).
+fifthsSharpTenor(5, -3).
+fifthsSharpTenor(6,  4).
+fifthsSharpTenor(7, -3).
+
+fifthsFlat(-2,  3).
+fifthsFlat(-3, -4).
+fifthsFlat(-4,  3).
+fifthsFlat(-5,  3).
+fifthsFlat(-6, -4).
+fifthsFlat(-7, -4).
+
+fifthCond(Fifth, Ref, Accidental, BaseStep, Step, BaseOctave, Octave, Clef, Num, Stafflines) :-
+  fifthCondEtiq(Fifth, Accidental),
+  fifthPattern(Clef, Num, Fifth, Interval),
+  pitchCondCcx(Ref, BaseStep, BaseOctave, Accidental, Step, Octave, Interval, Stafflines).
+
+fifthsIncr(Fifth, NextFifth) :-
+  [Fifth, NextFifth]::integer(1, 7),
+  { NextFifth == Fifth + 1 }.
+fifthsIncr(Fifth, NextFifth) :-
+  [Fifth, NextFifth]::integer(-7, -1),
+  { NextFifth == Fifth - 1 }.
+
+fifths(Fifth, NextFifth, Ref, Accidental, BaseStep, Step, BaseOctave, Octave) -->
+  { fifthsIncr(Fifth, NextFifth) },
+  state(baseStep, num, stafflines,
+        fifthCond(Fifth, Ref, Accidental, BaseStep, Step, BaseOctave, Octave)),
+  termp(Accidental).
