@@ -109,6 +109,7 @@ measure(element(measure, [number='1'], [Attributes | Notes])) -->
   staff(),
   barline(),
   attributes(Attributes),
+  state2(beam(noBeam)),
   sequence(note, Notes).
 
 aligned(Getter, Eps, Elements) :-

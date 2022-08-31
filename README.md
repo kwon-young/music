@@ -1,7 +1,7 @@
 # Music Notation Grammar
 
-The goal of this project is to write a grammar of the modern music notation.
-This grammar is defined using prolog Definite Clause Grammar (DCG) notation and links spatial relationships of music primitives with semantic relationships of music notation elements.
+The goal of this project is to write an executable specification of the modern music notation.
+This executable specification is a grammar defined using prolog Definite Clause Grammar (DCG) notation and links spatial relationships of music primitives with semantic relationships of music notation elements.
 
 Concretely, the same code used to describe the modern music notation can be used in two ways:
 
@@ -14,18 +14,20 @@ The only open source OMR solution is called Audiveris and works okay for music s
 
 ## Features
 
-Here is a list of currently supported music notation features by this project:
+Here is a list of currently supported music notation features:
 
 * single measure
   * 5 line staff with a single barline
   * attributes
     * g clef
     * 4/4 time signature
+    * key signature
   * note
     * noteheads, stem and flags: whole, half, quarter, 8th, 16th, etc
     * dotted note
-    * flat, sharp accidentals
+    * flat, sharp, natural accidentals
     * ledger lines
+    * single beam for grouped notes
 
 See the data folders to have an idea of the different supported music notation elements.
 
@@ -34,6 +36,16 @@ See the [documentation](https://kwon-young.github.io/music/) for a list of defin
 ## Why ?
 
 While the origin of this project is quite deep and complicated, the main reason driving this project is the realization that by using a carefully selected set of tools and formalism, the same code __could__ be used to do both music score typesetting __and__ recognition.
+The fundamental idea behind this realization is that, for example, when trying to __describe__ the relationship between two graphical objects, we do not want to repeat the exact same relationship depending on the direction of evaluation.
+
+If you take the relationship between a note head and its stem, non logic formalism would need to pick an evaluation order, such as:
+
+1. defining the coordinate of the note head;
+2. compute the position of the junction between the note head and the stem;
+3. compute the rest of the coordinates of the stem depending on the position of the junction with the note head.
+
+In this formalism, if you ever wanted to define the position of the note head given a specific stem, you would need to rewrite the exact same __relation__, but in the reverse order.
+Using prolog and constraint logic programming over reals, we can specify this relationship only once, and it will work in any directions.
 
 If you want to deep dive into the origin of this project, you can read the DMOS section of the documentation.
 
@@ -51,11 +63,11 @@ As previously said, the main particularity of this project is the ability to use
 
 For the music typesetting part, we start from a MusicXML file, and produces a special `.pl` that contains a prolog list of graphical primitives that constitute the engraved music scores.
 
-Much more work is required to turn this grammar into a full-blown engraver.
+Much more work is required to turn this grammar into a full blown engraver.
 Currently, only a few relationship are specified in the grammar, enough to do OMR, but not enough to fully ground the coordinates of the graphical primitives while typesetting.
 Then, the prolog list of graphical primitives should be transformed in something like a SVG file using actual music glyph.
 
-But the important thing is that the grammar actually runs in this direction, and produce the correct set of graphical primitives to typesetting the music score in the MusicXML file.
+But the important thing is that the grammar actually runs in this direction, and produce the correct set of graphical primitives to typeset the music score in the MusicXML file.
 
 #### OMR
 
@@ -290,7 +302,7 @@ R = [_A] ;
 false.
 ```
 
-One advantage of this formulation is that the implementation of the `term//1` can be improved later, by implementing something like a [R-Tree](https://en.wikipedia.org/wiki/R-tree) for efficient searching in a list of graphical primitives.
+One advantage of this formulation is that the implementation of the `term//1` can be improved later, by implementing something like an [R-Tree](https://en.wikipedia.org/wiki/R-tree) for efficient searching in a list of graphical primitives.
 However, the implementation would need to be pure, or make the implementation of `term//1` changeable at runtime.
 
 ## Dependencies
@@ -301,3 +313,9 @@ Multiple external packs are used:
 
 * [clpBNR](https://www.swi-prolog.org/pack/list?p=clpBNR)
 * [delay](https://www.swi-prolog.org/pack/list?p=delay)
+
+External program used:
+
+* [Verovio](https://www.verovio.org/index.xhtml)
+* python with [svgelements](https://github.com/meerk40t/svgelements)
+* Make for running tests

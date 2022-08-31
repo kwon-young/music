@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 import json
 
-from svgelements import Length, Rect, Viewbox, Matrix, Path, Point, Ellipse
+from svgelements import Length, Rect, Viewbox, Matrix, Path, Point, Ellipse, Polygon
 
 
 def make_args():
@@ -232,6 +232,20 @@ def parse_ellipse(node, transforms, defs, scopes):
                    Point(e.cx, e.cy))
 
 
+def parse_polygon(node, transforms, defs, scopes):
+    r = Polygon(**node.attrib)
+    r = apply_transforms(r, transforms)
+    r.reify()
+    if scopes[-1] == 'beam':
+        lefttop, righttop, rightbottom, leftbottom = r.points
+        p1 = Point((lefttop.x + leftbottom.x) / 2,
+                   (lefttop.y + leftbottom.y) / 2)
+        p2 = Point((righttop.x + rightbottom.x) / 2,
+                   (righttop.y + rightbottom.y) / 2)
+        width = abs(leftbottom.y - lefttop.y)
+        return Seg(p1, p2, scopes.copy(), width)
+
+
 # def parse_text(node, transforms, defs, scopes):
 #     __import__('ipdb').set_trace()
 #     return
@@ -256,6 +270,8 @@ def parse_node(node, transforms, defs, scopes):
         res = parse_rect(node, transforms, defs, scopes)
     elif tag == "svg:ellipse":
         res = parse_ellipse(node, transforms, defs, scopes)
+    elif tag == "svg:polygon":
+        res = parse_polygon(node, transforms, defs, scopes)
     # elif tag == "svg:text":
     #     res = parse_text(node, transforms, defs, scopes)
     return res

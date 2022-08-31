@@ -31,7 +31,7 @@ $(RECO): data/%-verovio.musicxml: data/%-verovio.pl settings/musicReco.txt $(SRC
 	swipl -t halt -s music.pl -g "mainReco('$<', 'settings/musicReco.txt', '$@')."
 
 $(GEN): data/%-music.pl: data/%-in.musicxml settings/musicGen.txt $(SRC)
-	swipl -t halt -s music.pl -g "mainGen('$<', 'settings/musicGen.txt', '$@')."
+	timeout 5s swipl -t halt -s music.pl -g "mainGen('$<', 'settings/musicGen.txt', '$@')."
 
 $(DIFFXML): data/%.diffXml: data/%-in.musicxml data/%-verovio.musicxml diffxml.pl
 	swipl -t halt -s diffxml.pl -g "diffXml('$<', 'data/$*-verovio.musicxml')." && touch $@

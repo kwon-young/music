@@ -172,7 +172,7 @@ flagDir(up, 'Dir', FlagOrigin, StemTop, _) :-
 flagDir(down, 'Down', FlagOrigin, _, StemBottom) :-
   pointDiffEps(0, FlagOrigin, StemBottom).
 
-durationNoFlag(Duration, Division) :-
+durationNoFlagBeam(Duration, Division) :-
   { Duration / Division >= 1 }.
 
 dotCond(Ref, Dot, NumIntervals, Stafflines) :-
@@ -270,11 +270,14 @@ octaveCond(OctaveAtom, Octave) :-
 octave(element(octave, [], [Octave])) -->
   state(octave, octaveCond(Octave)).
 
+delay:mode(system:append(ground, ground, _)).
+delay:mode(system:append(ground, _, ground)).
+delay:mode(system:append(_, ground, ground)).
 noteGraphique(Attributes) -->
   {debug(note, "noteGraphique~n", [])},
   notehead(NoteheadAttributes),
-  noteStem(Stem),
-  {append(NoteheadAttributes, Stem, Attributes)}.
+  {delay(system:append(NoteheadAttributes, Stem, Attributes))},
+  noteStem(Stem).
 
 notehead(Attributes) -->
   state(notehead(Notehead), duration, division, noteheadCond),
@@ -336,9 +339,10 @@ accidAlter(0, natural, Step, _, _, KeySteps, _) :-
   memberchk(Step, KeySteps).
 accidAlter(0, natural, Step, Octave, AccidStepOctaves, _, _) :-
   memberchk(_-Step-Octave, AccidStepOctaves).
-accidAlter(Alter, Name, Step, _, _, KeySteps, _) :-
+accidAlter(Alter, Name, Step, Octave, AccidStepOctaves, KeySteps, _) :-
   \+ memberchk(Step, KeySteps),
-  accidAlter_(Alter, Name).
+  accidAlter_(Alter, Name),
+  \+ memberchk(Name-Step-Octave, AccidStepOctaves).
 
 % accidAlter_(0, natural).
 accidAlter_(1, sharp).
@@ -451,15 +455,86 @@ ledgerlines -->
 noteStem([]) -->
   state(duration, division, durationNoStem),
   {debug(note, "noteStem: without stem~n", [])}.
-noteStem([element(stem, [], [Dir])]) -->
+noteStem([element(stem, [], [Dir]) | Beam]) -->
   verticalSeg(Stem),
   state(notehead, stem(Stem), duration, division, dir(Dir), noteheadStemCond),
   {debug(note, "noteStem: with stem~n", [])},
-  noteFlag.
-noteFlag -->
+  ( noteFlag(Beam)
+  | noteBeam(Beam)
+  | noFlagBeam(Beam)
+  ).
+noteFlag([]) -->
   state(stem, flag(Flag), duration, division, dir, stemFlagCond),
   termp(Flag),
   {debug(note, "noteFlag: with flag~n", [])}.
-noteFlag -->
-  state(duration, division, durationNoFlag),
+
+stemBeamCond(State, Stem, BeamIn, BeamOut, Duration, Div, Dir) :-
+  { Duration / Div == 1r2 },
+  stemBeamCondState(State, Stem, BeamIn, BeamOut, Dir).
+stemBeamCondState(begin, Stem, noBeam, Beam, Dir) :-
+  delay(stemBeamCondDir(Dir, begin, Stem, Beam)).
+stemBeamCondState(continue, Stem, Beam, Beam, Dir) :-
+  delay(stemBeamCondDir(Dir, continue, Stem, Beam)).
+stemBeamCondState(end, Stem, Beam, noBeam, Dir) :-
+  delay(stemBeamCondDir(Dir, end, Stem, Beam)).
+
+delay:mode(note:stemBeamCondDir(ground, _, _, _)).
+delay:mode(note:beamDir(_, _, ground, ground)).
+stemBeamCondDir(up, begin, Stem, Beam) :-
+  segCorner(v, left-top, Stem, point(StemX, StemY)),
+  segStart(Beam, point(BeamX, BeamY)),
+  diffEps(0, BeamX, StemX),
+  diffEps(2.7, BeamY, StemY).
+stemBeamCondDir(down, begin, Stem, Beam) :-
+  segCorner(v, left-bottom, Stem, point(StemX, StemY)),
+  segStart(Beam, point(BeamX, BeamY)),
+  diffEps(0, BeamX, StemX),
+  diffEps(2.7, BeamY, StemY).
+stemBeamCondDir(up, continue, Stem, Beam) :-
+  segCorner(v, left-top, Stem, point(StemLeftX, _)),
+  segStart(Beam, point(BeamStartX, _)),
+  \+ diffEps(0, BeamStartX, StemLeftX),
+  segCorner(v, right-top, Stem, point(StemRightX, _)),
+  segEnd(Beam, point(BeamEndX, _)),
+  \+ diffEps(0, BeamEndX, StemRightX),
+  segStart(Stem, point(StemX, StemY)),
+  { BeamStartX =< StemX },
+  { StemX =< BeamEndX },
+  segYAtX(Beam, BeamY, StemX),
+  diffEps(2.7, BeamY, StemY).
+stemBeamCondDir(down, continue, Stem, Beam) :-
+  segCorner(v, left-bottom, Stem, point(StemLeftX, _)),
+  segStart(Beam, point(BeamStartX, _)),
+  \+ diffEps(0, BeamStartX, StemLeftX),
+  segCorner(v, right-bottom, Stem, point(StemRightX, _)),
+  segEnd(Beam, point(BeamEndX, _)),
+  \+ diffEps(0, BeamEndX, StemRightX),
+  segEnd(Stem, point(StemX, StemY)),
+  { BeamStartX =< StemX },
+  { StemX =< BeamEndX },
+  segYAtX(Beam, BeamY, StemX),
+  diffEps(2.7, BeamY, StemY).
+stemBeamCondDir(up, end, Stem, Beam) :-
+  segCorner(v, right-top, Stem, point(StemX, StemY)),
+  segEnd(Beam, point(BeamX, BeamY)),
+  diffEps(0, BeamX, StemX),
+  diffEps(2.7, BeamY, StemY).
+stemBeamCondDir(down, end, Stem, Beam) :-
+  segCorner(v, right-bottom, Stem, point(StemX, StemY)),
+  segEnd(Beam, point(BeamX, BeamY)),
+  diffEps(0, BeamX, StemX),
+  diffEps(2.7, BeamY, StemY).
+
+noteBeam([element(beam, [number='1'], [State])]) -->
+  state(stem, -beam(Beam), duration, division, dir, stemBeamCond(State)),
+  noteBeamState(State, Beam).
+noteBeamState(begin, Beam) -->
+  termp(Beam).
+noteBeamState(continue, _) -->
+  { true }.
+noteBeamState(end, _) -->
+  { true }.
+
+noFlagBeam([]) -->
+  state(duration, division, durationNoFlagBeam),
   {debug(note, "noteFlag: without flag~n", [])}.
