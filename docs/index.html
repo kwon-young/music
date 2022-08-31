@@ -13,8 +13,8 @@
 <h1 class="wiki">Music Notation Grammar</h1>
 
 <p>
-The goal of this project is to write a grammar of the modern music notation.
-This grammar is defined using prolog Definite Clause Grammar (DCG) notation and links spatial relationships of music primitives with semantic relationships of music notation elements.</p>
+The goal of this project is to write an executable specification of the modern music notation.
+This executable specification is a grammar defined using prolog Definite Clause Grammar (DCG) notation and links spatial relationships of music primitives with semantic relationships of music notation elements.</p>
 
 <p>
 Concretely, the same code used to describe the modern music notation can be used in two ways:</p>
@@ -29,7 +29,7 @@ The only open source OMR solution is called Audiveris and works okay for music s
 <h2 class="wiki">Features</h2>
 
 <p>
-Here is a list of currently supported music notation features by this project:</p>
+Here is a list of currently supported music notation features:</p>
 <ul>
 <li>single measure
 <ul>
@@ -38,29 +38,46 @@ Here is a list of currently supported music notation features by this project:</
 <ul>
 <li>g clef</li>
 <li>4/4 time signature</li>
+<li>key signature</li>
 </ul>
 </li>
 <li>note
 <ul>
 <li>noteheads, stem and flags: whole, half, quarter, 8th, 16th, etc</li>
 <li>dotted note</li>
-<li>flat, sharp accidentals</li>
+<li>flat, sharp, natural accidentals</li>
 <li>ledger lines</li>
+<li>single beam for grouped notes</li>
 </ul>
 </li>
 </ul>
 
 <p>
-See the data folders to have an idea of the different supported music notation elements.</p></li>
+See the data folders to have an idea of the different supported music notation elements.</p>
+
+<p>
+See the <a href="https://kwon-young.github.io/music/">documentation</a> for a list of defined predicates used in this grammar.</p></li>
 </ul>
 
 <h2 class="wiki">Why ?</h2>
 
 <p>
-While the origin of this project is quite deep and complicated, the main reason driving this project is the realization that by using a carefully selected set of tools and formalism, the same code <strong>could</strong> be used to do both music score typesetting <strong>and</strong> recognition.</p>
+While the origin of this project is quite deep and complicated, the main reason driving this project is the realization that by using a carefully selected set of tools and formalism, the same code <strong>could</strong> be used to do both music score typesetting <strong>and</strong> recognition.
+The fundamental idea behind this realization is that, for example, when trying to <strong>describe</strong> the relationship between two graphical objects, we do not want to repeat the exact same relationship depending on the direction of evaluation.</p>
 
 <p>
-If you want to deep dive into the origin of this project, you can read the DMOS section of the documentation.</p>
+If you take the relationship between a note head and its stem, non logic formalism would need to pick an evaluation order, such as:</p>
+
+<ol>
+<li>defining the coordinate of the note head;</li>
+<li>compute the position of the junction between the note head and the stem;</li>
+<li>compute the rest of the coordinates of the stem depending on the position of the junction with the note head.
+In this formalism, if you ever wanted to define the position of the note head given a specific stem, you would need to rewrite the exact same <strong>relation</strong>, but in the reverse order.
+Using prolog and constraint logic programming over reals, we can specify this relationship only once, and it will work in any directions.
+
+<p>
+If you want to deep dive into the origin of this project, you can read the DMOS section of the documentation.</p></li>
+</ol>
 
 <h2 class="wiki">How does this work ?</h2>
 
@@ -81,12 +98,12 @@ As previously said, the main particularity of this project is the ability to use
 For the music typesetting part, we start from a MusicXML file, and produces a special `.pl` that contains a prolog list of graphical primitives that constitute the engraved music scores.</p>
 
 <p>
-Much more work is required to turn this grammar into a full-blown engraver.
+Much more work is required to turn this grammar into a full blown engraver.
 Currently, only a few relationship are specified in the grammar, enough to do OMR, but not enough to fully ground the coordinates of the graphical primitives while typesetting.
 Then, the prolog list of graphical primitives should be transformed in something like a SVG file using actual music glyph.</p>
 
 <p>
-But the important thing is that the grammar actually runs in this direction, and produce the correct set of graphical primitives to typesetting the music score in the MusicXML file.</p>
+But the important thing is that the grammar actually runs in this direction, and produce the correct set of graphical primitives to typeset the music score in the MusicXML file.</p>
 
 <h4 class="wiki">OMR</h4>
 
@@ -337,7 +354,7 @@ R = [_A] ;
 false.</pre>
 
 <p>
-One advantage of this formulation is that the implementation of the <a class="extmanual" href="http://www.swi-prolog.org/pldoc/man?predicate=term/3">term//1</a> can be improved later, by implementing something like a <a href="https://en.wikipedia.org/wiki/R-tree">R-Tree</a> for efficient searching in a list of graphical primitives.
+One advantage of this formulation is that the implementation of the <a class="extmanual" href="http://www.swi-prolog.org/pldoc/man?predicate=term/3">term//1</a> can be improved later, by implementing something like an <a href="https://en.wikipedia.org/wiki/R-tree">R-Tree</a> for efficient searching in a list of graphical primitives.
 However, the implementation would need to be pure, or make the implementation of <a class="extmanual" href="http://www.swi-prolog.org/pldoc/man?predicate=term/3">term//1</a> changeable at runtime.</p>
 
 <h2 class="wiki">Dependencies</h2>
@@ -349,7 +366,11 @@ The prolog implementation used is <a href="https://www.swi-prolog.org/">swi-prol
 Multiple external packs are used:</p>
 <ul>
 <li><a href="https://www.swi-prolog.org/pack/list?p=clpBNR">clpBNR</a></li>
-<li><a href="https://www.swi-prolog.org/pack/list?p=delay">delay</a></li>
+<li><a href="https://www.swi-prolog.org/pack/list?p=delay">delay</a>
+External program used:</li>
+<li><a href="https://www.verovio.org/index.xhtml">Verovio</a></li>
+<li>python with <a href="https://github.com/meerk40t/svgelements">svgelements</a></li>
+<li>Make for running tests</li>
 </ul>
 
 <h2 class="wiki plfiles">Prolog files</h2>
@@ -364,6 +385,7 @@ Multiple external packs are used:</p>
 <tr><th colspan="3" class="file"><span style="float:left"><a href="music.html">music.pl</a></span><span style="float:right"></span></th></tr>
 <tr><th colspan="3" class="file"><span style="float:left"><a href="music_utils.html">music_utils.pl</a></span><span style="float:right"></span></th></tr>
 <tr><th colspan="3" class="file"><span style="float:left"><a href="note.html">note.pl</a></span><span style="float:right"></span></th></tr>
+<tr><th colspan="3" class="file"><span style="float:left"><a href="pitch_cond.html">pitch_cond.pl</a></span><span style="float:right"></span></th></tr>
 <tr><th colspan="3" class="file"><span style="float:left"><a href="seg.html">seg.pl</a></span><span style="float:right"></span></th></tr>
 <tr><th colspan="3" class="file"><span style="float:left"><a href="utils.html">utils.pl</a></span><span style="float:right"></span></th></tr>
 </table>

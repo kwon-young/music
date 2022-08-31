@@ -36,6 +36,9 @@ $(GEN): data/%-music.pl: data/%-in.musicxml settings/musicGen.txt $(SRC)
 $(DIFFXML): data/%.diffXml: data/%-in.musicxml data/%-verovio.musicxml diffxml.pl
 	swipl -t halt -s diffxml.pl -g "diffXml('$<', 'data/$*-verovio.musicxml')." && touch $@
 
+docs: $(SRC) README.md
+	swipl -t halt -s music.pl -g "doc_save(., [recursive(true), doc_root(\"docs\")])."
+
 .PHONY: clean
 
 clean:
