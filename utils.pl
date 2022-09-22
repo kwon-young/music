@@ -8,6 +8,9 @@
 delay:mode(system:atom_number(ground, _)).
 delay:mode(system:atom_number(_, ground)).
 
+delay:mode(system:length(ground, _)).
+delay:mode(system:length(_, ground)).
+
 :- meta_predicate convlist2(3, ?, ?).
 :- meta_predicate maplist2(2, ?).
 :- meta_predicate maplist2(4, ?, ?).

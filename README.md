@@ -318,4 +318,16 @@ External program used:
 
 * [Verovio](https://www.verovio.org/index.xhtml)
 * python with [svgelements](https://github.com/meerk40t/svgelements)
-* Make for running tests
+* GNU Make for running tests
+
+## Ideas
+
+This is a list of very far fetched ideas for which I need more research and experience in order to evaluate them:
+
+* formalization of using a dcg state (maybe using term_expansion, so a limited convenient version of edcg)
+* generalization of the sequence2//3 grammar predicate
+* Infinite recursion detection for a bidirectional grammar in generation mode
+* Compilation of a bidirectional grammar into a unidirectional grammar using a query argument modes and ground state
+* Automatic optimization of graphical thresholds
+* Rule induction of relationship between graphical elements
+* Probabilistic dcg rules

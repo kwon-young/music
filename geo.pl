@@ -1,7 +1,7 @@
 :- module(
   geo, [
     diffEps/3, pointDiffEps/3, segYAtX/3, inside/2, intersect/2,
-    boxLeftTopRightBottom/3
+    boxLeftTopRightBottom/3, segLength/2
   ]).
 
 :- use_module(library(clpBNR)).
@@ -82,3 +82,8 @@ inside(Term, Container) :-
   contour(Container, Box),
   boxEq(Box, P1),
   boxEq(Box, P2).
+
+segLength(Seg, Length) :-
+  segStart(Seg, Start),
+  segEnd(Seg, End),
+  pointDiffEps(Length, Start, End).

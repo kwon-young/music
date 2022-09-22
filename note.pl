@@ -455,80 +455,108 @@ ledgerlines -->
 noteStem([]) -->
   state(duration, division, durationNoStem),
   {debug(note, "noteStem: without stem~n", [])}.
-noteStem([element(stem, [], [Dir]) | Beam]) -->
+noteStem([element(stem, [], [Dir]) | Beams]) -->
   verticalSeg(Stem),
   state(notehead, stem(Stem), duration, division, dir(Dir), noteheadStemCond),
   {debug(note, "noteStem: with stem~n", [])},
-  ( noteFlag(Beam)
-  | noteBeam(Beam)
-  | noFlagBeam(Beam)
+  ( noteFlag(Beams)
+  | noteBeams(Beams)
+  | noFlagBeam(Beams)
   ).
 noteFlag([]) -->
   state(stem, flag(Flag), duration, division, dir, stemFlagCond),
   termp(Flag),
   {debug(note, "noteFlag: with flag~n", [])}.
 
-stemBeamCond(State, Stem, BeamIn, BeamOut, Duration, Div, Dir) :-
-  { Duration / Div == 1r2 },
-  stemBeamCondState(State, Stem, BeamIn, BeamOut, Dir).
-stemBeamCondState(begin, Stem, noBeam, Beam, Dir) :-
-  delay(stemBeamCondDir(Dir, begin, Stem, Beam)).
-stemBeamCondState(continue, Stem, Beam, Beam, Dir) :-
-  delay(stemBeamCondDir(Dir, continue, Stem, Beam)).
-stemBeamCondState(end, Stem, Beam, noBeam, Dir) :-
-  delay(stemBeamCondDir(Dir, end, Stem, Beam)).
+stemBeamCond(State, Ref, Beam, Notehead, Stem, BeamIn, BeamOut, Dir, Stafflines) :-
+  stemBeamState(State, Notehead, Stem, StemX, StemY, BeamIn, BeamOut, Beam, Dir),
+  interlineAtX(Stafflines, StemX, Interline),
+  stemBeamRef(Ref, StemY, Beam, Dir, Interline).
 
-delay:mode(note:stemBeamCondDir(ground, _, _, _)).
-delay:mode(note:beamDir(_, _, ground, ground)).
-stemBeamCondDir(up, begin, Stem, Beam) :-
-  segCorner(v, left-top, Stem, point(StemX, StemY)),
-  segStart(Beam, point(BeamX, BeamY)),
-  diffEps(0, BeamX, StemX),
-  diffEps(2.7, BeamY, StemY).
-stemBeamCondDir(down, begin, Stem, Beam) :-
-  segCorner(v, left-bottom, Stem, point(StemX, StemY)),
-  segStart(Beam, point(BeamX, BeamY)),
-  diffEps(0, BeamX, StemX),
-  diffEps(2.7, BeamY, StemY).
-stemBeamCondDir(up, continue, Stem, Beam) :-
-  segCorner(v, left-top, Stem, point(StemLeftX, _)),
-  segStart(Beam, point(BeamStartX, _)),
-  \+ diffEps(0, BeamStartX, StemLeftX),
-  segCorner(v, right-top, Stem, point(StemRightX, _)),
-  segEnd(Beam, point(BeamEndX, _)),
-  \+ diffEps(0, BeamEndX, StemRightX),
-  segStart(Stem, point(StemX, StemY)),
-  { BeamStartX =< StemX },
-  { StemX =< BeamEndX },
-  segYAtX(Beam, BeamY, StemX),
-  diffEps(2.7, BeamY, StemY).
-stemBeamCondDir(down, continue, Stem, Beam) :-
-  segCorner(v, left-bottom, Stem, point(StemLeftX, _)),
-  segStart(Beam, point(BeamStartX, _)),
-  \+ diffEps(0, BeamStartX, StemLeftX),
-  segCorner(v, right-bottom, Stem, point(StemRightX, _)),
-  segEnd(Beam, point(BeamEndX, _)),
-  \+ diffEps(0, BeamEndX, StemRightX),
-  segEnd(Stem, point(StemX, StemY)),
-  { BeamStartX =< StemX },
-  { StemX =< BeamEndX },
-  segYAtX(Beam, BeamY, StemX),
-  diffEps(2.7, BeamY, StemY).
-stemBeamCondDir(up, end, Stem, Beam) :-
-  segCorner(v, right-top, Stem, point(StemX, StemY)),
-  segEnd(Beam, point(BeamX, BeamY)),
-  diffEps(0, BeamX, StemX),
-  diffEps(2.7, BeamY, StemY).
-stemBeamCondDir(down, end, Stem, Beam) :-
-  segCorner(v, right-bottom, Stem, point(StemX, StemY)),
-  segEnd(Beam, point(BeamX, BeamY)),
-  diffEps(0, BeamX, StemX),
-  diffEps(2.7, BeamY, StemY).
+stemBeamDir(up, H, Stem, StemTop) :-
+  segCorner(v, H-top, Stem, StemTop).
+stemBeamDir(down, H, Stem, StemBottom) :-
+  segCorner(v, H-bottom, Stem, StemBottom).
 
-noteBeam([element(beam, [number='1'], [State])]) -->
-  state(stem, -beam(Beam), duration, division, dir, stemBeamCond(State)),
+% delay:mode(note:stemBeamState(
+%               ground,         _,        _,    _,     _,     _,      _,      _,    _)).
+% delay:mode(note:stemBeamState(
+%               _,              ground, ground, _,     _,     ground, ground, ground, _)).
+stemBeamState('forward hook', Notehead, Stem, StemX, StemY, noBeam, noBeam, Beam, Dir) :-
+  gtrace,
+  stemBeamState(begin, Notehead, Stem, StemX, StemY, noBeam, Beam, Beam, Dir),
+  ccxWidth(Notehead, NoteheadWidth),
+  segLength(Beam, BeamLength),
+  diffEps(0, NoteheadWidth, BeamLength).
+stemBeamState(begin, _Notehead, Stem, StemX, StemY, noBeam, Beam, Beam, Dir) :-
+  segStartX(Beam, BeamX),
+  stemBeamDir(Dir, left, Stem, point(StemX, StemY)),
+  segThickness(Stem, StemThickness),
+  { HalfThickness == StemThickness },
+  diffEps(HalfThickness, BeamX, StemX).
+stemBeamState(continue, _Notehead, Stem, StemX, StemY, Beam, Beam, Beam, Dir) :-
+  segStartX(Beam, BeamStartX),
+  segEndX(Beam, BeamEndX),
+  stemBeamDir(Dir, mid, Stem, point(StemX, StemY)),
+  { BeamStartX + 1 =< StemX },
+  { StemX =< BeamEndX - 1}.
+stemBeamState(end, _Notehead, Stem, StemX, StemY, Beam, noBeam, Beam, Dir) :-
+  segEndX(Beam, BeamX),
+  stemBeamDir(Dir, right, Stem, point(StemX, StemY)),
+  segThickness(Stem, StemThickness),
+  { HalfThickness == StemThickness },
+  diffEps(HalfThickness, BeamX, StemX).
+stemBeamState('backward hook', Notehead, Stem, StemX, StemY, noBeam, noBeam, Beam, Dir) :-
+  stemBeamState(end, Notehead, Stem, StemX, StemY, Beam, noBeam, Beam, Dir),
+  ccxWidth(Notehead, NoteheadWidth),
+  segLength(Beam, BeamLength),
+  diffEps(0, NoteheadWidth, BeamLength).
+
+beamRefDir(up, +).
+beamRefDir(down, -).
+
+stemBeamRef(noRef, StemY, Beam, _Dir, _Interline) :-
+  segStartY(Beam, BeamY),
+  diffEps(2.7, BeamY, StemY).
+stemBeamRef(BeamRef, _StemY, Beam, Dir, Interline) :-
+  segStartY(BeamRef, BeamRefY),
+  segStartY(Beam, BeamY),
+  segThickness(BeamRef, RefThickness),
+  segThickness(Beam, BeamThickness),
+  beamRefDir(Dir, Op),
+  Expr =.. [Op, BeamRefY, RefThickness / 2 + Interline / 4 + BeamThickness / 2],
+  { YFromRef == Expr },
+  diffEps(2.7, BeamY, YFromRef).
+
+beamsCond(Beams, Duration, Division) :-
+  delay(length(Beams, NumBeams)),
+  NumBeams::integer(1, 10),
+  { Duration / Division == 1 / (2 ** NumBeams) }.
+
+%!  noteBeams(?Beams) is nondet.
+%
+%   Specify the relationship between a note and its beams.
+%   For more information, see beam.md
+noteBeams(Beams) -->
+  state(duration, division, beamsCond(Beams)),
+  sequence2(noteBeam, [element(beam, [number='0'], [_]) | Beams], [noRef | _]).
+
+atom_inc(N, N1, BeamN) :-
+  atom_number(N, NInt),
+  { N1Int == NInt + 1},
+  atom_number(N1, N1Int),
+  atom_concat(beam, N1, BeamN).
+
+noteBeam(element(beam, [number=N], [_]),
+         element(beam, [number=N1], [State]), Ref, Beam) -->
+  { atom_inc(N, N1, BeamN) },
+  state(notehead, stem, -BeamN, dir, stafflines, stemBeamCond(State, Ref, Beam)),
   noteBeamState(State, Beam).
 noteBeamState(begin, Beam) -->
+  termp(Beam).
+noteBeamState('forward hook', Beam) -->
+  termp(Beam).
+noteBeamState('backward hook', Beam) -->
   termp(Beam).
 noteBeamState(continue, _) -->
   { true }.

@@ -2,9 +2,11 @@
                 termchk//1, selectchk//1, selectchk//2, updatechk//2,
                 state//2, state//3, state//4, state//5, state//6, state//7, state//8,
                 state//9,
-                state2//1, state2//2, state2//3, state2//9,
+                state2//1, state2//2, state2//3, state2//4, state2//9,
                 add//1,
                 sequence2//3, sequence2//5]).
+
+:- use_module(library(clpBNR)).
 
 term(El) -->
   [El].
@@ -82,7 +84,8 @@ parseCompound_(Name, Arity, StateFunctor, StateArity, StateGoal, GoalArity, Args
     length(Arg, Arity),
     compound_name_arguments(Compound, Name, Arg)), Compounds, ArgsList),
   append(ArgsList, AllArgs),
-  length(Args, GoalArity),
+  {ArgsLen == Arity * GoalArity},
+  length(Args, ArgsLen),
   append(_, Args, AllArgs),
   compound_name_arguments(StateGoal, StateFunctor, Compounds).
 
@@ -148,6 +151,11 @@ state2(Term1, Term2, Term3) -->
   state2(Term1),
   state2(Term2),
   state2(Term3).
+state2(Term1, Term2, Term3, Term4) -->
+  state2(Term1),
+  state2(Term2),
+  state2(Term3),
+  state2(Term4).
 state2(Term1, Term2, Term3, Term4, Term5, Term6, Term7, Term8, Term9) -->
   state2(Term1),
   state2(Term2),

@@ -63,6 +63,14 @@ segCornerApply(h, Seg, Thickness, Getter, Op, point(X, YOffset)) :-
   [YOffset, Y, Thickness]::real,
   {YOffset == Expr}.
 
+segCorner(v, mid-top, Seg, Corner) :-
+  segStart(Seg, Corner).
+segCorner(v, mid-bottom, Seg, Corner) :-
+  segEnd(Seg, Corner).
+segCorner(h, left-mid, Seg, Corner) :-
+  segStart(Seg, Corner).
+segCorner(v, right-mid, Seg, Corner) :-
+  segEnd(Seg, Corner).
 segCorner(Dir, H-V, Seg, Corner) :-
   segCornerOp(Dir, H, HOp),
   segCornerOp(Dir, V, VOp),
