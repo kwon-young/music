@@ -468,8 +468,12 @@ noteFlag([]) -->
   termp(Flag),
   {debug(note, "noteFlag: with flag~n", [])}.
 
-stemBeamCond(State, Ref, Beam, Notehead, Stem, BeamIn, BeamOut, Dir, Stafflines) :-
-  stemBeamState(State, Notehead, Stem, StemX, StemY, BeamIn, BeamOut, Beam, Dir),
+stemBeamCond(State, Ref, Beam, Notehead, Stem, noBeam, BeamOut, Dir, Stafflines) :-
+  delay(stemBeamState(State, Notehead, Stem, StemX, StemY, BeamOut, Beam, Dir)),
+  interlineAtX(Stafflines, StemX, Interline),
+  stemBeamRef(Ref, StemY, Beam, Dir, Interline).
+stemNoBeamCond(State, Ref, Beam, Stem, BeamIn, BeamOut, Dir, Stafflines) :-
+  stemNoBeamState(State, Stem, StemX, StemY, BeamIn, BeamOut, Beam, Dir),
   interlineAtX(Stafflines, StemX, Interline),
   stemBeamRef(Ref, StemY, Beam, Dir, Interline).
 
@@ -478,39 +482,39 @@ stemBeamDir(up, H, Stem, StemTop) :-
 stemBeamDir(down, H, Stem, StemBottom) :-
   segCorner(v, H-bottom, Stem, StemBottom).
 
-% delay:mode(note:stemBeamState(
-%               ground,         _,        _,    _,     _,     _,      _,      _,    _)).
-% delay:mode(note:stemBeamState(
-%               _,              ground, ground, _,     _,     ground, ground, ground, _)).
-stemBeamState('forward hook', Notehead, Stem, StemX, StemY, noBeam, noBeam, Beam, Dir) :-
-  gtrace,
-  stemBeamState(begin, Notehead, Stem, StemX, StemY, noBeam, Beam, Beam, Dir),
+delay:mode(note:stemBeamState(
+              ground,         _,        _,    _,     _,     _,      _,    _)).
+delay:mode(note:stemBeamState(
+              _,              ground, ground, _,     _,     _,      ground, _)).
+stemBeamState('forward hook', Notehead, Stem, StemX, StemY, noBeam, Beam, Dir) :-
+  stemBeamState(begin, Notehead, Stem, StemX, StemY, Beam, Beam, Dir),
   ccxWidth(Notehead, NoteheadWidth),
   segLength(Beam, BeamLength),
   diffEps(0, NoteheadWidth, BeamLength).
-stemBeamState(begin, _Notehead, Stem, StemX, StemY, noBeam, Beam, Beam, Dir) :-
+stemBeamState(begin, _Notehead, Stem, StemX, StemY, Beam, Beam, Dir) :-
   segStartX(Beam, BeamX),
   stemBeamDir(Dir, left, Stem, point(StemX, StemY)),
   segThickness(Stem, StemThickness),
   { HalfThickness == StemThickness },
   diffEps(HalfThickness, BeamX, StemX).
-stemBeamState(continue, _Notehead, Stem, StemX, StemY, Beam, Beam, Beam, Dir) :-
+stemBeamState('backward hook', Notehead, Stem, StemX, StemY, noBeam, Beam, Dir) :-
+  stemNoBeamState(end, Stem, StemX, StemY, Beam, noBeam, Beam, Dir),
+  ccxWidth(Notehead, NoteheadWidth),
+  segLength(Beam, BeamLength),
+  diffEps(0, NoteheadWidth, BeamLength).
+
+stemNoBeamState(continue, Stem, StemX, StemY, Beam, Beam, Beam, Dir) :-
   segStartX(Beam, BeamStartX),
   segEndX(Beam, BeamEndX),
   stemBeamDir(Dir, mid, Stem, point(StemX, StemY)),
   { BeamStartX + 1 =< StemX },
   { StemX =< BeamEndX - 1}.
-stemBeamState(end, _Notehead, Stem, StemX, StemY, Beam, noBeam, Beam, Dir) :-
+stemNoBeamState(end, Stem, StemX, StemY, Beam, noBeam, Beam, Dir) :-
   segEndX(Beam, BeamX),
   stemBeamDir(Dir, right, Stem, point(StemX, StemY)),
   segThickness(Stem, StemThickness),
   { HalfThickness == StemThickness },
   diffEps(HalfThickness, BeamX, StemX).
-stemBeamState('backward hook', Notehead, Stem, StemX, StemY, noBeam, noBeam, Beam, Dir) :-
-  stemBeamState(end, Notehead, Stem, StemX, StemY, Beam, noBeam, Beam, Dir),
-  ccxWidth(Notehead, NoteheadWidth),
-  segLength(Beam, BeamLength),
-  diffEps(0, NoteheadWidth, BeamLength).
 
 beamRefDir(up, +).
 beamRefDir(down, -).
@@ -550,18 +554,12 @@ atom_inc(N, N1, BeamN) :-
 noteBeam(element(beam, [number=N], [_]),
          element(beam, [number=N1], [State]), Ref, Beam) -->
   { atom_inc(N, N1, BeamN) },
+  state(stem, -BeamN, dir, stafflines, stemNoBeamCond(State, Ref, Beam)).
+noteBeam(element(beam, [number=N], [_]),
+         element(beam, [number=N1], [State]), Ref, Beam) -->
+  { atom_inc(N, N1, BeamN) },
   state(notehead, stem, -BeamN, dir, stafflines, stemBeamCond(State, Ref, Beam)),
-  noteBeamState(State, Beam).
-noteBeamState(begin, Beam) -->
   termp(Beam).
-noteBeamState('forward hook', Beam) -->
-  termp(Beam).
-noteBeamState('backward hook', Beam) -->
-  termp(Beam).
-noteBeamState(continue, _) -->
-  { true }.
-noteBeamState(end, _) -->
-  { true }.
 
 noFlagBeam([]) -->
   state(duration, division, durationNoFlagBeam),
