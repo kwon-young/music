@@ -47,7 +47,7 @@ mainGen(XmlFile, SettingsFile, StructFile) :-
   print_term(Rest, _).
 mainGen(XmlFile, State, Struct, Rest) :-
   load_xml(XmlFile, Xml, [space(remove), number(integer)]),
-  phrase(music(Xml), [state(State) | Struct], Rest).
+  phrase(music(Xml), [cursor(noEl), state([cursor(noEl) | State]) | Struct], Rest).
 
 mainReco(StructFile, SettingsFile, XmlFile) :-
   load_settings(SettingsFile),
@@ -70,7 +70,7 @@ mainReco(StructFile, Struct, Rest, Xml) :-
   open(StructFile, read, S),
   read(S, Struct),
   close(S),
-  phrase(music(Xml), [state(_) | Struct], Rest).
+  phrase(music(Xml), [cursor(noEl), state([cursor(noEl) | _]) | Struct], Rest).
 
 music([element('score-partwise', [version='4.0'], [PartList, Part])]) -->
   state2(keySteps([]), keyAlter(0), accidStepsOctaves([])),
@@ -110,7 +110,7 @@ measure(element(measure, [number='1'], [Attributes | Notes])) -->
   barline(),
   attributes(Attributes),
   state2(beam1(noBeam), beam2(noBeam), beam3(noBeam), beam4(noBeam)),
-  sequence(note, Notes).
+  sequence(find(note), Notes).
 
 aligned(Getter, Eps, Elements) :-
   convlist(Getter, Elements, [Coord | Coords]),

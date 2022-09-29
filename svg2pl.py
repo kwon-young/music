@@ -277,6 +277,13 @@ def parse_node(node, transforms, defs, scopes):
     return res
 
 
+def sort_elements(element):
+    if isinstance(element, Seg):
+        return element.start.x
+    elif isinstance(element, Ccx):
+        return element.origin.x
+
+
 def main(args):
     tree = ET.parse(args.svg)
     root = tree.getroot()
@@ -292,6 +299,7 @@ def main(args):
             if el.etiq[i].startswith('#'):
                 codepoint = el.etiq[i].replace('#', 'U+')
                 el.etiq[i] = glyphnames_inv[codepoint]['name']
+    res.sort(key=sort_elements)
     __import__('pprint').pprint(res)
     with args.output.open('w') as f:
         f.write(listtopl(res))

@@ -223,6 +223,58 @@ note(element(note, [], [Pitch, Duration, Type | NoteAttributes])) -->
   type(Type),
   notePitch(Pitch),
   noteGraphique(NoteAttributes).
+note(element(note, [], [Rest, Duration, Type])) -->
+  state2(+duration, +dots(0)),
+  duration(Duration),
+  type(Type),
+  rest(Rest).
+
+restCond(Rest, Duration, Division, Stafflines) :-
+  ccxEtiqsCond(Rest, 1, 'rest'),
+  delay(restCond_(Rest, Duration, Division, Stafflines)).
+
+delay:mode(note:restCond_(ground, _, _, _)).
+delay:mode(note:restCond_(_, ground, ground, _)).
+restCond_(Rest, Duration, Division, Stafflines) :-
+  ccxEtiqsCond(Rest, 'restWhole'),
+  { Duration / Division == 4 },
+  ccxOrigin(Rest, point(RestX, RestY)),
+  nth1(4, Stafflines, Line),
+  segYAtX(Line, LineY, RestX),
+  diffEps(0.0, LineY, RestY).
+restCond_(Rest, Duration, Division, Stafflines) :-
+  ccxEtiqsCond(Rest, 'restHalf'),
+  { Duration / Division == 2 },
+  ccxOrigin(Rest, point(RestX, RestY)),
+  nth1(3, Stafflines, Line),
+  segYAtX(Line, LineY, RestX),
+  diffEps(0.0, LineY, RestY).
+restCond_(Rest, Duration, Division, Stafflines) :-
+  ccxEtiqsCond(Rest, 'restQuarter'),
+  { Duration / Division == 1 },
+  ccxOrigin(Rest, point(RestX, RestY)),
+  nth1(3, Stafflines, Line),
+  segYAtX(Line, LineY, RestX),
+  diffEps(0.0, LineY, RestY).
+restCond_(Rest, Duration, Division, Stafflines) :-
+  restVal(RestName, Val),
+  ccxEtiqsCond(Rest, RestName),
+  { Duration / Division == 4 / Val },
+  ccxOrigin(Rest, point(RestX, RestY)),
+  nth1(3, Stafflines, Line),
+  segYAtX(Line, LineY, RestX),
+  diffEps(0.0, LineY, RestY).
+
+restVal(Rest, Val) :-
+  delay(atom_codes(Rest, Codes)),
+  delay(phrase(restVal(Val), Codes)).
+restVal(Val) -->
+  "rest",
+  flagVal(Val).
+
+rest(element(rest, [], [])) -->
+  state(duration, division, stafflines, restCond(Rest)),
+  termp(Rest).
 
 duration(element(duration, [], [DurationAtom])) -->
   state(division, duration, dots, durationCond(DurationAtom)).

@@ -34,13 +34,15 @@ boxArgs(box(LeftTop, RightBottom), [LeftTop, RightBottom]).
 boxLeftTopRightBottom(Box, LeftTop, RightBottom) :-
   boxArgs(Box, [LeftTop, RightBottom]).
 
-contour(Seg, Box) :-
+contour(El, Box) :-
+  when(nonvar(El), contour_(El, Box)).
+contour_(Seg, Box) :-
   segStartEnd(Seg, Start, End),
-  contour(Start, End, Box).
-contour(Ccx, Box) :-
+  contour_(Start, End, Box).
+contour_(Ccx, Box) :-
   ccxLeftTopRightBottom(Ccx, LeftTop, RightBottom),
-  contour(LeftTop, RightBottom, Box).
-contour(point(X1, Y1), point(X2, Y2), Box) :-
+  contour_(LeftTop, RightBottom, Box).
+contour_(point(X1, Y1), point(X2, Y2), Box) :-
   [X1, Y1, X2, Y2, Xmin, Ymin, Xmax, Ymax]::real,
   {
     min(X1, X2) == Xmin,

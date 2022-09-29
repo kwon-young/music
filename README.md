@@ -27,7 +27,10 @@ Here is a list of currently supported music notation features:
     * dotted note
     * flat, sharp, natural accidentals
     * ledger lines
-    * single beam for grouped notes
+    * single/multiple beam for grouped notes
+    * forward backward hook for grouped notes
+  * rests
+    * TODO: dotted rest
 
 See the data folders to have an idea of the different supported music notation elements.
 
