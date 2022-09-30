@@ -89,22 +89,21 @@ noteheadCond(Notehead, Duration, Division) :-
 durationNoStem(Duration, Division) :-
   { Duration / Division >= 4 }.
 
-noteheadStemCond(Notehead, Stem, Duration, Division, Dir) :-
+noteheadStemCond(noChord, Notehead, Stem, Duration, Division, Dir) :-
   { Duration / Division =< 2 },
   stemDirCond(Dir, Notehead, Stem).
+noteheadStemCond(Notehead, Notehead, _Stem, Duration, Division, _Dir) :-
+  dif(Notehead, noChord),
+  { Duration / Division =< 2 }.
 
 stemDirCond(Dir, Notehead, Stem) :-
   ccxLeftRight(Notehead, NoteLeft, NoteRight),
   segCorner(v, right-bottom, Stem, point(StemBottom, _)),
-  epsGround(0.1, StemBottom, StemBottomG),
   segCorner(v, left-top, Stem, point(StemTop, _)),
-  epsGround(0.1, StemTop, StemTopG),
   debug(note, "stemDirCond ~p, ~p, ~p, ~p, ~p~n", [Dir, NoteRight, StemBottom, NoteLeft, StemTop]),
-  delay(stemDir(Dir, NoteRight, StemBottomG, NoteLeft, StemTopG)).
-
-delay:mode(note:stemDir(ground , _      , _      , _      , _)).
-delay:mode(note:stemDir(_      , ground , ground , _      , _)).
-delay:mode(note:stemDir(_      , _      , _      , ground , ground)).
+  when(
+    (ground(Dir) ; ground(Notehead), ground(Stem)),
+    stemDir(Dir, NoteRight, StemBottom, NoteLeft, StemTop)).
 
 stemDir(up, NoteRight, StemBottom, _, _) :-
   diffEps(0.1, NoteRight, StemBottom).
@@ -167,12 +166,12 @@ delay:mode(note:flagDir(ground , _      , _      , _      , _     )).
 delay:mode(note:flagDir(_      , ground , _      , _      , _     )).
 delay:mode(note:flagDir(_      , _      , ground , ground , _     )).
 delay:mode(note:flagDir(_      , _      , ground , _      , ground)).
-flagDir(up, 'Dir', FlagOrigin, StemTop, _) :-
+flagDir(up, 'Up', FlagOrigin, StemTop, _) :-
   pointDiffEps(0, FlagOrigin, StemTop).
 flagDir(down, 'Down', FlagOrigin, _, StemBottom) :-
   pointDiffEps(0, FlagOrigin, StemBottom).
 
-durationNoFlagBeam(Duration, Division) :-
+durationNoFlagBeam(_, noFlag, Duration, Division) :-
   { Duration / Division >= 1 }.
 
 dotCond(Ref, Dot, NumIntervals, Stafflines) :-
@@ -216,18 +215,57 @@ dotsDuration([_ | Dots], DotsDur, Dur) :-
   },
   dotsDuration(Dots, NextDotsDur, HalfDur).
 
+note(element(note, [], [element(chord, [], []), Pitch, Duration, Type | NoteAttributes])) -->
+  % does not renew stem, dir, flag
+  state2(chord(Notehead), +duration, +dots, +notehead(Notehead), +step, +octave, +intervals, +alter, +type),
+  duration(Duration),
+  type(Type),
+  notePitch(Pitch),
+  noteGraphique(NoteAttributes),
+  isChord.
 note(element(note, [], [Pitch, Duration, Type | NoteAttributes])) -->
-  state2(+duration, +dots, +notehead, +stem, +dir, +step, +octave, +intervals, +alter),
+  state2(chord(noChord), +duration, +dots, +notehead, +stem, +dir, +step, +octave, +intervals, +alter, +flag, +type),
   {debug(note, "note: ~p, ~p, ~p~n", [Pitch, Duration, Type])},
   duration(Duration),
   type(Type),
   notePitch(Pitch),
-  noteGraphique(NoteAttributes).
+  noteGraphique(NoteAttributes),
+  isChord.
 note(element(note, [], [Rest, Duration, Type])) -->
   state2(+duration, +dots(0)),
   duration(Duration),
   type(Type),
   rest(Rest).
+
+isChordCond(Stem, _, Notehead) :-
+  ccxEtiqsCond(Notehead, 1, notehead),
+  ccxLeftRight(Notehead, NoteLeft, NoteRight),
+  ccxOrigin(Notehead, point(_, NoteheadY)),
+  segTop(v, Stem, StemTop),
+  segBottom(v, Stem, StemBottom),
+  segYAtX(Stem, NoteheadY, StemX),
+  segThickness(Stem, StemThickness),
+  {
+    StemTop =< NoteheadY,
+    NoteheadY =< StemBottom,
+    StemLeft == StemX - StemThickness / 2,
+    StemRight == StemX + StemThickness / 2
+  },
+  when(ground(Notehead), stemNoteheadChord(StemLeft, StemRight, NoteLeft, NoteRight)).
+
+stemNoteheadChord(StemLeft, StemRight, NoteLeft, NoteRight) :-
+  debug(note, "stemNoteheadChord: ~p, ~p~n", [StemLeft, StemRight]),
+  (
+    diffEps(0.1, StemLeft, NoteLeft)
+  ; diffEps(0.1, StemRight, NoteRight)
+  ).
+
+
+isChord -->
+  state(stem, -chord(Notehead), isChordCond),
+  selectp(Notehead).
+isChord -->
+  state2(+chord(noChord)).
 
 restCond(Rest, Duration, Division, Stafflines) :-
   ccxEtiqsCond(Rest, 1, 'rest'),
@@ -508,9 +546,14 @@ noteStem([]) -->
   state(duration, division, durationNoStem),
   {debug(note, "noteStem: without stem~n", [])}.
 noteStem([element(stem, [], [Dir]) | Beams]) -->
+  state(chord(noChord), notehead, stem(Stem), duration, division, dir(Dir), noteheadStemCond),
   verticalSeg(Stem),
-  state(notehead, stem(Stem), duration, division, dir(Dir), noteheadStemCond),
   {debug(note, "noteStem: with stem~n", [])},
+  noteStemEnd(Beams).
+noteStem([element(stem, [], [Dir]) | Beams]) -->
+  state(chord(Notehead), notehead(Notehead), stem, duration, division, dir(Dir), noteheadStemCond),
+  noteStemEnd(Beams).
+noteStemEnd(Beams) -->
   ( noteFlag(Beams)
   | noteBeams(Beams)
   | noFlagBeam(Beams)
@@ -518,6 +561,11 @@ noteStem([element(stem, [], [Dir]) | Beams]) -->
 noteFlag([]) -->
   state(stem, flag(Flag), duration, division, dir, stemFlagCond),
   termp(Flag),
+  {debug(note, "noteFlag: with flag~n", [])}.
+noteFlag([]) -->
+  state2(chord(Notehead), notehead(Notehead)),
+  {dif(Notehead, noChord)},
+  state(stem, flag, duration, division, dir, stemFlagCond),
   {debug(note, "noteFlag: with flag~n", [])}.
 
 stemBeamCond(State, Ref, Beam, Notehead, Stem, noBeam, BeamOut, Dir, Stafflines) :-
@@ -614,5 +662,5 @@ noteBeam(element(beam, [number=N], [_]),
   termp(Beam).
 
 noFlagBeam([]) -->
-  state(duration, division, durationNoFlagBeam),
+  state(-flag, duration, division, durationNoFlagBeam),
   {debug(note, "noteFlag: without flag~n", [])}.
