@@ -1,23 +1,30 @@
 :- module(epf_geo, [termp//1, selectp//1, find//2, horizontalSeg//1, verticalSeg//1]).
 
 :- use_module(epf).
+:- use_module(state).
 :- use_module(cond).
 :- use_module(geo).
 
 termp(Term) -->
-  state(page, inside(Term)),
+  statep(inside(Term), [o(page)]),
   cursor(term, Term),
   {debug(epf_geo, "termp Term ~p~n", [Term])}.
 
 selectp(Term) -->
-  state(page, inside(Term)),
+  statep(inside(Term), [o(page)]),
   cursor(select, Term),
   {debug(epf_geo, "selectp Term ~p~n", [Term])}.
 
-:- meta_predicate cursor(1, ?, ?, ?).
+:- meta_predicate cursor(3, ?, ?, ?).
 
-cursor(_Goal, Term) -->
+cursor(_Mod:term, Term) -->
   updatechk(cursor(Cursor), cursor(noEl)),
+  {
+    dif(Cursor, noEl),
+    Term = Cursor
+  }.
+cursor(_Mod:select, Term) -->
+  updatechk(cursor(Cursor), cursor(Cursor)),
   {
     dif(Cursor, noEl),
     Term = Cursor

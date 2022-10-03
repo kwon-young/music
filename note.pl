@@ -9,6 +9,7 @@
 :- use_module(geo).
 :- use_module(cond).
 :- use_module(epf).
+:- use_module(state).
 :- use_module(epf_geo).
 :- use_module(utils).
 :- use_module(music_utils).
@@ -89,11 +90,10 @@ noteheadCond(Notehead, Duration, Division) :-
 durationNoStem(Duration, Division) :-
   { Duration / Division >= 4 }.
 
-noteheadStemCond(noChord, Notehead, Stem, Duration, Division, Dir) :-
+noteheadStemCond(false, Notehead, Stem, Duration, Division, Dir) :-
   { Duration / Division =< 2 },
   stemDirCond(Dir, Notehead, Stem).
-noteheadStemCond(Notehead, Notehead, _Stem, Duration, Division, _Dir) :-
-  dif(Notehead, noChord),
+noteheadStemCond(true, _Notehead, _Stem, Duration, Division, _Dir) :-
   { Duration / Division =< 2 }.
 
 stemDirCond(Dir, Notehead, Stem) :-
@@ -171,8 +171,9 @@ flagDir(up, 'Up', FlagOrigin, StemTop, _) :-
 flagDir(down, 'Down', FlagOrigin, _, StemBottom) :-
   pointDiffEps(0, FlagOrigin, StemBottom).
 
-durationNoFlagBeam(_, noFlag, Duration, Division) :-
-  { Duration / Division >= 1 }.
+durationNoFlagBeam(Duration, Division) :-
+  { Duration / Division >= 1 },
+  debug(note, "Division: ~p~n", [Division]).
 
 dotCond(Ref, Dot, NumIntervals, Stafflines) :-
   ccxEtiqsCond(Ref, 1, 'notehead'),
@@ -216,28 +217,30 @@ dotsDuration([_ | Dots], DotsDur, Dur) :-
   dotsDuration(Dots, NextDotsDur, HalfDur).
 
 note(element(note, [], [element(chord, [], []), Pitch, Duration, Type | NoteAttributes])) -->
+  chord,
   % does not renew stem, dir, flag
-  state2(chord(Notehead), +duration, +dots, +notehead(Notehead), +step, +octave, +intervals, +alter, +type),
+  states([
+    +(chord, true), +duration, +dots, +step, +octave, +intervals, +alter, +type]),
   duration(Duration),
   type(Type),
   notePitch(Pitch),
-  noteGraphique(NoteAttributes),
-  isChord.
+  noteGraphique(NoteAttributes).
 note(element(note, [], [Pitch, Duration, Type | NoteAttributes])) -->
-  state2(chord(noChord), +duration, +dots, +notehead, +stem, +dir, +step, +octave, +intervals, +alter, +flag, +type),
+  states([
+    +(chord, false), +duration, +dots, +notehead, +stem, +dir, +step, +octave,
+    +intervals, +alter, +flag, +type]),
   {debug(note, "note: ~p, ~p, ~p~n", [Pitch, Duration, Type])},
   duration(Duration),
   type(Type),
   notePitch(Pitch),
-  noteGraphique(NoteAttributes),
-  isChord.
+  noteGraphique(NoteAttributes).
 note(element(note, [], [Rest, Duration, Type])) -->
-  state2(+duration, +dots(0)),
+  states([+duration, +(dots, 0)]),
   duration(Duration),
   type(Type),
   rest(Rest).
 
-isChordCond(Stem, _, Notehead) :-
+chordCond(Stem, Notehead) :-
   ccxEtiqsCond(Notehead, 1, notehead),
   ccxLeftRight(Notehead, NoteLeft, NoteRight),
   ccxOrigin(Notehead, point(_, NoteheadY)),
@@ -261,11 +264,9 @@ stemNoteheadChord(StemLeft, StemRight, NoteLeft, NoteRight) :-
   ).
 
 
-isChord -->
-  state(stem, -chord(Notehead), isChordCond),
+chord -->
+  statep(chordCond, [o(stem), +(notehead, Notehead)]),
   selectp(Notehead).
-isChord -->
-  state2(+chord(noChord)).
 
 restCond(Rest, Duration, Division, Stafflines) :-
   ccxEtiqsCond(Rest, 1, 'rest'),
@@ -311,14 +312,14 @@ restVal(Val) -->
   flagVal(Val).
 
 rest(element(rest, [], [])) -->
-  state(duration, division, stafflines, restCond(Rest)),
+  statep(restCond(Rest), [o(duration), o(division), o(stafflines)]),
   termp(Rest).
 
 duration(element(duration, [], [DurationAtom])) -->
-  state(division, duration, dots, durationCond(DurationAtom)).
+  statep(durationCond(DurationAtom), [o(division), o(duration), o(dots)]).
 
 type(element(type, [], [Type])) -->
-  state(duration, division, typeCond(Type)).
+  statep(typeCond(Type), [o(duration), o(division)]).
 
 notePitch(element(pitch, [], Pitch)) -->
   {debug(note, "notePitch~n", [])},
@@ -326,13 +327,13 @@ notePitch(element(pitch, [], Pitch)) -->
   step(Step),
   alter(Alter),
   octave(Octave),
-  state(notehead, step, octave,
-        baseLine, baseStep, baseOctave,
-        intervals, stafflines,
-        pitchCondLine).
+  statep(
+    pitchCondLine,
+    [o(notehead), o(step), o(octave), o(baseLine), o(baseStep), o(baseOctave),
+     o(intervals), o(stafflines)]).
 
 step(element(step, [], [Step])) -->
-  state2(step(Step)).
+  state(o(step, Step)).
 
 alterCond(Element, Alter) :-
   delay(alterCond_(Element, Alter)).
@@ -351,14 +352,14 @@ alterCond_([element(alter, [], [AlterAtom])], Alter) :-
 alterCond_([], 0).
 
 alter(Alter) -->
-  state(alter, alterCond(Alter)).
+  statep(alterCond(Alter), [o(alter)]).
 
 octaveCond(OctaveAtom, Octave) :-
   Octave::integer(0, 9),
   delay(atom_number(OctaveAtom, Octave)).
 
 octave(element(octave, [], [Octave])) -->
-  state(octave, octaveCond(Octave)).
+  statep(octaveCond(Octave), [o(octave)]).
 
 delay:mode(system:append(ground, ground, _)).
 delay:mode(system:append(ground, _, ground)).
@@ -370,7 +371,7 @@ noteGraphique(Attributes) -->
   noteStem(Stem).
 
 notehead(Attributes) -->
-  state(notehead(Notehead), duration, division, noteheadCond),
+  statep(noteheadCond, [o(notehead, Notehead), o(duration), o(division)]),
   termp(Notehead),
   {debug(note, "notehead: ~p~n", [Notehead])},
   dots(Notehead, Dots),
@@ -380,12 +381,12 @@ notehead(Attributes) -->
 
 dots(Notehead, Dots) -->
   {debug(note, "dots: In ~p~n", [Dots])},
-  state(dots, duration, dotsCond(Dots)),
+  statep(dotsCond(Dots), [o(dots), o(duration)]),
   sequence2(dot, [_ | Dots], [Notehead | _]),
   {debug(note, "dots: Out ~p~n", [Dots])}.
 
 dot(_, element(dot, [], []), Ref, Dot) -->
-  state(numIntervals, stafflines, dotCond(Ref, Dot)),
+  statep(dotCond(Ref, Dot), [o(numIntervals), o(stafflines)]),
   termp(Dot).
 
 delay:mode(note:accidName(ground, _)).
@@ -465,12 +466,14 @@ accidentalCond(Accidental, AccidentalName, Notehead, Step, Octave,
                    AccidStepsOctaves, KeySteps, KeyAlter)).
 
 accidental([element(accidental, [], [AccidentalName])]) -->
-  state(notehead, step, octave,
-        alter, keySteps, keyAlter, -accidStepsOctaves,
-        accidentalCond(Accidental, AccidentalName)),
+  statep(
+    accidentalCond(Accidental, AccidentalName),
+    [o(notehead), o(step), o(octave), o(alter), o(keySteps), o(keyAlter),
+    -accidStepsOctaves]),
   termp(Accidental).
 accidental([]) -->
-  state(alter, step, octave, accidStepsOctaves, keySteps, keyAlter, noAccidAlter).
+  statep(noAccidAlter,
+         [o(alter), o(step), o(octave), o(accidStepsOctaves), o(keySteps), o(keyAlter)]).
 
 ledgerlineCond(LedgerLines, Notehead, Stafflines, Num, PitchIntervals) :-
   length(Stafflines, NumStafflines),
@@ -539,19 +542,26 @@ ledgerlineCond([], Notehead, Stafflines, Num, PitchIntervals) :-
   }.
 
 ledgerlines -->
-  state(notehead, stafflines, num, intervals, ledgerlineCond(LedgerLines)),
+  statep(ledgerlineCond(LedgerLines),
+        [o(notehead), o(stafflines), o(num), o(intervals)]),
   sequence(selectp, LedgerLines).
 
 noteStem([]) -->
-  state(duration, division, durationNoStem),
+  statep(durationNoStem, [o(duration), o(division)]),
   {debug(note, "noteStem: without stem~n", [])}.
 noteStem([element(stem, [], [Dir]) | Beams]) -->
-  state(chord(noChord), notehead, stem(Stem), duration, division, dir(Dir), noteheadStemCond),
+  statep(
+    noteheadStemCond,
+    [o(chord, false), o(notehead), o(stem, Stem), o(duration), o(division),
+     o(dir, Dir)]),
   verticalSeg(Stem),
   {debug(note, "noteStem: with stem~n", [])},
   noteStemEnd(Beams).
 noteStem([element(stem, [], [Dir]) | Beams]) -->
-  state(chord(Notehead), notehead(Notehead), stem, duration, division, dir(Dir), noteheadStemCond),
+  statep(
+    noteheadStemCond,
+    [o(chord, true), o(notehead), o(stem), o(duration), o(division),
+     o(dir, Dir)]),
   noteStemEnd(Beams).
 noteStemEnd(Beams) -->
   ( noteFlag(Beams)
@@ -559,13 +569,12 @@ noteStemEnd(Beams) -->
   | noFlagBeam(Beams)
   ).
 noteFlag([]) -->
-  state(stem, flag(Flag), duration, division, dir, stemFlagCond),
+  statep(stemFlagCond, [o(stem), o(flag, Flag), o(duration), o(division), o(dir)]),
   termp(Flag),
   {debug(note, "noteFlag: with flag~n", [])}.
 noteFlag([]) -->
-  state2(chord(Notehead), notehead(Notehead)),
-  {dif(Notehead, noChord)},
-  state(stem, flag, duration, division, dir, stemFlagCond),
+  state(o(chord, true)),
+  statep(stemFlagCond, [o(stem), o(flag), o(duration), o(division), o(dir)]),
   {debug(note, "noteFlag: with flag~n", [])}.
 
 stemBeamCond(State, Ref, Beam, Notehead, Stem, noBeam, BeamOut, Dir, Stafflines) :-
@@ -634,6 +643,8 @@ stemBeamRef(BeamRef, _StemY, Beam, Dir, Interline) :-
 
 beamsCond(Beams, Duration, Division) :-
   delay(length(Beams, NumBeams)),
+  beamsChordCond(NumBeams, Duration, Division).
+beamsChordCond(NumBeams, Duration, Division) :-
   NumBeams::integer(1, 10),
   { Duration / Division == 1 / (2 ** NumBeams) }.
 
@@ -642,25 +653,32 @@ beamsCond(Beams, Duration, Division) :-
 %   Specify the relationship between a note and its beams.
 %   For more information, see beam.md
 noteBeams(Beams) -->
-  state(duration, division, beamsCond(Beams)),
+  state(o(chord, false)),
+  statep(beamsCond(Beams), [o(duration), o(division)]),
   sequence2(noteBeam, [element(beam, [number='0'], [_]) | Beams], [noRef | _]).
+noteBeams([]) -->
+  state(o(chord, true)),
+  statep(beamsChordCond, [o(numBeams), o(duration), o(division)]).
 
-atom_inc(N, N1, BeamN) :-
+atom_inc(N, N1, beam-N1Int) :-
   atom_number(N, NInt),
   { N1Int == NInt + 1},
-  atom_number(N1, N1Int),
-  atom_concat(beam, N1, BeamN).
+  atom_number(N1, N1Int).
 
 noteBeam(element(beam, [number=N], [_]),
          element(beam, [number=N1], [State]), Ref, Beam) -->
-  { atom_inc(N, N1, BeamN) },
-  state(stem, -BeamN, dir, stafflines, stemNoBeamCond(State, Ref, Beam)).
+  { atom_inc(N, N1, beam-N1Int) },
+  state(+(numBeams, N1Int)),
+  statep(stemNoBeamCond(State, Ref, Beam), [o(stem), -(beam-N1Int), o(dir), o(stafflines)]).
 noteBeam(element(beam, [number=N], [_]),
          element(beam, [number=N1], [State]), Ref, Beam) -->
-  { atom_inc(N, N1, BeamN) },
-  state(notehead, stem, -BeamN, dir, stafflines, stemBeamCond(State, Ref, Beam)),
+  { atom_inc(N, N1, beam-N1Int) },
+  state(+(numBeams, N1Int)),
+  statep(stemBeamCond(State, Ref, Beam),
+         [o(notehead), o(stem), -(beam-N1Int), o(dir), o(stafflines)]),
   termp(Beam).
 
 noFlagBeam([]) -->
-  state(-flag, duration, division, durationNoFlagBeam),
+  states([+(flag, noFlag), +(numBeams, 0)]),
+  statep(durationNoFlagBeam, [o(duration), o(division)]),
   {debug(note, "noteFlag: without flag~n", [])}.

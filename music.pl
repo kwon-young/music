@@ -10,6 +10,7 @@
 :- use_module(geo).
 :- use_module(utils).
 :- use_module(epf).
+:- use_module(state).
 :- use_module(cond).
 :- use_module(epf_geo).
 :- use_module(note).
@@ -47,7 +48,8 @@ mainGen(XmlFile, SettingsFile, StructFile) :-
   print_term(Rest, _).
 mainGen(XmlFile, State, Struct, Rest) :-
   load_xml(XmlFile, Xml, [space(remove), number(integer)]),
-  phrase(music(Xml), [cursor(noEl), state([cursor(noEl) | State]) | Struct], Rest).
+  makeState(State),
+  phrase(music(Xml), [cursor(noEl), State | Struct], Rest).
 
 mainReco(StructFile, SettingsFile, XmlFile) :-
   load_settings(SettingsFile),
@@ -70,10 +72,29 @@ mainReco(StructFile, Struct, Rest, Xml) :-
   open(StructFile, read, S),
   read(S, Struct),
   close(S),
-  phrase(music(Xml), [cursor(noEl), state([cursor(noEl) | _]) | Struct], Rest).
+  makeState(State),
+  phrase(music(Xml), [cursor(noEl), State | Struct], Rest).
 
 music([element('score-partwise', [version='4.0'], [PartList, Part])]) -->
-  state2(keySteps([]), keyAlter(0), accidStepsOctaves([])),
+  states([
+    +(keySteps, []),
+    +(keyAlter, 0),
+    +(accidStepsOctaves, []),
+    +(stem, noStem),
+    +(chord, false),
+    +(beam-1, noBeam),
+    +(beam-2, noBeam),
+    +(beam-3, noBeam),
+    +(beam-4, noBeam),
+    +(beam-5, noBeam),
+    +(beam-6, noBeam),
+    +(beam-7, noBeam),
+    +(beam-8, noBeam),
+    +(beam-9, noBeam),
+    +(beam-10, noBeam),
+    +(beam-11, noBeam),
+    +(numBeams, 0)
+  ]),
   page,
   partList(PartId, PartList),
   part(PartId, Part).
@@ -85,7 +106,7 @@ pageCond(Page) :-
   ccxEtiqsCond(Page, 'page').
 
 page -->
-  state(page(Page), pageCond),
+  statep(pageCond, [o(page, Page)]),
   term(Page).
 
 partList(PartId, element('part-list', [], [ScorePart])) -->
@@ -98,18 +119,13 @@ part(PartId, element(part, [id=PartId], [Measure])) -->
   { PartId = 'P1' },
   measure(Measure),
   {debug(music, "part: Measure ~p~n", [Measure])},
-  state2(division(Div), duration(Dur), dots(Dots)),
-  {debug(music, "part: Div ~p~n", [Div])},
-  {debug(music, "part: Dur ~p~n", [Dur])},
-  {debug(music, "part: Dots ~p~n", [Dots])},
-  state(division, lower_bound).
+  statep(lower_bound, [o(division)]).
 
 measure(element(measure, [number='1'], [Attributes | Notes])) -->
   {debug(music, "measure: In ~p, ~p~n", [Attributes, Notes])},
   staff(),
   barline(),
   attributes(Attributes),
-  state2(beam1(noBeam), beam2(noBeam), beam3(noBeam), beam4(noBeam), chord(noChord)),
   sequence(find(note), Notes).
 
 aligned(Getter, Eps, Elements) :-
@@ -139,7 +155,7 @@ staffCond(Stafflines) :-
   interlineCond(Stafflines, segEndY, Interline, InterlineEps).
 
 staff() -->
-  state(stafflines(Stafflines), staffCond),
+  statep(staffCond, [o(stafflines, Stafflines)]),
   sequence(horizontalSeg, Stafflines).
 
 barlineCond(Barline, Stafflines) :-
@@ -156,7 +172,7 @@ barlineCond(Barline, Stafflines) :-
   pointDiffEps(BarlineEps, StafflineTopEnd, BarlineTopRight).
 
 barline() -->
-  state(barline(Barline), stafflines, barlineCond),
+  statep(barlineCond, [o(barline, Barline), o(stafflines)]),
   verticalSeg(Barline).
 
 attributes(element(attributes, [], [Div, Key, Time, Clef])) -->
@@ -171,7 +187,7 @@ divisionCond(DivAtom, Div) :-
   delay(atom_number(DivAtom, Div)).
 
 division(element(divisions, [], [DivAtom])) -->
-  state(division, divisionCond(DivAtom)).
+  statep(divisionCond(DivAtom), [o(division)]).
 
 clefCond([element(sign, [], ['G']), element(line, [], ['2'])],
          Clef, 2, BaseLine, 'G', 4, Stafflines) :-
@@ -181,7 +197,8 @@ clefCond([element(sign, [], ['G']), element(line, [], ['2'])],
 
 
 clef(element(clef, [], SignLine)) -->
-  state(clef(Clef), num, baseLine, baseStep, baseOctave, stafflines, clefCond(SignLine)),
+  statep(clefCond(SignLine),
+         [o(clef, Clef), o(num), o(baseLine), o(baseStep), o(baseOctave), o(stafflines)]),
   termp(Clef).
 
 time(element(time, [], [Beats, BeatType])) -->
@@ -193,7 +210,7 @@ beatsCond('4', Beats, Stafflines) :-
   ccxOnStaffline(Stafflines, Beats, 'timeSig4', 4, BeatsEps).
 
 beats(element(beats, [], [BeatsNumber])) -->
-  state(beats(Beats), stafflines, beatsCond(BeatsNumber)),
+  statep(beatsCond(BeatsNumber), [o(beats, Beats), o(stafflines)]),
   termp(Beats).
 
 beatTypeCond('4', BeatType, Stafflines) :-
@@ -201,7 +218,7 @@ beatTypeCond('4', BeatType, Stafflines) :-
   ccxOnStaffline(Stafflines, BeatType, 'timeSig4', 2, BeatsEps).
 
 beatType(element('beat-type', [], [BeatTypeNumber])) -->
-  state(beatType(BeatType), stafflines, beatTypeCond(BeatTypeNumber)),
+  statep(beatTypeCond(BeatTypeNumber), [o(beatType, BeatType), o(stafflines)]),
   termp(BeatType).
 
 delay:mode(music:fifthsAlter(ground, _)).
@@ -261,8 +278,9 @@ fifthsList_([NextFifth | FifthsList], Cpt, Fifth, Fifths, Incr) :-
 
   
 key(element(key, [], [element(fifths, [], [FifthsAtom])])) -->
-  state(fifths, +keySteps(Steps), +keyAlter, fifthsCond(Accidentals, FifthsAtom, FifthsList)),
-  state2(clef(Clef), baseStep(BaseStep), baseOctave(BaseOctave)),
+  statep(fifthsCond(Accidentals, FifthsAtom, FifthsList),
+         [o(fifths), +(keySteps, Steps), +keyAlter]),
+  states([o(clef, Clef), o(baseStep, BaseStep), o(baseOctave, BaseOctave)]),
   sequence2(fifths, FifthsList, [Clef | Accidentals], [BaseStep | Steps], [BaseOctave | _]).
 
 fifthCondEtiq(Fifth, Accidental) :-
@@ -347,6 +365,7 @@ fifthsIncr(Fifth, NextFifth) :-
 
 fifths(Fifth, NextFifth, Ref, Accidental, BaseStep, Step, BaseOctave, Octave) -->
   { fifthsIncr(Fifth, NextFifth) },
-  state(baseStep, num, stafflines,
-        fifthCond(Fifth, Ref, Accidental, BaseStep, Step, BaseOctave, Octave)),
+  statep(
+    fifthCond(Fifth, Ref, Accidental, BaseStep, Step, BaseOctave, Octave),
+    [o(baseStep), o(num), o(stafflines)]),
   termp(Accidental).
