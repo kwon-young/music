@@ -11,7 +11,7 @@
   <part id="P1">
     <measure number="1">
       <attributes>
-        <divisions>2</divisions>
+        <divisions>1</divisions>
         <key>
           <fifths>0</fifths>
         </key>
@@ -30,7 +30,7 @@
           <octave>4</octave>
         </pitch>
         <duration>1</duration>
-        <type>eighth</type>
+        <type>quarter</type>
         <stem>up</stem>
       </note>
       <note>
@@ -40,17 +40,17 @@
           <octave>4</octave>
         </pitch>
         <duration>1</duration>
-        <type>eighth</type>
+        <type>quarter</type>
         <stem>up</stem>
       </note>
       <note>
         <chord/>
         <pitch>
-          <step>E</step>
+          <step>D</step>
           <octave>4</octave>
         </pitch>
         <duration>1</duration>
-        <type>eighth</type>
+        <type>quarter</type>
         <stem>up</stem>
       </note>
     </measure>

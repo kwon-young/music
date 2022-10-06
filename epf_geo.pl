@@ -36,6 +36,10 @@ cursor(Goal, Term) -->
 :- meta_predicate find(1, ?, ?, ?).
 
 find(Goal, Arg) -->
+  selectchk(cursor(El)),
+  { dif(El, noEl) },
+  call(Goal, Arg).
+find(Goal, Arg) -->
   termp(Term),
   updatechk(cursor(noEl), cursor(Term)),
   call(Goal, Arg).

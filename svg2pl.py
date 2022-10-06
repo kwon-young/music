@@ -279,9 +279,12 @@ def parse_node(node, transforms, defs, scopes):
 
 def sort_elements(element):
     if isinstance(element, Seg):
-        return element.start.x
+        p = element.start
     elif isinstance(element, Ccx):
-        return element.origin.x
+        p = element.origin
+    x = p.x.value() if isinstance(p.x, Length) else p.x
+    y = p.y.value() if isinstance(p.y, Length) else p.y
+    return (x, y)
 
 
 def main(args):

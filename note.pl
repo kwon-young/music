@@ -92,23 +92,24 @@ durationNoStem(Duration, Division) :-
 
 noteheadStemCond(false, Notehead, Stem, Duration, Division, Dir) :-
   { Duration / Division =< 2 },
-  stemDirCond(Dir, Notehead, Stem).
+  delay(stemDirCond(Dir, Notehead, Stem)).
 noteheadStemCond(true, _Notehead, _Stem, Duration, Division, _Dir) :-
   { Duration / Division =< 2 }.
 
-stemDirCond(Dir, Notehead, Stem) :-
-  ccxLeftRight(Notehead, NoteLeft, NoteRight),
-  segCorner(v, right-bottom, Stem, point(StemBottom, _)),
-  segCorner(v, left-top, Stem, point(StemTop, _)),
-  debug(note, "stemDirCond ~p, ~p, ~p, ~p, ~p~n", [Dir, NoteRight, StemBottom, NoteLeft, StemTop]),
-  when(
-    (ground(Dir) ; ground(Notehead), ground(Stem)),
-    stemDir(Dir, NoteRight, StemBottom, NoteLeft, StemTop)).
-
-stemDir(up, NoteRight, StemBottom, _, _) :-
-  diffEps(0.1, NoteRight, StemBottom).
-stemDir(down, _, _, NoteLeft, StemTop) :-
-  diffEps(0.1, NoteLeft, StemTop).
+delay:mode(note:stemDirCond(ground, _, _)).
+delay:mode(note:stemDirCond(_, ground, ground)).
+stemDirCond(up, Notehead, Stem) :-
+  ccxRight(Notehead, NoteRight),
+  ccxOrigin(Notehead, point(_, NoteY)),
+  segCorner(v, right-bottom, Stem, point(StemRight, StemBottom)),
+  diffEps(0.1, NoteRight, StemRight),
+  diffEps(2.9, NoteY, StemBottom).
+stemDirCond(down, Notehead, Stem) :-
+  ccxLeft(Notehead, NoteLeft),
+  ccxOrigin(Notehead, point(_, NoteY)),
+  segCorner(v, left-top, Stem, point(StemLeft, StemTop)),
+  diffEps(0.1, NoteLeft, StemLeft),
+  diffEps(2.9, NoteY, StemTop).
 
 stemFlagCond(Stem, Flag, Duration, Division, Dir) :-
   debug(note, "stemFlagCond: ~p, ~p, ~p, ~p~n", [Stem, Flag, Duration, Dir]),

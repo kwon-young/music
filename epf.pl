@@ -1,7 +1,7 @@
 :- module(epf, [term//1, select//1, update//2,
                 termchk//1, selectchk//1, selectchk//2, updatechk//2,
                 add//1,
-                sequence2//3, sequence2//5]).
+                sequence2//2, sequence2//3, sequence2//5]).
 
 :- use_module(library(clpBNR)).
 
@@ -35,6 +35,16 @@ updatechk(In, Out) -->
 
 add(El), [El] -->
   { true }.
+
+:- meta_predicate sequence2(4, ?, ?, ?).
+
+sequence2(Element, [Start1 | List1]) -->
+  sequence2_(List1, Start1, Element).
+sequence2_([B1 | List1], A1, P) -->
+  call(P, A1, B1),
+  !,
+  sequence2_(List1, B1, P).
+sequence2_([], _, _) --> {true}.
 
 :- meta_predicate sequence2(6, ?, ?, ?, ?).
 
