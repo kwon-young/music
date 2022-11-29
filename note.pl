@@ -168,9 +168,9 @@ delay:mode(note:flagDir(_      , ground , _      , _      , _     )).
 delay:mode(note:flagDir(_      , _      , ground , ground , _     )).
 delay:mode(note:flagDir(_      , _      , ground , _      , ground)).
 flagDir(up, 'Up', FlagOrigin, StemTop, _) :-
-  pointDiffEps(0, FlagOrigin, StemTop).
+  pointDiffEps(0.01, FlagOrigin, StemTop).
 flagDir(down, 'Down', FlagOrigin, _, StemBottom) :-
-  pointDiffEps(0, FlagOrigin, StemBottom).
+  pointDiffEps(0.01, FlagOrigin, StemBottom).
 
 durationNoFlagBeam(Duration, Division) :-
   { Duration / Division >= 1 },
