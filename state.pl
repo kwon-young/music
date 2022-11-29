@@ -2,15 +2,14 @@
 
 :- use_module(library(rbtrees)).
 :- use_module(library(dcg/high_order)).
-:- use_module(epf).
 
 makeState(state(Tree)) :-
-  rb_new(Tree).
+  list_to_rbtree([cursor-noEl], Tree).
 
 state(Term) -->
   stateValues(Term, _).
-stateValues(Term, Values) -->
-  updatechk(state(StateIn), state(StateOut)),
+stateValues(Term, Values), [state(StateOut)] -->
+  [state(StateIn)],
   { state_(Term, Values, StateIn, StateOut) }.
 
 state_(o(Key), Values, StateIn, StateOut) :-

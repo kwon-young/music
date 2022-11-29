@@ -18,31 +18,28 @@ selectp(Term) -->
 
 :- meta_predicate cursor(3, ?, ?, ?).
 
-cursor(_Mod:term, Term) -->
-  updatechk(cursor(Cursor), cursor(noEl)),
-  {
-    dif(Cursor, noEl),
-    Term = Cursor
-  }.
-cursor(_Mod:select, Term) -->
-  updatechk(cursor(Cursor), cursor(Cursor)),
-  {
-    dif(Cursor, noEl),
-    Term = Cursor
-  }.
-cursor(Goal, Term) -->
-  selectchk(cursor(noEl)),
+cursor_state(term, Cursor) -->
+  state(-(cursor, Cursor, noEl)).
+cursor_state(select, Cursor) -->
+  state(o(cursor, Cursor)).
+cursor(Mod:Goal, Term) -->
+  cursor_state(Goal, Cursor),
+  cursor_(Cursor, Mod:Goal, Term).
+cursor_(cursor(Term), _, Term) -->
+  {true}.
+cursor_(noEl, Goal, Term) -->
   call(Goal, Term).
 
 :- meta_predicate find(1, ?, ?, ?).
 
 find(Goal, Arg) -->
-  selectchk(cursor(El)),
-  { dif(El, noEl) },
+  state(o(cursor, Cursor)),
+  find_(Cursor, Goal, Arg).
+find_(cursor(_), Goal, Arg) -->
   call(Goal, Arg).
-find(Goal, Arg) -->
-  termp(Term),
-  updatechk(cursor(noEl), cursor(Term)),
+find_(noEl, Goal, Arg) -->
+  term(Term),
+  state(+(cursor, cursor(Term))),
   call(Goal, Arg).
 
 horizontalSeg(Seg) -->

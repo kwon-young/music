@@ -5,23 +5,28 @@
 
 :- use_module(library(clpBNR)).
 
-term(El) -->
+term_(nochk, El) -->
   [El].
-term(El), [CurEl] -->
-  [CurEl],
-  term(El).
-termchk(El) -->
+term_(chk, El) -->
   [El], !.
-termchk(El), [CurEl] -->
+term_(Mode, El), [CurEl] -->
   [CurEl],
-  termchk(El).
+  term_(Mode, El).
+select_(Mode, El), [El] -->
+  term_(Mode, El).
 
-select_(Goal, El), [El] -->
-  call(Goal, El).
-select(El) -->
-  select_(term, El).
-selectchk(El) -->
-  select_(termchk, El).
+term(El), [State, StructOut] -->
+  [State, StructIn],
+  { phrase(term_(nochk, El), StructIn, StructOut) }.
+termchk(El), [State, StructOut] -->
+  [State, StructIn],
+  { phrase(term_(chk, El), StructIn, StructOut) }.
+select(El), [State, StructOut] -->
+  [State, StructIn],
+  { phrase(select_(nochk, El), StructIn, StructOut) }.
+selectchk(El), [State, StructOut] -->
+  [State, StructIn],
+  { phrase(select_(chk, El), StructIn, StructOut) }.
 selectchk(El1, El2) -->
   selectchk(El1),
   selectchk(El2).
@@ -65,3 +70,21 @@ sequence2_([B1 | L1], [B2 | L2], [B3 | L3], [B4 | L4], A1, A2, A3, A4, P) -->
   !,
   sequence2_(L1, L2, L3, L4, B1, B2, B3, B4, P).
 sequence2_([], [], [], [], _, _, _, _, _) --> {true}.
+
+:- begin_tests(epf).
+
+test('term') :-
+  findall(X, phrase(term(X), [_, [a]], [_, []]), Xs),
+  Xs == [a].
+
+test('termchk') :-
+  phrase(termchk(a), [_, [a]], [_, []]).
+
+test('select') :-
+  findall(X, phrase(select(X), [_, [a]], [_, [a]]), Xs),
+  Xs == [a].
+
+test('selectchk') :-
+  phrase(selectchk(a), [_, [a]], [_, [a]]).
+
+:- end_tests(epf).

@@ -49,7 +49,7 @@ mainGen(XmlFile, SettingsFile, StructFile) :-
 mainGen(XmlFile, State, Struct, Rest) :-
   load_xml(XmlFile, Xml, [space(remove), number(integer)]),
   makeState(State),
-  phrase(music(Xml), [cursor(noEl), State | Struct], Rest).
+  phrase(music(Xml), [State, Struct], Rest).
 
 mainReco(StructFile, SettingsFile, XmlFile) :-
   load_settings(SettingsFile),
@@ -73,7 +73,7 @@ mainReco(StructFile, Struct, Rest, Xml) :-
   read(S, Struct),
   close(S),
   makeState(State),
-  phrase(music(Xml), [cursor(noEl), State | Struct], Rest).
+  phrase(music(Xml), [State, Struct], Rest).
 
 music([element('score-partwise', [version='4.0'], [PartList, Part])]) -->
   states([
