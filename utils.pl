@@ -11,6 +11,12 @@ delay:mode(system:atom_number(_, ground)).
 delay:mode(system:length(ground, _)).
 delay:mode(system:length(_, ground)).
 
+delay:mode(system:compound_name_arity(nonvar, _, _)).
+delay:mode(system:compound_name_arity(_, ground, nonvar)).
+
+delay:mode(system:compound_name_arguments(nonvar, _, _)).
+delay:mode(system:compound_name_arguments(_, ground, nonvar)).
+
 :- meta_predicate convlist2(3, ?, ?).
 :- meta_predicate maplist2(2, ?).
 :- meta_predicate maplist2(4, ?, ?).

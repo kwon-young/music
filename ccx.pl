@@ -1,5 +1,6 @@
 :- module(
   ccx, [
+    ccx/1,
     ccxEtiqs/2, ccxOrigin/2, ccxLeftTop/2, ccxRightBottom/2,
     ccxLeftTopRightBottom/3, ccxTopBottom/3, ccxLeftRight/3,
     ccxRight/2, ccxLeft/2, ccxTop/2, ccxBottom/2, ccxWidth/2, ccxHeight/2
@@ -7,6 +8,13 @@
 
 :- use_module(library(clpBNR)).
 
+ccx(Ccx) :-
+  ccxArgs(Ccx, [point(X1, Y1), point(X2, Y2), _, point(X, Y)]),
+  [X, Y, X1, Y1, X2, Y2]::real,
+  {
+    X1 =< X2,
+    Y1 =< Y2
+  }.
 ccxArgs(ccx(LeftTop, RightBottom, Etiqs, Origin), [LeftTop, RightBottom, Etiqs, Origin]).
 
 ccxEtiqs(Ccx, Etiqs) :-

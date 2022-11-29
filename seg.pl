@@ -1,11 +1,11 @@
 :- module(
   seg, [
+    seg/1,
     segArgs/2,
     segStart/2, segStartX/2, segStartY/2,
     segEnd/2, segEndX/2, segEndY/2,
     segStartEnd/3,
     segThickness/2,
-    segCorner/4,
     segHV/5,
     segTop/3,
     segBottom/3,
@@ -127,6 +127,11 @@ segWidth(v, Seg, Width) :-
   segLeft(v, Seg, Left),
   segRight(v, Seg, Right),
   { Width == Right - Left }.
+
+seg(Seg) :-
+  segArgs(Seg, [point(X1, Y1), point(X2, Y2), _, Thickness]),
+  [X1, Y1, X2, Y2, Thickness]::real,
+  { (X1 =< X2) or (Y1 =< Y2) }.
 
 :- begin_tests(seg).
 

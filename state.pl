@@ -41,16 +41,24 @@ sequence3_([], [], _Goal) -->
 states(KeyValues) -->
   sequence(state, KeyValues).
 
+:- meta_predicate add_args(:, ?, ?).
+
+add_args(delay:delay(Goal), Args, delay:delay(NewGoal)) :-
+  !,
+  add_args(Goal, Args, NewGoal).
+add_args(Mod:Goal, Args, Mod:NewGoal) :-
+  Goal =.. GoalList,
+  append(GoalList, Args, NewGoalList),
+  NewGoal =.. NewGoalList.
+
 :- meta_predicate statep(:, ?, ?, ?).
 
-statep(Mod:Goal, KeyValues) -->
+statep(Goal, KeyValues) -->
   sequence3(stateValues, KeyValues, ListValues),
   {
     append(ListValues, Values),
-    Goal =.. GoalList,
-    append(GoalList, Values, NewGoalList),
-    NewGoal =.. NewGoalList,
-    call(Mod:NewGoal)
+    add_args(Goal, Values, NewGoal),
+    call(NewGoal)
   }.
 
 :- begin_tests(state).
@@ -110,5 +118,11 @@ test('statep(Goal, [-(key1)])') :-
   rb_insert_new(T0, key1, value1, T1),
   phrase(statep([_OldValue, _NewValue]>>(true), [-(key1)]),
          [state(T1)], [state(_T2)]).
+
+:- use_module(library(delay)).
+
+test('statep_delay') :-
+  list_to_rbtree([key1-value1], T0),
+  phrase(statep(delay:delay(atom_codes), [-key1]), [state(T0)], [state(_)]).
 
 :- end_tests(state).

@@ -5,8 +5,10 @@
   ]).
 
 :- use_module(library(clpBNR)).
+:- use_module(library(delay)).
 :- use_module(seg).
 :- use_module(ccx).
+:- use_module(utils).
 
 diffEps(Eps, A, B) :-
   debug(diffEps, "In Eps ~p, A ~p, B ~p~n", [Eps, A, B]),
@@ -34,15 +36,17 @@ boxArgs(box(LeftTop, RightBottom), [LeftTop, RightBottom]).
 boxLeftTopRightBottom(Box, LeftTop, RightBottom) :-
   boxArgs(Box, [LeftTop, RightBottom]).
 
+delay:mode(geo:contour(nonvar, _)).
 contour(El, Box) :-
-  when(nonvar(El), contour_(El, Box)).
-contour_(Seg, Box) :-
+  delay(compound_name_arity(El, Name, _)),
+  contour_(Name, El, Box).
+contour_(seg, Seg, Box) :-
   segStartEnd(Seg, Start, End),
-  contour_(Start, End, Box).
-contour_(Ccx, Box) :-
+  contour(Start, End, Box).
+contour_(ccx, Ccx, Box) :-
   ccxLeftTopRightBottom(Ccx, LeftTop, RightBottom),
-  contour_(LeftTop, RightBottom, Box).
-contour_(point(X1, Y1), point(X2, Y2), Box) :-
+  contour(LeftTop, RightBottom, Box).
+contour(point(X1, Y1), point(X2, Y2), Box) :-
   [X1, Y1, X2, Y2, Xmin, Ymin, Xmax, Ymax]::real,
   {
     min(X1, X2) == Xmin,
@@ -79,6 +83,7 @@ vdistanceAtX(X, Seg1, Seg2, Distance) :-
   segYAtX(Seg2, Y2, X),
   {Distance == Y2 - Y1}.
 
+delay:mode(geo:inside(nonvar, nonvar)).
 inside(Term, Container) :-
   contour(Term, box(P1, P2)),
   contour(Container, Box),
@@ -89,3 +94,15 @@ segLength(Seg, Length) :-
   segStart(Seg, Start),
   segEnd(Seg, End),
   pointDiffEps(Length, Start, End).
+
+:- begin_tests(ccx).
+
+contour_gen(_, _).
+contour_gen(Seg, _) :-
+  seg(Seg).
+contour_gen(Ccx, _) :-
+  ccx(Ccx).
+test('contour', [forall(contour_gen(Container, Box))]) :-
+  delay(contour(Container, Box)).
+
+:- end_tests(ccx).
