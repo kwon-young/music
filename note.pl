@@ -101,13 +101,13 @@ delay:mode(note:stemDirCond(_, ground, ground)).
 stemDirCond(up, Notehead, Stem) :-
   ccxRight(Notehead, NoteRight),
   ccxOrigin(Notehead, point(_, NoteY)),
-  segCorner(v, right-bottom, Stem, point(StemRight, StemBottom)),
+  segHV(v, right, bottom, Stem, point(StemRight, StemBottom)),
   diffEps(0.1, NoteRight, StemRight),
   diffEps(2.9, NoteY, StemBottom).
 stemDirCond(down, Notehead, Stem) :-
   ccxLeft(Notehead, NoteLeft),
   ccxOrigin(Notehead, point(_, NoteY)),
-  segCorner(v, left-top, Stem, point(StemLeft, StemTop)),
+  segHV(v, left, top, Stem, point(StemLeft, StemTop)),
   diffEps(0.1, NoteLeft, StemLeft),
   diffEps(2.9, NoteY, StemTop).
 
@@ -159,8 +159,8 @@ flagDuration(FlagVal, Duration, Division) :-
 
 flagDirCond(Dir, FlagDir, Stem, Flag) :-
   ccxOrigin(Flag, FlagOrigin),
-  segCorner(v, left-top, Stem, StemTop),
-  segCorner(v, left-bottom, Stem, StemBottom),
+  segHV(v, left, top, Stem, StemTop),
+  segHV(v, left, bottom, Stem, StemBottom),
   delay(flagDir(Dir, FlagDir, FlagOrigin, StemTop, StemBottom)).
 
 delay:mode(note:flagDir(ground , _      , _      , _      , _     )).
@@ -588,9 +588,9 @@ stemNoBeamCond(State, Ref, Beam, Stem, BeamIn, BeamOut, Dir, Stafflines) :-
   stemBeamRef(Ref, StemY, Beam, Dir, Interline).
 
 stemBeamDir(up, H, Stem, StemTop) :-
-  segCorner(v, H-top, Stem, StemTop).
+  segHV(v, H, top, Stem, StemTop).
 stemBeamDir(down, H, Stem, StemBottom) :-
-  segCorner(v, H-bottom, Stem, StemBottom).
+  segHV(v, H, bottom, Stem, StemBottom).
 
 delay:mode(note:stemBeamState(
               ground,         _,        _,    _,     _,     _,      _,    _)).

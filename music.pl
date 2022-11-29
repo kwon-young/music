@@ -163,12 +163,12 @@ barlineCond(Barline, Stafflines) :-
   % bottom right corner
   Stafflines = [StafflineBottom | _],
   segEnd(StafflineBottom, StafflineBottomEnd),
-  segCorner(v, right-bottom, Barline, BarlineBottomRight),
+  segHV(v, right, bottom, Barline, BarlineBottomRight),
   pointDiffEps(BarlineEps, StafflineBottomEnd, BarlineBottomRight),
   % top right corner
   last(Stafflines, StafflineTop),
   segEnd(StafflineTop, StafflineTopEnd),
-  segCorner(v, right-top, Barline, BarlineTopRight),
+  segHV(v, right, top, Barline, BarlineTopRight),
   pointDiffEps(BarlineEps, StafflineTopEnd, BarlineTopRight).
 
 barline() -->
