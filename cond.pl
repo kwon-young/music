@@ -8,10 +8,10 @@
 
 ccxEtiqsCond(Ccx, Etiq) :-
   ccxEtiqs(Ccx, Etiqs),
-  nth0(0, Etiqs, Etiq).
+  nth0(0, Etiqs, _-Etiq).
 ccxEtiqsCond(Ccx, N, Etiq) :-
   ccxEtiqs(Ccx, Etiqs),
-  nth0(N, Etiqs, Etiq).
+  nth0(N, Etiqs, _-Etiq).
 
 ccxOnSegCond(Seg, Ccx, Eps) :-
   ccxOrigin(Ccx, point(OriginX, OriginY)),

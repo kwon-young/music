@@ -1,10 +1,10 @@
-:- module(state, [makeState/1, state//1, states//1, statep//2]).
+:- module(state, [makeState/2, state//1, states//1, statep//2]).
 
 :- use_module(library(rbtrees)).
 :- use_module(library(dcg/high_order)).
 
-makeState(state(Tree)) :-
-  list_to_rbtree([cursor-noEl], Tree).
+makeState(state(Tree), List) :-
+  list_to_rbtree([cursor-noEl | List], Tree).
 
 state(Term) -->
   stateValues(Term, _).

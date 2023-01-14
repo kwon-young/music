@@ -5,6 +5,7 @@
     segStart/2, segStartX/2, segStartY/2,
     segEnd/2, segEndX/2, segEndY/2,
     segStartEnd/3,
+    segEtiqs/2,
     segThickness/2,
     segHV/5,
     segTop/3,
@@ -39,6 +40,9 @@ segEndY(Seg, Y) :-
 
 segStartEnd(Seg, Start, End) :-
   segArgs(Seg, [Start, End | _]).
+
+segEtiqs(Seg, Etiqs) :-
+  segArgs(Seg, [_, _, Etiqs | _]).
 
 segThickness(Seg, Thickness) :-
   segArgs(Seg, [_, _, _, Thickness]).

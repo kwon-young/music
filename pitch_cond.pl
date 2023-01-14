@@ -1,4 +1,4 @@
-:- module(pitch_cond, [pitchCond/8, pitchCondLine/8, pitchCondCcx/8,
+:- module(pitch_cond, [pitchCond/9, pitchCondLine/9, pitchCondCcx/9,
                   numIntervals/5, inRange/6]).
 
 :- use_module(library(delay)).
@@ -38,32 +38,29 @@ inRange(S1, O1, S2, O2, S, O) :-
 
 pitchCondLine(Notehead, Step, Octave,
               BaseLine, BaseStep, BaseOctave,
-              PitchIntervals, Stafflines) :-
+              PitchIntervals, HalfInterline, Eps) :-
   ccxOrigin(Notehead, point(NoteX, _)),
   segYAtX(BaseLine, BaseLineY, NoteX),
   pitchCond(Notehead, Step, Octave,
             BaseLineY, BaseStep, BaseOctave,
-            PitchIntervals, Stafflines).
+            PitchIntervals, HalfInterline, Eps).
 pitchCondCcx(Notehead, Step, Octave,
              BaseCcx, BaseStep, BaseOctave,
-             PitchIntervals, Stafflines) :-
+             PitchIntervals, Interline, Eps) :-
   ccxOrigin(BaseCcx, point(_, BaseY)),
   pitchCond(Notehead, Step, Octave,
             BaseY, BaseStep, BaseOctave,
-            PitchIntervals, Stafflines).
+            PitchIntervals, Interline, Eps).
 pitchCond(Notehead, Step, Octave,
           BaseY, BaseStep, BaseOctave,
-          PitchIntervals, Stafflines) :-
-  ccxOrigin(Notehead, point(NoteX, NoteY)),
-  interlineAtX(Stafflines, NoteX, Interline),
-  debug(note, "notePitchCond Interline ~p~n", [Interline]),
+          PitchIntervals, HalfInterline, Eps) :-
+  ccxOrigin(Notehead, point(_NoteX, NoteY)),
   {
-    HalfInterline == Interline / 2,
     NoteOffset == NoteY - BaseY,
     GraphicalIntervals == NoteOffset / HalfInterline
   },
   debug(note, "GraphicalIntervals: ~p~n", [GraphicalIntervals]),
-  diffEps(0, GraphicalIntervals, PitchIntervals),
+  diffEps(Eps, GraphicalIntervals, PitchIntervals),
   numIntervals(PitchIntervals, Step, Octave, BaseStep, BaseOctave),
   debug(note, "PitchIntervals: ~p~n", [PitchIntervals]).
 

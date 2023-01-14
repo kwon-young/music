@@ -11,6 +11,8 @@ delay:mode(system:atom_number(_, ground)).
 delay:mode(system:length(ground, _)).
 delay:mode(system:length(_, ground)).
 
+delay:mode(system:memberchk(_, list)).
+
 delay:mode(system:compound_name_arity(nonvar, _, _)).
 delay:mode(system:compound_name_arity(_, ground, nonvar)).
 

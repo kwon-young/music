@@ -1,4 +1,5 @@
 import argparse
+from typing import Optional
 from pathlib import Path as PLPath
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
@@ -17,39 +18,53 @@ def make_args():
     return args
 
 
-def pointtopl(point: Point):
+def pointtopl(point: Optional[Point]):
     if point:
         return f"point({point.x}, {point.y})"
     else:
         return "_"
 
 
-def listtopl(els):
-    return "[\n\t" + ",\n\t".join([x.topl() for x in els]) + "\n]."
+def listtopl(els, sep=' ', end=''):
+    return f"[{sep}" + f",{sep}".join([x.topl() for x in els]) + f"{end}]"
+
+
+@dataclass
+class IdClass:
+    id: Optional[str]
+    c: str
+
+    def topl(self):
+        if self.id:
+            id = f"'{self.id}'"
+        else:
+            id = '_'
+        return f"{id}-'{self.c}'"
 
 
 @dataclass
 class Seg:
     start: Point
     end: Point
-    etiq: list[str]
+    etiq: list
     thickness: float
 
     def topl(self):
         return f"seg({pointtopl(self.start)}, {pointtopl(self.end)}, " \
-                f"{self.etiq[::-1]}, {self.thickness})"
+                f"{listtopl(self.etiq[::-1])}, {self.thickness})"
 
 
 @dataclass
 class Ccx:
     lefttop: Point
     rightbottom: Point
-    etiq: list[str]
+    etiq: list[tuple[Optional[str], str]]
     origin: Point = None
 
     def topl(self):
         return f"ccx({pointtopl(self.lefttop)}, " \
-                f"{pointtopl(self.rightbottom)}, {self.etiq[::-1]}, " \
+               f"{pointtopl(self.rightbottom)}, " \
+               f"{listtopl(self.etiq[::-1])}, " \
                f"{pointtopl(self.origin)})"
 
 
@@ -133,7 +148,7 @@ def parse_svgnode(node, transforms, defs, scopes):
     res = None
     if w := node.attrib.get('width'):
         if h := node.attrib.get('height'):
-            scopes.append('page')
+            scopes.append(IdClass(None, 'page'))
             width = Length(w)
             height = Length(h)
             transforms.append(Rect(0, 0, width, height))
@@ -156,7 +171,7 @@ def parse_g(node, transforms, defs, scopes):
     if transform := node.attrib.get('transform'):
         transforms.append(Matrix(transform))
     if gclass := node.attrib.get('class'):
-        scopes.append(gclass)
+        scopes.append(IdClass(node.attrib.get('id', None), gclass))
 
 
 def seg_swap(direction, start, end):
@@ -174,11 +189,11 @@ def parse_path(node, transforms, defs, scopes):
     p.reify()
     h_lines = ['staff', 'ledgerLines below', 'ledgerLines above']
     v_lines = ['barLine']
-    if scopes and scopes[-1] in h_lines + v_lines:
+    if scopes and scopes[-1].c in h_lines + v_lines:
         points = [point for point in p.as_points()]
-        if scopes[-1] in h_lines:
+        if scopes[-1].c in h_lines:
             start, end = seg_swap('h', points[0], points[-1])
-        elif scopes[-1] in v_lines:
+        elif scopes[-1].c in v_lines:
             start, end = seg_swap('v', points[0], points[-1])
         return Seg(start, end, scopes.copy(), p.stroke_width)
     else:
@@ -201,7 +216,7 @@ def parse_use(node, transforms, defs, scopes):
     [ccx] = parse_node(symbol, transforms, defs, scopes)
     ccx.origin = origin
     glyphcode = href.split('-')[0]
-    ccx.etiq.extend(scopes.copy() + [glyphcode])
+    ccx.etiq.extend(scopes.copy() + [IdClass(None, glyphcode)])
     return [ccx]
 
 
@@ -216,7 +231,7 @@ def parse_rect(node, transforms, defs, scopes):
     r = Rect(**node.attrib)
     r = apply_transforms(r, transforms)
     r.reify()
-    if scopes[-1] == 'stem':
+    if scopes[-1].c == 'stem':
         x, y, w, h = r.x, r.y, r.width, r.height
         x = x + (w / 2)
         return Seg(Point(x, y), Point(x, y + h), scopes.copy(), w)
@@ -226,7 +241,7 @@ def parse_ellipse(node, transforms, defs, scopes):
     e = Ellipse(**node.attrib)
     e = apply_transforms(e, transforms)
     e.reify()
-    if scopes[-1] == 'dots':
+    if scopes[-1].c == 'dots':
         left, top, right, bottom = e.bbox()
         return Ccx(Point(left, top), Point(right, bottom), scopes.copy(),
                    Point(e.cx, e.cy))
@@ -236,7 +251,7 @@ def parse_polygon(node, transforms, defs, scopes):
     r = Polygon(**node.attrib)
     r = apply_transforms(r, transforms)
     r.reify()
-    if scopes[-1] == 'beam':
+    if scopes[-1].c == 'beam':
         lefttop, righttop, rightbottom, leftbottom = r.points
         p1 = Point((lefttop.x + leftbottom.x) / 2,
                    (lefttop.y + leftbottom.y) / 2)
@@ -287,25 +302,31 @@ def sort_elements(element):
     return (x, y)
 
 
-def main(args):
-    tree = ET.parse(args.svg)
-    root = tree.getroot()
-    res = parse_node(root, [], {}, [])
-    with args.glyphnames.open() as f:
+def load_glyphnames(path: Path) -> dict[str, str]:
+    with path.open() as f:
         glyphnames = json.load(f)
     glyphnames_inv = {
         v['codepoint']: {'name': k, 'description': v['description']}
         for k, v in glyphnames.items()
     }
+    return glyphnames_inv
+
+
+def main(args):
+    tree = ET.parse(args.svg)
+    root = tree.getroot()
+    res = parse_node(root, [], {}, [])
+    glyphnames_inv = load_glyphnames(args.glyphnames)
     for el in res:
         for i in range(len(el.etiq)):
-            if el.etiq[i].startswith('#'):
-                codepoint = el.etiq[i].replace('#', 'U+')
-                el.etiq[i] = glyphnames_inv[codepoint]['name']
+            if el.etiq[i].c.startswith('#'):
+                codepoint = el.etiq[i].c.replace('#', 'U+')
+                el.etiq[i] = IdClass(el.etiq[i].id,
+                                     glyphnames_inv[codepoint]['name'])
     res.sort(key=sort_elements)
     __import__('pprint').pprint(res)
     with args.output.open('w') as f:
-        f.write(listtopl(res))
+        f.write(listtopl(res, '\n\t', '\n') + '.')
     return
 
 
