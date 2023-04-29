@@ -18,19 +18,6 @@
 
 :- multifile delay:mode/1.
 
-:- use_module(library(settings)).
-
-:- setting(stemEW_eps, number, 0.05, 'stem up/down horizontal note jonction threshold').
-:- setting(stemUp, list(pair), [
-  'noteheadHalf'-0.16,
-  'noteheadBlack'-0.16
-  ], 'stem up vertical note jonction').
-:- setting(stemDown, list(pair), [
-  'noteheadHalf'-(-0.14),
-  'noteheadBlack'-(-0.16)
-  ], 'stem down vertical note jonction').
-:- setting(stemNS_eps, number, 0.01, 'stem up/down vertical note jonction threshold').
-
 durationCond(DurationAtom, Div, NoteheadDuration, DotsDuration) :-
   delay(atom_number(DurationAtom, Duration)),
   [Duration, Div, NoteheadDuration]::integer(1, _),
@@ -90,34 +77,34 @@ noteheadCond(Notehead, Duration, Division) :-
 durationNoStem(Duration, Division) :-
   { Duration / Division >= 4 }.
 
-noteheadStemCond(false, Notehead, Stem, Duration, Division, Dir) :-
+noteheadStemCond(false, Notehead, Stem, Duration, Division, Dir, NoteStem, Eps) :-
   { Duration / Division =< 2 },
-  delay(stemDirCond(Dir, Notehead, Stem)).
-noteheadStemCond(true, _Notehead, _Stem, Duration, Division, _Dir) :-
+  delay(stemDirCond(Dir, Notehead, Stem, NoteStem, Eps)).
+noteheadStemCond(true, _Notehead, _Stem, Duration, Division, _Dir, _NoteStem, _Eps) :-
   { Duration / Division =< 2 }.
 
-delay:mode(note:stemDirCond(ground, _, _)).
-delay:mode(note:stemDirCond(_, ground, ground)).
-stemDirCond(up, Notehead, Stem) :-
+delay:mode(note:stemDirCond(ground, _, _, _, _)).
+delay:mode(note:stemDirCond(_, ground, ground, _, _)).
+stemDirCond(up, Notehead, Stem, NoteStem, Eps) :-
   ccxRight(Notehead, NoteRight),
   ccxOrigin(Notehead, point(_, NoteY)),
   segHV(v, right, bottom, Stem, point(StemRight, StemBottom)),
-  diffEps(0.1, NoteRight, StemRight),
-  diffEps(2.9, NoteY, StemBottom).
-stemDirCond(down, Notehead, Stem) :-
+  eps(Eps, NoteRight, StemRight),
+  { NoteY == StemBottom + NoteStem + Eps}.
+stemDirCond(down, Notehead, Stem, NoteStem, Eps) :-
   ccxLeft(Notehead, NoteLeft),
   ccxOrigin(Notehead, point(_, NoteY)),
   segHV(v, left, top, Stem, point(StemLeft, StemTop)),
-  diffEps(0.1, NoteLeft, StemLeft),
-  diffEps(2.9, NoteY, StemTop).
+  eps(Eps, NoteLeft, StemLeft),
+  { StemTop == NoteY + NoteStem + Eps}.
 
-stemFlagCond(Stem, Flag, Duration, Division, Dir) :-
+stemFlagCond(Stem, Flag, Duration, Division, Dir, Eps) :-
   debug(note, "stemFlagCond: ~p, ~p, ~p, ~p~n", [Stem, Flag, Duration, Dir]),
   { Duration / Division =< 1r2 },
   ccxEtiqsCond(Flag, FlagEtiq),
   flagValDir(FlagEtiq, Val, FlagDir),
   flagDuration(Val, Duration, Division),
-  flagDirCond(Dir, FlagDir, Stem, Flag).
+  flagDirCond(Dir, FlagDir, Stem, Flag, Eps).
 
 delay:mode(system:atom_concat(ground , ground , _)).
 delay:mode(system:atom_concat(_      , _      , ground)).
@@ -157,51 +144,49 @@ flagDuration(FlagVal, Duration, Division) :-
   { Duration / Division == 4 / FlagVal },
   debug(note, "flagDuration: ~p, ~p~n", [FlagVal, Duration]).
 
-flagDirCond(Dir, FlagDir, Stem, Flag) :-
+flagDirCond(Dir, FlagDir, Stem, Flag, Eps) :-
   ccxOrigin(Flag, FlagOrigin),
   segHV(v, left, top, Stem, StemTop),
   segHV(v, left, bottom, Stem, StemBottom),
-  delay(flagDir(Dir, FlagDir, FlagOrigin, StemTop, StemBottom)).
+  delay(flagDir(Dir, FlagDir, FlagOrigin, StemTop, StemBottom, Eps)).
 
 delay:mode(note:flagDir(ground , _      , _      , _      , _     )).
 delay:mode(note:flagDir(_      , ground , _      , _      , _     )).
 delay:mode(note:flagDir(_      , _      , ground , ground , _     )).
 delay:mode(note:flagDir(_      , _      , ground , _      , ground)).
-flagDir(up, 'Up', FlagOrigin, StemTop, _) :-
-  pointDiffEps(0.01, FlagOrigin, StemTop).
-flagDir(down, 'Down', FlagOrigin, _, StemBottom) :-
-  pointDiffEps(0.01, FlagOrigin, StemBottom).
+flagDir(up, 'Up', FlagOrigin, StemTop, _, Eps) :-
+  eps(p, Eps, FlagOrigin, StemTop).
+flagDir(down, 'Down', FlagOrigin, _, StemBottom, Eps) :-
+  eps(p, Eps, FlagOrigin, StemBottom).
 
 durationNoFlagBeam(Duration, Division) :-
   { Duration / Division >= 1 },
   debug(note, "Division: ~p~n", [Division]).
 
-dotCond(Ref, Dot, NumIntervals, Stafflines) :-
+dotCond(Ref, Dot, NumIntervals, Interline, Eps) :-
   ccxEtiqsCond(Ref, 1, 'notehead'),
   ccxRight(Ref, NoteX),
   ccxOrigin(Ref, point(_, NoteY)),
-  interlineAtX(Stafflines, NoteX, Interline),
   { PredX == NoteX + 1r2 * Interline },
-  dotCondStart(NumIntervals, PredX, NoteY, Dot, Interline).
-dotCond(Ref, Dot, _, Stafflines) :-
+  dotCondStart(NumIntervals, PredX, NoteY, Dot, Interline, Eps).
+dotCond(Ref, Dot, _, Interline, Eps) :-
   ccxEtiqsCond(Ref, 'dots'),
   ccxOrigin(Ref, point(RefX, RefY)),
-  interlineAtX(Stafflines, RefX, Interline),
   { PredX == RefX + 3r4 * Interline },
-  dotCond_(point(PredX, RefY), Dot).
-dotCondStart(NumIntervals, PredX, NoteY, Dot, Interline) :-
+  dotCond_(point(PredX, RefY), Dot, Eps).
+dotCondStart(NumIntervals, PredX, NoteY, Dot, Interline, Eps) :-
   N::integer,
   { NumIntervals == 2 * N },
   { PredY == NoteY - 1r2 * Interline },
-  dotCond_(point(PredX, PredY), Dot).
-dotCondStart(NumIntervals, PredX, NoteY, Dot, _) :-
+  dotCond_(point(PredX, PredY), Dot, Eps).
+dotCondStart(NumIntervals, PredX, NoteY, Dot, _, Eps) :-
   N::integer,
   { NumIntervals == 2 * N + 1 },
-  dotCond_(point(PredX, NoteY), Dot).
-dotCond_(Point, Dot) :-
+  dotCond_(point(PredX, NoteY), Dot, Eps).
+dotCond_(Point, Dot, Eps) :-
   ccxEtiqsCond(Dot, 'dots'),
   ccxOrigin(Dot, DotCenter),
-  pointDiffEps(0.01, DotCenter, Point).
+  eps(p, Eps, DotCenter, Point).
 
 dotsCond(Dots, DotsDur, Dur) :-
   delay(dotsDuration(Dots, DotsDur, Dur)).
@@ -217,7 +202,7 @@ dotsDuration([_ | Dots], DotsDur, Dur) :-
   },
   dotsDuration(Dots, NextDotsDur, HalfDur).
 
-note(element(note, [], [element(chord, [], []), Pitch, Duration, Type | NoteAttributes])) -->
+note(element(note, [id=], [element(chord, [], []), Pitch, Duration, Type | NoteAttributes])) -->
   chord,
   % does not renew stem, dir, flag
   states([
@@ -241,7 +226,7 @@ note(element(note, [], [Rest, Duration, Type])) -->
   type(Type),
   rest(Rest).
 
-chordCond(Stem, Notehead) :-
+chordCond(Stem, Notehead, Eps) :-
   ccxEtiqsCond(Notehead, 1, notehead),
   ccxLeftRight(Notehead, NoteLeft, NoteRight),
   ccxOrigin(Notehead, point(_, NoteheadY)),
@@ -255,55 +240,56 @@ chordCond(Stem, Notehead) :-
     StemLeft == StemX - StemThickness / 2,
     StemRight == StemX + StemThickness / 2
   },
-  when(ground(Notehead), stemNoteheadChord(StemLeft, StemRight, NoteLeft, NoteRight)).
+  when(ground(Notehead), stemNoteheadChord(StemLeft, StemRight, NoteLeft, NoteRight,
+                                           Eps)).
 
-stemNoteheadChord(StemLeft, StemRight, NoteLeft, NoteRight) :-
+stemNoteheadChord(StemLeft, StemRight, NoteLeft, NoteRight, Eps) :-
   debug(note, "stemNoteheadChord: ~p, ~p~n", [StemLeft, StemRight]),
   (
-    diffEps(0.1, StemLeft, NoteLeft)
-  ; diffEps(0.1, StemRight, NoteRight)
+    eps(Eps, StemLeft, NoteLeft)
+  ; eps(Eps, StemRight, NoteRight)
   ).
 
 
 chord -->
-  statep(chordCond, [o(stem), +(notehead, Notehead)]),
+  statep(chordCond, [o(stem), +(notehead, Notehead), o(eps)]),
   selectp(Notehead).
 
-restCond(Rest, Duration, Division, Stafflines) :-
+restCond(Rest, Duration, Division, Stafflines, Eps) :-
   ccxEtiqsCond(Rest, 1, 'rest'),
-  delay(restCond_(Rest, Duration, Division, Stafflines)).
+  delay(restCond_(Rest, Duration, Division, Stafflines, Eps)).
 
 delay:mode(note:restCond_(ground, _, _, _)).
 delay:mode(note:restCond_(_, ground, ground, _)).
-restCond_(Rest, Duration, Division, Stafflines) :-
+restCond_(Rest, Duration, Division, Stafflines, Eps) :-
   ccxEtiqsCond(Rest, 'restWhole'),
   { Duration / Division == 4 },
   ccxOrigin(Rest, point(RestX, RestY)),
   nth1(4, Stafflines, Line),
   segYAtX(Line, LineY, RestX),
-  diffEps(0.0, LineY, RestY).
-restCond_(Rest, Duration, Division, Stafflines) :-
+  eps(Eps, LineY, RestY).
+restCond_(Rest, Duration, Division, Stafflines, Eps) :-
   ccxEtiqsCond(Rest, 'restHalf'),
   { Duration / Division == 2 },
   ccxOrigin(Rest, point(RestX, RestY)),
   nth1(3, Stafflines, Line),
   segYAtX(Line, LineY, RestX),
-  diffEps(0.0, LineY, RestY).
-restCond_(Rest, Duration, Division, Stafflines) :-
+  eps(Eps, LineY, RestY).
+restCond_(Rest, Duration, Division, Stafflines, Eps) :-
   ccxEtiqsCond(Rest, 'restQuarter'),
   { Duration / Division == 1 },
   ccxOrigin(Rest, point(RestX, RestY)),
   nth1(3, Stafflines, Line),
   segYAtX(Line, LineY, RestX),
-  diffEps(0.0, LineY, RestY).
-restCond_(Rest, Duration, Division, Stafflines) :-
+  eps(Eps, LineY, RestY).
+restCond_(Rest, Duration, Division, Stafflines, Eps) :-
   restVal(RestName, Val),
   ccxEtiqsCond(Rest, RestName),
   { Duration / Division == 4 / Val },
   ccxOrigin(Rest, point(RestX, RestY)),
   nth1(3, Stafflines, Line),
   segYAtX(Line, LineY, RestX),
-  diffEps(0.0, LineY, RestY).
+  eps(Eps, LineY, RestY).
 
 restVal(Rest, Val) :-
   delay(atom_codes(Rest, Codes)),
@@ -313,7 +299,7 @@ restVal(Val) -->
   flagVal(Val).
 
 rest(element(rest, [], [])) -->
-  statep(restCond(Rest), [o(duration), o(division), o(stafflines)]),
+  statep(restCond(Rest), [o(duration), o(division), o(stafflines), o(eps)]),
   termp(Rest).
 
 duration(element(duration, [], [DurationAtom])) -->
@@ -331,7 +317,7 @@ notePitch(element(pitch, [], Pitch)) -->
   statep(
     pitchCondLine,
     [o(notehead), o(step), o(octave), o(baseLine), o(baseStep), o(baseOctave),
-     o(intervals), o(stafflines)]).
+     o(intervals), o(halfInterline), o(eps)]).
 
 step(element(step, [], [Step])) -->
   state(o(step, Step)).
@@ -387,7 +373,7 @@ dots(Notehead, Dots) -->
   {debug(note, "dots: Out ~p~n", [Dots])}.
 
 dot(_, element(dot, [], []), Ref, Dot) -->
-  statep(dotCond(Ref, Dot), [o(numIntervals), o(stafflines)]),
+  statep(dotCond(Ref, Dot), [o(numIntervals), o(interline), o(eps)]),
   termp(Dot).
 
 delay:mode(note:accidName(ground, _)).
@@ -455,12 +441,13 @@ noAccidAlter(0, Step, Octave, AccidStepOctaves, _, _) :-
 
 accidentalCond(Accidental, AccidentalName, Notehead, Step, Octave,
                Alter, KeySteps, KeyAlter,
-               AccidStepsOctaves, [AccidentalName-Step-Octave | AccidStepsOctaves]) :-
+               AccidStepsOctaves, [AccidentalName-Step-Octave | AccidStepsOctaves],
+               Eps) :-
   ccxEtiqsCond(Accidental, AccidentalEtiq),
   ccxEtiqsCond(Accidental, 1, accid),
   ccxOrigin(Notehead, point(NoteX, NoteY)),
   ccxOrigin(Accidental, point(AccidX, AccidY)),
-  diffEps(0, NoteY, AccidY),
+  eps(Eps, NoteY, AccidY),
   { AccidX =< NoteX },
   delay(accidName(AccidentalEtiq, AccidentalName)),
   delay(accidAlter(Alter, AccidentalName, Step, Octave,
@@ -470,57 +457,54 @@ accidental([element(accidental, [], [AccidentalName])]) -->
   statep(
     accidentalCond(Accidental, AccidentalName),
     [o(notehead), o(step), o(octave), o(alter), o(keySteps), o(keyAlter),
-    -accidStepsOctaves]),
+    -accidStepsOctaves, o(eps)]),
   termp(Accidental).
 accidental([]) -->
   statep(noAccidAlter,
          [o(alter), o(step), o(octave), o(accidStepsOctaves), o(keySteps), o(keyAlter)]).
 
-ledgerlineCond(LedgerLines, Notehead, Stafflines, Num, PitchIntervals) :-
+ledgerlineCond(LedgerLines, Notehead, Stafflines, Num, PitchIntervals, Interline, Eps) :-
   length(Stafflines, NumStafflines),
   NumLedgerLines::integer(0, 70),
   { NumLedgerLines =< abs(PitchIntervals) / 2 - (NumStafflines - Num) },
   { NumLedgerLines >= (abs(PitchIntervals) - 1) / 2 - (NumStafflines - Num) },
   ccxOrigin(Notehead, point(NoteX, NoteY)),
-  interlineAtX(Stafflines, NoteX, Interline),
   last(Stafflines, TopLine),
   segYAtX(TopLine, TopY, NoteX),
   { NoteY =< TopY },
   NumLedgerLinesGraphique::integer(0, 70),
   { NumLedgerLinesGraphique =< (TopY - NoteY) / Interline },
   { NumLedgerLinesGraphique >= (TopY - (NoteY + Interline / 2)) / Interline },
-  diffEps(0, NumLedgerLines, NumLedgerLinesGraphique),
+  eps(Eps, NumLedgerLines, NumLedgerLinesGraphique),
   length(LedgerLines, NumLedgerLines),
   maplist({NoteX}/[Seg, Y]>>(segYAtX(Seg, Y, NoteX)), LedgerLines, Ys),
   numlist(1, NumLedgerLines, Coeffs),
   maplist({TopY, Interline}/[Coeff, Expr]>>({Expr == TopY - Coeff * Interline}),
           Coeffs, Exprs),
   setting(music:staff_interline_eps, Eps),
-  maplist(diffEps(Eps), Ys, Exprs).
-ledgerlineCond(LedgerLines, Notehead, Stafflines, Num, PitchIntervals) :-
+  maplist(eps(Eps), Ys, Exprs).
+ledgerlineCond(LedgerLines, Notehead, Stafflines, Num, PitchIntervals, Interline, Eps) :-
   { NumLedgerLines =< PitchIntervals / 2 - (Num - 1) },
   { NumLedgerLines >= (PitchIntervals - 1) / 2 - (Num - 1) },
   ccxOrigin(Notehead, point(NoteX, NoteY)),
   debug(note, "ledgerlineCond below, Notehead origin point(~p, ~p)~n", [NoteX, NoteY]),
-  interlineAtX(Stafflines, NoteX, Interline),
   nth0(0, Stafflines, BottomLine),
   segYAtX(BottomLine, BottomY, NoteX),
   { BottomY =< NoteY },
   NumLedgerLinesGraphique::integer(0, 70),
   { NumLedgerLinesGraphique =< (NoteY - BottomY) / Interline },
   { NumLedgerLinesGraphique >= ((NoteY - Interline / 2) - BottomY) / Interline },
-  diffEps(0, NumLedgerLines, NumLedgerLinesGraphique),
+  eps(Eps, NumLedgerLines, NumLedgerLinesGraphique),
   length(LedgerLines, NumLedgerLines),
   maplist({NoteX}/[Seg, Y]>>(segYAtX(Seg, Y, NoteX)), LedgerLines, Ys),
   numlist(1, NumLedgerLines, Coeffs),
   maplist({BottomY, Interline}/[Coeff, Expr]>>({Expr == BottomY + Coeff * Interline}),
           Coeffs, Exprs),
   setting(music:staff_interline_eps, Eps),
-  maplist(diffEps(Eps), Ys, Exprs).
-ledgerlineCond([], Notehead, Stafflines, Num, PitchIntervals) :-
+  maplist(eps(Eps), Ys, Exprs).
+ledgerlineCond([], Notehead, Stafflines, Num, PitchIntervals, Interline, _Eps) :-
   { PitchIntervals =< 7 },
   ccxOrigin(Notehead, point(NoteX, NoteY)),
-  interlineAtX(Stafflines, NoteX, Interline),
   last(Stafflines, TopLine),
   segYAtX(TopLine, TopY, NoteX),
   nth1(Num, Stafflines, BaseLine),
@@ -529,10 +513,9 @@ ledgerlineCond([], Notehead, Stafflines, Num, PitchIntervals) :-
     TopY - Interline / 2 =< NoteY,
     NoteY =< BaseY
   }.
-ledgerlineCond([], Notehead, Stafflines, Num, PitchIntervals) :-
+ledgerlineCond([], Notehead, Stafflines, Num, PitchIntervals, Interline, _Eps) :-
   { 1 =< PitchIntervals, PitchIntervals =< 3 },
   ccxOrigin(Notehead, point(NoteX, NoteY)),
-  interlineAtX(Stafflines, NoteX, Interline),
   nth0(0, Stafflines, BottomLine),
   segYAtX(BottomLine, BottomY, NoteX),
   nth1(Num, Stafflines, BaseLine),
@@ -544,7 +527,7 @@ ledgerlineCond([], Notehead, Stafflines, Num, PitchIntervals) :-
 
 ledgerlines -->
   statep(ledgerlineCond(LedgerLines),
-        [o(notehead), o(stafflines), o(num), o(intervals)]),
+        [o(notehead), o(stafflines), o(num), o(intervals), o(interline), o(eps)]),
   sequence(selectp, LedgerLines).
 
 noteStem([]) -->
@@ -554,7 +537,7 @@ noteStem([element(stem, [], [Dir]) | Beams]) -->
   statep(
     noteheadStemCond,
     [o(chord, false), o(notehead), o(stem, Stem), o(duration), o(division),
-     o(dir, Dir)]),
+     o(dir, Dir), o(noteStem), o(eps)]),
   verticalSeg(Stem),
   {debug(note, "noteStem: with stem~n", [])},
   noteStemEnd(Beams).
@@ -562,7 +545,7 @@ noteStem([element(stem, [], [Dir]) | Beams]) -->
   statep(
     noteheadStemCond,
     [o(chord, true), o(notehead), o(stem), o(duration), o(division),
-     o(dir, Dir)]),
+     o(dir, Dir), o(noteStem), o(eps)]),
   noteStemEnd(Beams).
 noteStemEnd(Beams) -->
   ( noteFlag(Beams)
@@ -570,22 +553,21 @@ noteStemEnd(Beams) -->
   | noFlagBeam(Beams)
   ).
 noteFlag([]) -->
-  statep(stemFlagCond, [o(stem), o(flag, Flag), o(duration), o(division), o(dir)]),
+  statep(stemFlagCond, [o(stem), o(flag, Flag), o(duration), o(division), o(dir),
+                        o(eps)]),
   termp(Flag),
   {debug(note, "noteFlag: with flag~n", [])}.
 noteFlag([]) -->
   state(o(chord, true)),
-  statep(stemFlagCond, [o(stem), o(flag), o(duration), o(division), o(dir)]),
+  statep(stemFlagCond, [o(stem), o(flag), o(duration), o(division), o(dir), o(eps)]),
   {debug(note, "noteFlag: with flag~n", [])}.
 
-stemBeamCond(State, Ref, Beam, Notehead, Stem, noBeam, BeamOut, Dir, Stafflines) :-
-  delay(stemBeamState(State, Notehead, Stem, StemX, StemY, BeamOut, Beam, Dir)),
-  interlineAtX(Stafflines, StemX, Interline),
-  stemBeamRef(Ref, StemY, Beam, Dir, Interline).
-stemNoBeamCond(State, Ref, Beam, Stem, BeamIn, BeamOut, Dir, Stafflines) :-
-  stemNoBeamState(State, Stem, StemX, StemY, BeamIn, BeamOut, Beam, Dir),
-  interlineAtX(Stafflines, StemX, Interline),
-  stemBeamRef(Ref, StemY, Beam, Dir, Interline).
+stemBeamCond(State, Ref, Beam, Notehead, Stem, noBeam, BeamOut, Dir, Interline, Eps) :-
+  delay(stemBeamState(State, Notehead, Stem, StemY, BeamOut, Beam, Dir, Eps)),
+  stemBeamRef(Ref, StemY, Beam, Dir, Interline, Eps).
+stemNoBeamCond(State, Ref, Beam, Stem, BeamIn, BeamOut, Dir, Interline, Eps) :-
+  stemNoBeamState(State, Stem, _StemX, StemY, BeamIn, BeamOut, Beam, Dir, Eps),
+  stemBeamRef(Ref, StemY, Beam, Dir, Interline, Eps).
 
 stemBeamDir(up, H, Stem, StemTop) :-
   segHV(v, H, top, Stem, StemTop).
@@ -593,46 +575,42 @@ stemBeamDir(down, H, Stem, StemBottom) :-
   segHV(v, H, bottom, Stem, StemBottom).
 
 delay:mode(note:stemBeamState(
-              ground,         _,        _,    _,     _,     _,      _,    _)).
+              ground , _      , _      , _ , _ , _ , _      , _, _)).
 delay:mode(note:stemBeamState(
-              _,              ground, ground, _,     _,     _,      ground, _)).
-stemBeamState('forward hook', Notehead, Stem, StemX, StemY, noBeam, Beam, Dir) :-
-  stemBeamState(begin, Notehead, Stem, StemX, StemY, Beam, Beam, Dir),
+              _      , ground , ground , _ , _ , _ , ground , _, _)).
+stemBeamState('forward hook', Notehead, Stem, StemY, noBeam, Beam, Dir, Eps) :-
+  stemBeamState(begin, Notehead, Stem, StemY, Beam, Beam, Dir, Eps),
   ccxWidth(Notehead, NoteheadWidth),
   segLength(Beam, BeamLength),
-  diffEps(0, NoteheadWidth, BeamLength).
-stemBeamState(begin, _Notehead, Stem, StemX, StemY, Beam, Beam, Dir) :-
+  eps(Eps, NoteheadWidth, BeamLength).
+stemBeamState(begin, _Notehead, Stem, StemY, Beam, Beam, Dir, Eps) :-
   segStartX(Beam, BeamX),
   stemBeamDir(Dir, left, Stem, point(StemX, StemY)),
-  segThickness(Stem, StemThickness),
-  { HalfThickness == StemThickness },
-  diffEps(HalfThickness, BeamX, StemX).
-stemBeamState('backward hook', Notehead, Stem, StemX, StemY, noBeam, Beam, Dir) :-
-  stemNoBeamState(end, Stem, StemX, StemY, Beam, noBeam, Beam, Dir),
+  eps(Eps, BeamX, StemX).
+stemBeamState('backward hook', Notehead, Stem, StemX, StemY, noBeam, Beam, Dir, Eps) :-
+  stemNoBeamState(end, Stem, StemX, StemY, Beam, noBeam, Beam, Dir, Eps),
   ccxWidth(Notehead, NoteheadWidth),
   segLength(Beam, BeamLength),
-  diffEps(0, NoteheadWidth, BeamLength).
+  eps(Eps, NoteheadWidth, BeamLength).
 
-stemNoBeamState(continue, Stem, StemX, StemY, Beam, Beam, Beam, Dir) :-
+stemNoBeamState(continue, Stem, StemX, StemY, Beam, Beam, Beam, Dir, _Eps) :-
   segStartX(Beam, BeamStartX),
   segEndX(Beam, BeamEndX),
   stemBeamDir(Dir, mid, Stem, point(StemX, StemY)),
   { BeamStartX + 1 =< StemX },
   { StemX =< BeamEndX - 1}.
-stemNoBeamState(end, Stem, StemX, StemY, Beam, noBeam, Beam, Dir) :-
+stemNoBeamState(end, Stem, StemX, StemY, Beam, noBeam, Beam, Dir, Eps) :-
   segEndX(Beam, BeamX),
   stemBeamDir(Dir, right, Stem, point(StemX, StemY)),
-  segThickness(Stem, StemThickness),
-  { HalfThickness == StemThickness },
-  diffEps(HalfThickness, BeamX, StemX).
+  eps(Eps, BeamX, StemX).
 
 beamRefDir(up, +).
 beamRefDir(down, -).
 
-stemBeamRef(noRef, StemY, Beam, _Dir, _Interline) :-
+stemBeamRef(noRef, StemY, Beam, _Dir, _Interline, Eps) :-
   segStartY(Beam, BeamY),
-  diffEps(2.7, BeamY, StemY).
-stemBeamRef(BeamRef, _StemY, Beam, Dir, Interline) :-
+  eps(Eps, BeamY, StemY).
+stemBeamRef(BeamRef, _StemY, Beam, Dir, Interline, Eps) :-
   segStartY(BeamRef, BeamRefY),
   segStartY(Beam, BeamY),
   segThickness(BeamRef, RefThickness),
@@ -640,7 +618,7 @@ stemBeamRef(BeamRef, _StemY, Beam, Dir, Interline) :-
   beamRefDir(Dir, Op),
   Expr =.. [Op, BeamRefY, RefThickness / 2 + Interline / 4 + BeamThickness / 2],
   { YFromRef == Expr },
-  diffEps(2.7, BeamY, YFromRef).
+  eps(Eps, BeamY, YFromRef).
 
 beamsCond(Beams, Duration, Division) :-
   delay(length(Beams, NumBeams)),
@@ -676,7 +654,7 @@ noteBeam(element(beam, [number=N], [_]),
   { atom_inc(N, N1, beam-N1Int) },
   state(+(numBeams, N1Int)),
   statep(stemBeamCond(State, Ref, Beam),
-         [o(notehead), o(stem), -(beam-N1Int), o(dir), o(stafflines)]),
+         [o(notehead), o(stem), -(beam-N1Int), o(dir), o(interline), o(eps)]),
   termp(Beam).
 
 noFlagBeam([]) -->

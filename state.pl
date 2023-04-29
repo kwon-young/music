@@ -1,10 +1,13 @@
-:- module(state, [makeState/2, state//1, states//1, statep//2]).
+:- module(state, [makeState/2, state//1, states//1, statep//2, scope//1, scope//2,
+                  bbox//2, nCond/3, nCond//2]).
 
 :- use_module(library(rbtrees)).
+:- use_module(library(clpBNR)).
 :- use_module(library(dcg/high_order)).
+:- use_module(geo).
 
 makeState(state(Tree), List) :-
-  list_to_rbtree([cursor-noEl | List], Tree).
+  list_to_rbtree([cursor-noEl, scope-[], bbox-[] | List], Tree).
 
 state(Term) -->
   stateValues(Term, _).
@@ -40,6 +43,14 @@ sequence3_([], [], _Goal) -->
 states(KeyValues) -->
   sequence(state, KeyValues).
 
+nCond(NAtom, PrevN, N) :-
+  N::integer(1, _),
+  { N == PrevN + 1 },
+  atom_number(NAtom, N).
+
+nCond(State, NAtom) -->
+  statep(nCond(NAtom), [-(State)]).
+
 :- meta_predicate add_args(:, ?, ?).
 
 add_args(delay:delay(Goal), Args, delay:delay(NewGoal)) :-
@@ -59,6 +70,35 @@ statep(Goal, KeyValues) -->
     add_args(Goal, Values, NewGoal),
     call(NewGoal)
   }.
+
+:- meta_predicate scope(3, ?, ?).
+
+scope(Mod:Goal) -->
+  state(-(scope, Scopes, [Scope-Name | Scopes])),
+  { Goal =.. [Name | _] },
+  call(Mod:Goal, Scope),
+  state(-(scope, [Scope-Name | Scopes], Scopes)).
+
+:- meta_predicate scope(4, ?, ?).
+
+scope(Mod:Goal, Arg) -->
+  {
+    Goal =.. L,
+    append(L, [Arg], NewL),
+    NewGoal =.. NewL
+  },
+  scope(Mod:NewGoal).
+
+:- meta_predicate bbox(2, ?, ?, ?).
+
+bbox(Mod:Goal, BBox) -->
+  state(-(bbox, [Parent | BBoxes], [BBox, Parent | BBoxes])),
+  {
+    box(BBox),
+    inside(BBox, Parent)
+  },
+  call(Mod:Goal),
+  state(-(bbox, [BBox, Parent | BBoxes], [Parent | BBoxes])).
 
 :- begin_tests(state).
 

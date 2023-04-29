@@ -1,12 +1,15 @@
 :- module(music_utils, [
   interlineAtStart/2, interlineAtEnd/2, interlineAtX/3,
   interlineAt/3, interlineAt/4,
-  listSum/2, average/2]).
+  listSum/2, average/2, ccxOnStaffline/5,
+  atom_number//2]).
 
 :- use_module(library(clpBNR)).
+:- use_module(library(delay)).
 :- use_module(seg).
 :- use_module(geo).
 :- use_module(utils).
+:- use_module(cond).
 
 listSum([],0).
 listSum([X | Xs],Sum) :-
@@ -34,3 +37,11 @@ interlineAt(Stafflines, Getter, Interline, Interlines) :-
   maplist(Getter, Stafflines, Ys),
   convlist2(distance, Ys, Interlines),
   average(Interlines, Interline).
+
+ccxOnStaffline(Stafflines, Ccx, Etiq, NumStaffline, Eps) :-
+  ccxEtiqsCond(Ccx, Etiq),
+  nth1(NumStaffline, Stafflines, Staffline),
+  ccxOnSegCond(Staffline, Ccx, Eps).
+
+atom_number(Atom, Number) -->
+  { delay(atom_number(Atom, Number)) }.

@@ -1,4 +1,4 @@
-:- module(music, [mainGen/3, mainGen/4, mainReco/3, mainReco/4]).
+:- module(music, [main/0, main/2]).
 
 :- use_module(library(dcg/basics)).
 :- use_module(library(dcg/high_order)).
@@ -13,359 +13,252 @@
 :- use_module(state).
 :- use_module(cond).
 :- use_module(epf_geo).
-:- use_module(note).
 :- use_module(music_utils).
+:- use_module(music_settings).
 :- use_module(pitch_cond).
 
-:- use_module(library(settings)).
+main :-
+  current_prolog_flag(argv, [Goal | Args]),
+  main(Goal, Args).
+main(Goal, Args) :-
+  apply(Goal, Args).
 
-:- setting(page_width, number, 2100.0, 'page width').
-:- setting(page_height, number, 2970.0, 'page height').
-:- setting(staff_aligned_eps, number, 0, 'staffline alignement threshold').
-:- setting(staff_interline, number, 18, 'stafflines interline height').
-:- setting(staff_interline_eps, number, 0.05, 'stafflines interline threshold').
-:- setting(staff_barline_eps, number, 0.05, 'stafflines and barline threshold').
-:- setting(clef_eps, number, 0, 'Clef position threshold').
-:- setting(beats_eps, number, 0, 'Clef position threshold').
-
-ccxOnStaffline(Stafflines, Ccx, Etiq, NumStaffline, Eps) :-
-  ccxEtiqsCond(Ccx, Etiq),
-  nth1(NumStaffline, Stafflines, Staffline),
-  ccxOnSegCond(Staffline, Ccx, Eps).
-
-mainGen(XmlFile, SettingsFile, StructFile) :-
-  load_settings(SettingsFile),
-  mainGen(XmlFile, State, Struct, Rest),
-  save_settings,
-  open(StructFile, write, S),
-  print_term(Struct, [output(S)]),
-  close(S),
-  format("State~n", []),
-  print_term(State, _),
-  format("Struct~n", []),
-  print_term(Struct, _),
-  format("~nRest~n", []),
-  print_term(Rest, _).
-mainGen(XmlFile, State, Struct, Rest) :-
+mainGen(XmlFile, StructFile) :-
   load_xml(XmlFile, Xml, [space(remove), number(integer)]),
-  makeState(State),
-  phrase(music(Xml), [State, Struct], Rest).
-
-mainReco(StructFile, SettingsFile, XmlFile) :-
-  load_settings(SettingsFile),
-  mainReco(StructFile, Struct, Rest, Xml),
-  save_settings,
-  format("Xml~n", []),
-  print_term(Xml, _),
-  open(XmlFile, write, XmlS),
-  xml_write(XmlS, Xml, [
-    doctype('score-partwise'),
-    public("-//Recordare//DTD MusicXML 4.0 Partwise//EN"),
-    system("http://www.musicxml.org/dtds/partwise.dtd"),
-    net(false)]),
-  close(XmlS),
-  format("~nStruct~n", []),
-  print_term(Struct, _),
-  format("~nRest~n", []),
-  print_term(Rest, _).
-mainReco(StructFile, Struct, Rest, Xml) :-
+  get_settings(value, Settings),
+  makeState(State, Settings),
+  once(phrase(mei(Xml), [State, Struct], [_, []])),
+  maplist(ground_elem, Struct, GroundStruct),
+  open(StructFile, write, S),
+  print_term(GroundStruct, [output(S)]),
+  write(S, "."),
+  close(S).
+mainReco(StructFile, TestSettingsFile, XmlFile, RecoSettingsFile) :-
   open(StructFile, read, S),
   read(S, Struct),
   close(S),
-  makeState(State),
-  phrase(music(Xml), [State, Struct], Rest).
+  load_settings(TestSettingsFile),
+  get_settings(domain, Settings),
+  makeState(State, Settings),
+  once(phrase(mei(Xml), [State, Struct], [_, []])),
+  % print_term(Rest, []),
+  % Rest == [],
+  open(XmlFile, write, XmlS),
+  xml_write(XmlS, Xml, []),
+  close(XmlS),
+  update_settings(Settings),
+  save_settings(RecoSettingsFile).
+mainTest(XmlFile, StructFile, SettingsFile) :-
+  load_xml(XmlFile, Xml, [space(remove), number(integer)]),
+  open(StructFile, read, S),
+  read(S, Struct),
+  close(S),
+  get_settings(domain, Settings),
+  makeState(State, Settings),
+  once(phrase(mei(Xml), [State, Struct], [_, _Rest])),
+  % print_term(Rest, []),
+  % Rest == [],
+  update_settings(Settings),
+  save_settings(SettingsFile).
 
-music([element('score-partwise', [version='4.0'], [PartList, Part])]) -->
+mei([pi('xml-model href="https://music-encoding.org/schema/dev/mei-all.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"'),
+     pi('xml-model href="https://music-encoding.org/schema/dev/mei-all.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"'),
+     element(mei, [xmlns='http://www.music-encoding.org/ns/mei', meiversion='5.0.0-dev'], [MeiHead, Music])]) -->
   states([
-    +(keySteps, []),
-    +(keyAlter, 0),
-    +(accidStepsOctaves, []),
-    +(stem, noStem),
-    +(chord, false),
-    +(beam-1, noBeam),
-    +(beam-2, noBeam),
-    +(beam-3, noBeam),
-    +(beam-4, noBeam),
-    +(beam-5, noBeam),
-    +(beam-6, noBeam),
-    +(beam-7, noBeam),
-    +(beam-8, noBeam),
-    +(beam-9, noBeam),
-    +(beam-10, noBeam),
-    +(beam-11, noBeam),
-    +(numBeams, 0)
+    +(pageId, 0),
+    +(measureN, 0),
+    +(staffN, 0),
+    +(staffLines, noEl)
   ]),
-  page,
-  partList(PartId, PartList),
-  part(PartId, Part).
-
-pageCond(Page) :-
-  setting(page_width, Width),
-  setting(page_height, Height),
-  ccxLeftTopRightBottom(Page, point(0, 0), point(Width, Height)),
-  ccxEtiqsCond(Page, 'page').
-
-page -->
-  statep(pageCond, [o(page, Page)]),
-  term(Page).
-
-partList(PartId, element('part-list', [], [ScorePart])) -->
-  scorePart(PartId, ScorePart).
-
-scorePart(PartId, element('score-part', [id=PartId], [element('part-name', [], [])])) -->
-  {true}.
-
-part(PartId, element(part, [id=PartId], [Measure])) -->
-  { PartId = 'P1' },
-  measure(Measure),
-  {debug(music, "part: Measure ~p~n", [Measure])},
-  statep(lower_bound, [o(division)]).
-
-measure(element(measure, [number='1'], [Attributes | Notes])) -->
-  {debug(music, "measure: In ~p, ~p~n", [Attributes, Notes])},
-  staff(),
-  barline(),
-  attributes(Attributes),
-  sequence(find(note), Notes).
-
-aligned(Getter, Eps, Elements) :-
-  convlist(Getter, Elements, [Coord | Coords]),
-  maplist(diffEps(Eps, Coord), Coords).
-
-interlineCond(Stafflines, Getter, Interline, Eps) :-
-  music_utils:interlineAt(Stafflines, Getter, InterlineAverage, Interlines),
-  diffEps(Eps, Interline, InterlineAverage),
-  maplist(diffEps(Eps, Interline), Interlines),
-  debug(music, "interlineCond Interlines: ~p~n", [Interlines]).
-
-staffCond(Stafflines) :-
-  length(Stafflines, 5),
-  setting(staff_aligned_eps, AlignedEps),
-  % left aligned
-  aligned(segStartX, AlignedEps, Stafflines),
-  % right aligned
-  aligned(segEndX, AlignedEps, Stafflines),
-  convlist(segStartY, Stafflines, Ys),
-  % order lines along Y coord starting from the bottom
-  maplist2([Y1, Y2]>>([Y1, Y2]::real, {Y2 < Y1}), Ys),
-  setting(staff_interline, Interline),
-  setting(staff_interline_eps, InterlineEps),
-  % all interlines are similar
-  interlineCond(Stafflines, segStartY, Interline, InterlineEps),
-  interlineCond(Stafflines, segEndY, Interline, InterlineEps).
-
-staff() -->
-  statep(staffCond, [o(stafflines, Stafflines)]),
-  sequence(horizontalSeg, Stafflines).
-
-barlineCond(Barline, Stafflines) :-
-  setting(staff_barline_eps, BarlineEps),
-  % bottom right corner
-  Stafflines = [StafflineBottom | _],
-  segEnd(StafflineBottom, StafflineBottomEnd),
-  segHV(v, right, bottom, Barline, BarlineBottomRight),
-  pointDiffEps(BarlineEps, StafflineBottomEnd, BarlineBottomRight),
-  % top right corner
-  last(Stafflines, StafflineTop),
-  segEnd(StafflineTop, StafflineTopEnd),
-  segHV(v, right, top, Barline, BarlineTopRight),
-  pointDiffEps(BarlineEps, StafflineTopEnd, BarlineTopRight).
-
-barline() -->
-  statep(barlineCond, [o(barline, Barline), o(stafflines)]),
-  verticalSeg(Barline).
-
-attributes(element(attributes, [], [Div, Key, Time, Clef])) -->
-  {debug(music, "attributes: ~p, ~p, ~p, ~p~n", [Div, Key, Time, Clef])},
-  division(Div),
-  clef(Clef),
-  time(Time),
-  key(Key).
-
-divisionCond(DivAtom, Div) :-
-  Div::integer(1, _),
-  delay(atom_number(DivAtom, Div)).
-
-division(element(divisions, [], [DivAtom])) -->
-  statep(divisionCond(DivAtom), [o(division)]).
-
-clefCond([element(sign, [], ['G']), element(line, [], ['2'])],
-         Clef, 2, BaseLine, 'G', 4, Stafflines) :-
-  setting(clef_eps, ClefEps),
-  ccxOnStaffline(Stafflines, Clef, 'gClef', 2, ClefEps),
-  nth1(2, Stafflines, BaseLine).
-
-
-clef(element(clef, [], SignLine)) -->
-  statep(clefCond(SignLine),
-         [o(clef, Clef), o(num), o(baseLine), o(baseStep), o(baseOctave), o(stafflines)]),
-  termp(Clef).
-
-time(element(time, [], [Beats, BeatType])) -->
-  beats(Beats),
-  beatType(BeatType).
-
-beatsCond('4', Beats, Stafflines) :-
-  setting(beats_eps, BeatsEps),
-  ccxOnStaffline(Stafflines, Beats, 'timeSig4', 4, BeatsEps).
-
-beats(element(beats, [], [BeatsNumber])) -->
-  statep(beatsCond(BeatsNumber), [o(beats, Beats), o(stafflines)]),
-  termp(Beats).
-
-beatTypeCond('4', BeatType, Stafflines) :-
-  setting(beats_eps, BeatsEps),
-  ccxOnStaffline(Stafflines, BeatType, 'timeSig4', 2, BeatsEps).
-
-beatType(element('beat-type', [], [BeatTypeNumber])) -->
-  statep(beatTypeCond(BeatTypeNumber), [o(beatType, BeatType), o(stafflines)]),
-  termp(BeatType).
-
-delay:mode(music:fifthsAlter(ground, _)).
-delay:mode(music:fifthsAlter(_, ground)).
-fifthsAlter(0, 0).
-fifthsAlter(Fifths, Alter) :-
-  Fifths::integer(-7, 7),
-  Alter::integer(-1, 1),
   {
-    Fifths <> 0,
-    Alter <> 0,
-    Alter == Fifths / abs(Fifths)
+    MeiHead = element(meiHead, [], [element(fileDesc, [], [element(titleStmt, [], [element(title, [], [])])])])
+  },
+  music(Music).
+
+music(element(music, [], [Body])) -->
+  body(Body).
+
+body(element(body, [], [element(mdiv, ['xml:id'=Id], [Score])])) -->
+  add_id(Id),
+  score(Score).
+
+score(element(score, ['xml:id'=Id], [ScoreDef, Section])) -->
+  add_id(Id),
+  scoreDef(ScoreDef),
+  section(Section).
+
+scoreDef(element(scoreDef, ['xml:id'=Id], [StaffGrp])) -->
+  add_id(Id),
+  staffGrp(StaffGrp).
+
+staffGrp(element(staffGrp, ['xml:id'=Id], [StaffDef])) -->
+  add_id(Id),
+  staffDef(StaffDef).
+
+staffDef(element(staffDef, ['xml:id'=Id, n=NAtom, lines=Lines], Childs)) -->
+  add_id(Id),
+  nCond(staffN, NAtom),
+  statep(atom_number(Lines), [o(staffNumLines, 5)]),
+  state(+(staffDef, Childs)).
+
+section(element(section, ['xml:id'=Id], Measures)) -->
+  add_id(Id),
+  scope(page(Measures)).
+
+pageCond(Page, PrevId, Id, [PageMargin], W, H, TopM, LeftM, BotM, RightM) :-
+  Id::integer(1, _),
+  { Id == PrevId + 1 },
+  ccxEtiqsCond(Page, 'page'),
+  ccxLeftTop(Page, point(0, 0)),
+  ccxOrigin(Page, point(0, 0)),
+  ccxWidth(Page, W),
+  ccxHeight(Page, H),
+  ccxLeftTopRightBottom(Page, point(Left, Top), point(Right, Bottom)),
+  [TopWM, LeftWM, BottomWM, RightWM]::real(0, inf),
+  {
+    TopWM == Top + TopM,
+    LeftWM == Left + LeftM,
+    BottomWM == Bottom - BotM,
+    RightWM == Right - RightM
+  },
+  boxArgs(PageMargin, [point(LeftWM, TopWM), point(RightWM, BottomWM)]),
+  box(PageMargin).
+page(Measures, PageId) -->
+  statep(pageCond(Page), [-(pageId, _, PageId), +(bbox), o(pageWidth), o(pageHeight),
+                          o(topMargin), o(leftMargin), o(bottomMargin), o(rightMargin)]),
+  terms(Page),
+  measures(Measures).
+
+measures(Measures) -->
+  state(o(spacingStaff, Spacing)),
+  vertical_layout(measureLine, Spacing, Measures).
+
+measureLine(Box, MeasuresIn, MeasuresOut) -->
+  state(+(staffLines, noEl)),
+  bbox(epf:longuest_notempty_sequence(state:scope(music:measure), MeasuresIn, MeasuresOut),
+       Box),
+  debug(measureLine, "Box ~p~n", [Box]).
+
+
+measureEndCond([Line | _], StaffWidth, BarLineThickness, MeasureMinWidth, Unit) :-
+  debug(measureEndCond, "Line Before ~p~n", [Line]),
+  { StaffWidth >= (BarLineThickness + MeasureMinWidth) * Unit },
+  debug(measureEndCond, "StaffWidth ~p~n", [StaffWidth]),
+  debug(measureEndCond, "Line After ~p~n", [Line]).
+  % segStartEnd(Line, point(XStart, YStart), point(XEnd, YEnd)),
+  % Vars = [XStart, YStart, XEnd, YEnd],
+  % maplist(global_minimize, Vars, Vars).
+measure(element(measure, ['xml:id'=Id, n=NAtom], [Staff]), Id) -->
+  debug(measure, "start ~p~n", [NAtom]),
+  add_id(Id),
+  statep(nCond(NAtom), [-(measureN)]),
+  debug(measure, "staff pre ~p~n", [NAtom]),
+  scope(staff(Staff)),
+  debug(measure, "barline pre ~p~n", [NAtom]),
+  barline,
+  debug(measure, "barline post ~p~n", [NAtom]),
+  statep(measureEndCond, [o(staffLines, StaffLines), o(staffWidth), o(barLineThickness),
+                          o(measureMinWidth), o(unit)]),
+  debug(measure, "end ~p ~p~n", [NAtom, StaffLines]).
+
+staff(element(staff, ['xml:id'=Id, n=NAtom], [Layer]), Id) -->
+  debug(staff, "start ~p~n", [NAtom]),
+  add_id(Id),
+  statep(atom_number(NAtom), [o(staffN)]),
+  stafflines,
+  clef,
+  scope(layer(Layer)).
+
+stafflinesCond([L | Lines], StaffLines, _, NumLines, Unit, Width, Thickness, Eps) :-
+  maplist(segEnd, [L | Lines], Ends),
+  length(StaffLines, NumLines),
+  maplist(segStart, StaffLines, Starts),
+  maplist(eps(p, Eps), Ends, Starts),
+  Ends = [End | _],
+  Starts = [Start | _],
+  debug(stafflinesCond, "End ~p~n", [End]),
+  debug(stafflinesCond, "Start ~p~n", [Start]),
+  stafflinesCond(StaffLines, NumLines, Unit, Width, Thickness, Eps).
+stafflinesCond(noEl, StaffLines, [Box | _], NumLines, Unit, Width, Thickness, Eps) :-
+  stafflinesCond(StaffLines, NumLines, Unit, Width, Thickness, Eps),
+  StaffLines = [TopLine | _],
+  segStart(TopLine, Start),
+  boxArgs(Box, [LeftTop, _]),
+  debug(stafflinesCond, "LeftTop ~p~n", [LeftTop]),
+  debug(stafflinesCond, "Start ~p~n", [Start]),
+  eps(p, Eps, LeftTop, Start).
+
+stafflinesCond(StaffLines, NumLines, Unit, Width, Thickness, Eps) :-
+  length(StaffLines, NumLines),
+  maplist(segStartEndThickness, StaffLines, Starts, Ends, Thicknesses),
+  maplist(leftof, Starts, Ends),
+  chaing(Starts, above(2*Unit, Eps)),
+  chaing(Ends, above(2*Unit, Eps)),
+  chaing(Starts, eps(px, Eps)),
+  chaing(Ends, eps(px, Eps)),
+  maplist(eps(Eps, Thickness*Unit), Thicknesses),
+  maplist(horizontalSeg(Eps, Unit), StaffLines),
+  maplist(segWidth, StaffLines, Widths),
+  maplist(eps(Eps, Width), Widths).
+stafflines -->
+  debug(stafflines, "start~n", []),
+  statep(stafflinesCond, [-(staffLines, _, StaffLines), o(bbox), o(staffNumLines),
+                          o(unit), +(staffWidth), o(thickness), o(eps)]),
+  sequence(termp, StaffLines),
+  debug(stafflines, "end ~p~n", [StaffLines]).
+
+layer(element(layer, ['xml:id'=Id, n='1'], []), Id) -->
+  add_id(Id),
+  [].
+
+barlineCond(BarLine, StaffLines, Thickness, Unit, Eps) :-
+  nth1(1, StaffLines, TopLine),
+  last(StaffLines, BottomLine),
+  maplist(segEnd, [TopLine, BottomLine], StaffLinesPoints),
+  segHV(v, right, top, BarLine, BarLineTopRight),
+  segHV(v, right, bottom, BarLine, BarLineBottomRight),
+  maplist(eps(p, Eps), [BarLineTopRight, BarLineBottomRight], StaffLinesPoints),
+  segThickness(BarLine, BarLineThickness),
+  eps(Eps, Unit*Thickness, BarLineThickness).
+barline -->
+  debug(barline, "barline start ~n", []),
+  statep(barlineCond(BarLine), [o(staffLines), o(barLineThickness), o(unit), o(eps)]),
+  debug(barline, "barline mid ~p~n", [BarLine]),
+  termp(BarLine),
+  debug(barline, "barline end ~p~n", [BarLine]).
+
+debug(Topic, Fmt, Args) -->
+  state(o(scope, Scope)),
+  {
+    string_concat("~p ~p ", Fmt, NewFmt),
+    append([Topic, Scope], Args, NewArgs),
+    debug(Topic, NewFmt, NewArgs)
   }.
-fifthsCond(Accidentals, FifthsAtom, FifthsList, Fifths, Steps, FifthsAlter) :-
-  Fifths::integer(-7, 7),
-  delay(atom_number(FifthsAtom, Fifths)),
-  {Length == abs(Fifths)},
-  delay(length(Accidentals, Length)),
-  fifthsList(Fifths, FifthsList),
-  delay(length(Steps, Length)),
-  delay(fifthsAlter(Fifths, FifthsAlter)).
 
-fifthsStep(1, 'F').
-fifthsStep(2, 'C').
-fifthsStep(3, 'G').
-fifthsStep(4, 'D').
-fifthsStep(5, 'A').
-fifthsStep(6, 'E').
-fifthsStep(7, 'B').
+:- multifile delay:mode/1.
 
-fifthsList(Fifths, FifthsList) :-
-  Fifths::integer(-7, 7),
-  Incr::integer(-1, 1),
-  {
-    Fifths <> 0,
-    Incr <> 0,
-    Incr == Fifths / abs(Fifths),
-    Fifths1 == Fifths + Incr
-  },
-  when(
-    (nonvar(FifthsList) ; ground(Fifths)),
-    fifthsList_(FifthsList, 0, 0, Fifths1, Incr)).
-fifthsList(0, [1]).
-fifthsList_([], _, Fifths, Fifths, _).
-fifthsList_([NextFifth | FifthsList], Cpt, Fifth, Fifths, Incr) :-
-  debug(fifthsList, "~p~n", [Fifth]),
-  NextFifth::integer(-8, 8),
-  {
-    Cpt < 8,
-    NextCpt == Cpt + 1,
-    abs(Fifth) < abs(Fifths),
-    NextFifth == Fifth + Incr
-  },
-  when(
-    (nonvar(FifthsList) ; ground(Fifths)),
-    fifthsList_(FifthsList, NextCpt, NextFifth, Fifths, Incr)).
+delay:mode(music:clef_shape_etiq(ground, _)).
+delay:mode(music:clef_shape_etiq(_, ground)).
+clef_shape_etiq('G', gClef).
+clef_shape_etiq('F', fClef).
 
-  
-key(element(key, [], [element(fifths, [], [FifthsAtom])])) -->
-  statep(fifthsCond(Accidentals, FifthsAtom, FifthsList),
-         [o(fifths), +(keySteps, Steps), +keyAlter]),
-  states([o(clef, Clef), o(baseStep, BaseStep), o(baseOctave, BaseOctave)]),
-  sequence2(fifths, FifthsList, [Clef | Accidentals], [BaseStep | Steps], [BaseOctave | _]).
+clefCond(Clef,
+         [element(clef, ['xml:id'=Id, shape=Shape, line=NAtom], [])],
+         StaffLines, LeftMargin, Unit, Eps) :-
+  add_id(Id),
+  delay(atom_number(NAtom, N)),
+  ccxEtiqsCond(Clef, 1, 'clef'),
+  ccxEtiqsCond(Clef, Etiq),
+  delay(clef_shape_etiq(Shape, Etiq)),
+  ccxOrigin(Clef, point(X, Y)),
+  nth1(N, StaffLines, Line),
+  segStart(Line, point(SegX, SegY)),
+  eps(Eps, SegY, Y),
+  eps(Eps, SegX + Unit * LeftMargin, X).
 
-fifthCondEtiq(Fifth, Accidental) :-
-  {Fifth >= 1},
-  ccxEtiqsCond(Accidental, 'accidentalSharp').
-fifthCondEtiq(Fifth, Accidental) :-
-  {Fifth =< -1},
-  ccxEtiqsCond(Accidental, 'accidentalFlat').
-
-fifthPattern('G', 2, Fifth, Interval) :-
-  fifthGClef(Fifth, Interval).
-fifthPattern('F', 4, Fifth, Interval) :-
-  fifthFClef(Fifth, Interval).
-fifthPattern('C', Num, Fifth, Interval) :-
-  fifthCClef(Num, Fifth, Interval).
-
-fifthGClef(1, 6).
-fifthGClef(-1, 2).
-fifthGClef(Fifth, Interval) :-
-  ( fifthsSharp(Fifth, Interval)
-  ; fifthsFlat(Fifth, Interval)
-  ).
-
-fifthFClef(1, 0).
-fifthFClef(-1, -4).
-fifthFClef(Fifth, Interval) :-
-  ( fifthsSharp(Fifth, Interval)
-  ; fifthsFlat(Fifth, Interval)
-  ).
-
-fifthCClef(3, Fifth, Interval) :-
-  fifthC3(Fifth, Interval).
-fifthCClef(4, Fifth, Interval) :-
-  fifthC4(Fifth, Interval).
-
-fifthC3(1, 3).
-fifthC3(-1, -1).
-fifthC3(Fifth, Interval) :-
-  ( fifthsSharp(Fifth, Interval)
-  ; fifthsFlat(Fifth, Interval)
-  ).
-
-fifthC4(1, -4).
-fifthC4(-1, -1).
-fifthC4(Fifth, Interval) :-
-  ( fifthsSharpTenor(Fifth, Interval)
-  ; fifthsFlat(Fifth, Interval)
-  ).
-
-fifthsSharp(2, -3).
-fifthsSharp(3,  4).
-fifthsSharp(4, -3).
-fifthsSharp(5, -3).
-fifthsSharp(6,  4).
-fifthsSharp(7, -3).
-
-fifthsSharpTenor(2,  4).
-fifthsSharpTenor(3, -3).
-fifthsSharpTenor(4,  4).
-fifthsSharpTenor(5, -3).
-fifthsSharpTenor(6,  4).
-fifthsSharpTenor(7, -3).
-
-fifthsFlat(-2,  3).
-fifthsFlat(-3, -4).
-fifthsFlat(-4,  3).
-fifthsFlat(-5,  3).
-fifthsFlat(-6, -4).
-fifthsFlat(-7, -4).
-
-fifthCond(Fifth, Ref, Accidental, BaseStep, Step, BaseOctave, Octave, Clef, Num, Stafflines) :-
-  fifthCondEtiq(Fifth, Accidental),
-  fifthPattern(Clef, Num, Fifth, Interval),
-  pitchCondCcx(Ref, BaseStep, BaseOctave, Accidental, Step, Octave, Interval, Stafflines).
-
-fifthsIncr(Fifth, NextFifth) :-
-  [Fifth, NextFifth]::integer(1, 7),
-  { NextFifth == Fifth + 1 }.
-fifthsIncr(Fifth, NextFifth) :-
-  [Fifth, NextFifth]::integer(-7, -1),
-  { NextFifth == Fifth - 1 }.
-
-fifths(Fifth, NextFifth, Ref, Accidental, BaseStep, Step, BaseOctave, Octave) -->
-  { fifthsIncr(Fifth, NextFifth) },
-  statep(
-    fifthCond(Fifth, Ref, Accidental, BaseStep, Step, BaseOctave, Octave),
-    [o(baseStep), o(num), o(stafflines)]),
-  termp(Accidental).
+clef -->
+  statep(clefCond(Clef), [o(staffDef), o(staffLines), o(leftMarginClef),
+                          o(unit), o(eps)]),
+  termp(Clef).
+clef -->
+  state(o(staffDef([]))).

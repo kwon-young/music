@@ -1,6 +1,8 @@
 __pycache__
 .directory
 /various
+.ninja*
+build.ninja
 dataset
 examples
 tags

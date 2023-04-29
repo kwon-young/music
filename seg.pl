@@ -7,13 +7,15 @@
     segStartEnd/3,
     segEtiqs/2,
     segThickness/2,
+    segStartEndThickness/4,
+    segLength/2,
     segHV/5,
     segTop/3,
     segBottom/3,
     segLeft/3,
     segRight/3,
-    segHeight/3,
-    segWidth/3
+    segHeight/2,
+    segWidth/2
   ]).
 
 :- use_module(library(clpBNR)).
@@ -47,6 +49,9 @@ segEtiqs(Seg, Etiqs) :-
 segThickness(Seg, Thickness) :-
   segArgs(Seg, [_, _, _, Thickness]).
 
+segStartEndThickness(Seg, Start, End, Thickness) :-
+  segArgs(Seg, [Start, End, _, Thickness | _]).
+
 segInterpolate(Seg, Coeff, point(X, Y)) :-
   segStart(Seg, point(StartX, StartY)),
   segEnd(Seg, point(EndX, EndY)),
@@ -54,6 +59,10 @@ segInterpolate(Seg, Coeff, point(X, Y)) :-
     X == StartX * (1 - Coeff) + EndX * Coeff,
     Y == StartY * (1 - Coeff) + EndY * Coeff
   }.
+
+segLength(Seg, L) :-
+  segVec(Seg, Vec),
+  vecLength(Vec, L).
 
 segVec(Seg, vec(X, Y)) :-
   segStart(Seg, point(StartX, StartY)),
@@ -123,14 +132,14 @@ segLeft(v, Seg, Left) :-
 segRight(v, Seg, Right) :-
   segEndX(Seg, Right).
 
-segHeight(v, Seg, Height) :-
-  segTop(v, Seg, Top),
-  segBottom(v, Seg, Bottom),
-  { Height == Bottom - Top }.
-segWidth(v, Seg, Width) :-
-  segLeft(v, Seg, Left),
-  segRight(v, Seg, Right),
-  { Width == Right - Left }.
+segHeight(Seg, Height) :-
+  segStartY(Seg, Y1),
+  segEndY(Seg, Y2),
+  { Height == abs(Y2 - Y1) }.
+segWidth(Seg, Width) :-
+  segStartX(Seg, X1),
+  segEndX(Seg, X2),
+  { Width == X2 - X1 }.
 
 seg(Seg) :-
   segArgs(Seg, [point(X1, Y1), point(X2, Y2), _, Thickness]),

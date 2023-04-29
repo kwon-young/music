@@ -1,7 +1,0 @@
-﻿/*  Saved settings
-    Date: Wed Jul 13 12:09:46 2022
-*/
-
-
-%	staffline alignement threshold
-setting(music:staff_aligned_eps, 1).

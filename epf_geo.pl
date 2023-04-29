@@ -1,4 +1,4 @@
-:- module(epf_geo, [termp//1, selectp//1, find//2, horizontalSeg//1, verticalSeg//1]).
+:- module(epf_geo, [termp//1, terms//1, selectp//1, find//2, vertical_layout//3]).
 
 :- use_module(library(delay)).
 :- use_module(ccx).
@@ -22,16 +22,23 @@ in_scope(ccx, Ccx, Scopes) :-
 in_scope_end(Etiqs, Scope) :-
   delay(memberchk(Scope, Etiqs)).
 
-
+in_bounding_box(Term, BBoxes) :-
+  in_bounding_box_(BBoxes, Term).
+in_bounding_box_([], _).
+in_bounding_box_([BBox | _], Term) :-
+  delay(inside(Term, BBox)).
 
 termp(Term) -->
-  statep(delay:delay(geo:inside(Term)), [o(page)]),
   statep(delay:delay(epf_geo:in_scope(Term)), [o(scope)]),
-  cursor(term, Term),
-  {debug(epf_geo, "termp Term ~p~n", [Term])}.
+  statep(in_bounding_box(Term), [o(bbox)]),
+  cursor(term, Term).
+terms(Term) -->
+  statep(delay:delay(epf_geo:in_scope(Term)), [o(scope)]),
+  cursor(term, Term).
 
 selectp(Term) -->
   statep(delay:delay(geo:inside(Term)), [o(page)]),
+  statep(in_bounding_box(Term), [o(bbox)]),
   cursor(select, Term),
   {debug(epf_geo, "selectp Term ~p~n", [Term])}.
 
@@ -61,10 +68,24 @@ find_(noEl, Goal, Arg) -->
   state(+(cursor, cursor(Term))),
   call(Goal, Arg).
 
-horizontalSeg(Seg) -->
-  { horizontalCond(Seg) },
-  termp(Seg).
+:- meta_predicate vertical_layout(5, ?, ?, ?, ?).
 
-verticalSeg(Seg) -->
-  { verticalCond(Seg) },
-  termp(Seg).
+vertical_layout(Goal, Margin, SequenceIn) -->
+  state(o(bbox, [box(P, _) | _])),
+  {Box = box(P, _)},
+  reify(call(Goal, Box, SequenceIn, SequenceOut), Result),
+  vertical_layout(Result, Goal, Margin, Box, SequenceIn, SequenceOut).
+
+vertical_layoutCond(Margin, PrevBox, Box, Unit, Eps) :-
+  PrevBox = box(point(X1, _), point(X2, Y2)),
+  Box = box(point(X1, Y1), point(X2, _)),
+  eps(Eps, Y2 + Margin*Unit, Y1).
+
+vertical_layout(Goal, Margin, PrevBox, SequenceIn) -->
+  statep(vertical_layoutCond(Margin, PrevBox, Box), [o(unit), o(eps)]),
+  reify(call(Goal, Box, SequenceIn, SequenceOut), Result),
+  vertical_layout(Result, Goal, Margin, Box, SequenceIn, SequenceOut).
+vertical_layout(true, Goal, Margin, Box, _, Sequence) -->
+  vertical_layout(Goal, Margin, Box, Sequence).
+vertical_layout(false, _, _, _, [], _) -->
+  [].

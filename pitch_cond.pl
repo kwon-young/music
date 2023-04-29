@@ -60,7 +60,7 @@ pitchCond(Notehead, Step, Octave,
     GraphicalIntervals == NoteOffset / HalfInterline
   },
   debug(note, "GraphicalIntervals: ~p~n", [GraphicalIntervals]),
-  diffEps(Eps, GraphicalIntervals, PitchIntervals),
+  eps(Eps, GraphicalIntervals, PitchIntervals),
   numIntervals(PitchIntervals, Step, Octave, BaseStep, BaseOctave),
   debug(note, "PitchIntervals: ~p~n", [PitchIntervals]).
 

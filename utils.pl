@@ -1,4 +1,7 @@
-:- module(utils, [convlist2/3, maplist2/2, maplist2/3, nth0u/3, nth1u/3, epsGround/3]).
+:- module(utils, [convlist2/3, maplist2/2, maplist2/3, chain/2, chaing/2,
+                  nth0u/3, nth1u/3, epsGround/3, lower_bound/2,
+                  reify//2, reify/2,
+                  add_id/1, add_id//1]).
 
 :- use_module(library(delay)).
 :- use_module(library(clpBNR)).
@@ -52,6 +55,21 @@ product_([], [_ | L2], L1, L3) :-
   product(L2, L1, L1, L3).
 product_([A | L1R], [B | L2], L1, [A-B | L3]) :-
   product([B | L2], L1R, L1, L3).
+
+chain(Rel, X, Prev, X) :-
+  Expr =.. [Rel, Prev, X],
+  {Expr}.
+
+chain([A | List], Rel) :-
+  foldl(chain(Rel), List, A, _).
+
+:- meta_predicate chaing(?, 2).
+:- meta_predicate chain_(2, ?, ?, ?).
+
+chain_(Goal, B, A, B) :-
+  call(Goal, A, B).
+chaing([A | List], Goal) :-
+  foldl(chain_(Goal), List, A, _).
 
 :- use_module(library(clpBNR)).
 :- use_module(library(reif)).
@@ -107,6 +125,40 @@ epsGround(Eps, X, Y) :-
   ;   { Y == X }
   ).
 
+lower_bound(N, X) :-
+  ( interval(X)
+  -> range(X, [V, _]),
+     X is ceil(V * 10 * N) / (10.0 * N)
+  ; true
+  ).
 delay:mode(pairs:pairs_keys_values(ground, _, _)).
 delay:mode(pairs:pairs_keys_values(_, ground, _)).
 delay:mode(pairs:pairs_keys_values(_, _, ground)).
+
+:- meta_predicate reify(2, ?, ?, ?).
+reify(Goal, Result, L, R) :-
+   (  call(Goal, L, R)
+   *-> Result = true
+   ;  Result = false, L = R
+   ).
+
+:- meta_predicate reify(0, ?).
+reify(Goal, Result) :-
+   (  Goal
+   *-> Result = true
+   ;  Result = false
+   ).
+
+add_id(Id) :-
+  ( var(Id)
+  ->  gensym(id, Id)
+  ; true
+  ).
+
+add_id(Id) -->
+  {
+    ( var(Id)
+    ->  gensym(id, Id)
+    ; true
+    )
+  }.
