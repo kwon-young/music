@@ -25,8 +25,8 @@ def pointtopl(point: Optional[Point]):
         return "_"
 
 
-def listtopl(els, sep=' ', end=''):
-    return f"[{sep}" + f",{sep}".join([x.topl() for x in els]) + f"{end}]"
+def listtopl(els, sep=' ', start='', end=''):
+    return f"[{start}" + f",{sep}".join([x.topl() for x in els]) + f"{end}]"
 
 
 @dataclass
@@ -36,7 +36,10 @@ class IdClass:
 
     def topl(self):
         if self.id:
-            id = f"'{self.id}'"
+            if isinstance(self.id, int):
+                id = f"{self.id}"
+            else:
+                id = f"'{self.id}'"
         else:
             id = '_'
         return f"{id}-'{self.c}'"
@@ -148,7 +151,7 @@ def parse_svgnode(node, transforms, defs, scopes):
     res = None
     if w := node.attrib.get('width'):
         if h := node.attrib.get('height'):
-            scopes.append(IdClass(None, 'page'))
+            # scopes.append(IdClass(None, 'page'))
             width = Length(w)
             height = Length(h)
             transforms.append(Rect(0, 0, width, height))
@@ -313,9 +316,10 @@ def load_glyphnames(path: Path) -> dict[str, str]:
 
 
 def main(args):
+    page_number = int(args.svg.stem.split('_')[-1])
     tree = ET.parse(args.svg)
     root = tree.getroot()
-    res = parse_node(root, [], {}, [])
+    res = parse_node(root, [], {}, [IdClass(page_number, 'page')])
     glyphnames_inv = load_glyphnames(args.glyphnames)
     for el in res:
         for i in range(len(el.etiq)):
@@ -324,9 +328,9 @@ def main(args):
                 el.etiq[i] = IdClass(el.etiq[i].id,
                                      glyphnames_inv[codepoint]['name'])
     res.sort(key=sort_elements)
-    __import__('pprint').pprint(res)
+    # __import__('pprint').pprint(res)
     with args.output.open('w') as f:
-        f.write(listtopl(res, '\n\t', '\n') + '.')
+        f.write(listtopl(res, '\n\t', '\n\t', '\n') + '.')
     return
 
 
