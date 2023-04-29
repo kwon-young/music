@@ -5,28 +5,30 @@
 
 :- use_module(library(clpBNR)).
 
-term_(nochk, El) -->
-  [El].
-term_(chk, El) -->
-  [El], !.
-term_(Mode, El), [CurEl] -->
-  [CurEl],
-  term_(Mode, El).
-select_(Mode, El), [El] -->
-  term_(Mode, El).
+term_(Mode, X, [CurX | L], L) :-
+   (  (Mode == chk ; (var(CurX), var(L)))
+   -> !
+   ;  true
+   ),
+   CurX = X.
+term_(Mode, X, [CurX | L], [CurX | R]) :-
+   term_(Mode, X, L, R).
+
+select_(Mode, X, L, [X | R]) :-
+   term_(Mode, X, L, R).
 
 term(El), [State, StructOut] -->
   [State, StructIn],
-  { phrase(term_(nochk, El), StructIn, StructOut) }.
+  { term_(nochk, El, StructIn, StructOut) }.
 termchk(El), [State, StructOut] -->
   [State, StructIn],
-  { phrase(term_(chk, El), StructIn, StructOut) }.
+  { term_(chk, El, StructIn, StructOut) }.
 select(El), [State, StructOut] -->
   [State, StructIn],
-  { phrase(select_(nochk, El), StructIn, StructOut) }.
+  { select_(nochk, El, StructIn, StructOut) }.
 selectchk(El), [State, StructOut] -->
   [State, StructIn],
-  { phrase(select_(chk, El), StructIn, StructOut) }.
+  { select_(chk, El, StructIn, StructOut) }.
 selectchk(El1, El2) -->
   selectchk(El1),
   selectchk(El2).
