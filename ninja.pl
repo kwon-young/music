@@ -42,11 +42,11 @@ verovio -->
 swipl -->
   "swipl -q -t halt ".
 
-stem_page("stafflines", 1).
-stem_page("staff", 1).
+stem_page(_, 1).
 
 stem("stafflines").
 stem("staff").
+stem("clef-G-2").
 
 dir -->
    "data".

@@ -1,7 +1,6 @@
 *.svg
 *.pdf
-*.pl
+*-verovio*.pl
 *-verovio.musicxml
 *.diffXml
 *-ids.mei
-*-music.mei

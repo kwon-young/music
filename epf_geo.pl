@@ -26,6 +26,8 @@ in_bounding_box(Term, BBoxes) :-
   in_bounding_box_(BBoxes, Term).
 in_bounding_box_([], _).
 in_bounding_box_([BBox | _], Term) :-
+  debug(in_bounding_box, "BBox ~p~n", [BBox]),
+  debug(in_bounding_box, "Term ~p~n", [Term]),
   delay(inside(Term, BBox)).
 
 termp(Term) -->

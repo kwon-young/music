@@ -1,0 +1,40 @@
+﻿/*  Saved settings
+    Date: Sat Apr 29 17:06:42 2023
+*/
+
+
+%	page width
+setting(music_settings:pageWidth, real(0,inf)-2100.0).
+
+%	page height
+setting(music_settings:pageHeight, real(0,inf)-2970.0).
+
+%	page top margin
+setting(music_settings:topMargin, real(0,104)-104).
+
+%	page left margin
+setting(music_settings:leftMargin, real(40.0,50)-50).
+
+%	page bottom margin
+setting(music_settings:bottomMargin, real(0,2506.0)-50).
+
+%	page right margin
+setting(music_settings:rightMargin, real(0,48.80000000000018)-50).
+
+%	Global Eps in pixels
+setting(music_settings:eps, real(0.049999999999954525,0.050607299804642035)-0).
+
+%	The MEI unit (1⁄2 of the distance between the staff lines)
+setting(music_settings:unit, real(8.974696350097673,9.025303649902327)-9).
+
+%	line thickness in unit
+setting(music_settings:thickness, real(0.13843220667804113,0.15049058454105171)-0.15).
+
+%	barline thickness in unit
+setting(music_settings:barLineThickness, real(0.2935516413593497,0.30648472020724216)-0.3).
+
+%	The minimal measure width in MEI units
+setting(music_settings:measureMinWidth, real(0,15.567776892419419)-15).
+
+%	The staff minimal spacing in MEI units
+setting(music_settings:spacingStaff, real(0,24.073305532777535)-12).

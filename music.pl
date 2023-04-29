@@ -186,7 +186,7 @@ stafflinesCond(noEl, StaffLines, [Box | _], NumLines, Unit, Width, Thickness, Ep
   boxArgs(Box, [LeftTop, _]),
   debug(stafflinesCond, "LeftTop ~p~n", [LeftTop]),
   debug(stafflinesCond, "Start ~p~n", [Start]),
-  eps(p, Eps, LeftTop, Start).
+  eps(px, Eps, LeftTop, Start).
 
 stafflinesCond(StaffLines, NumLines, Unit, Width, Thickness, Eps) :-
   length(StaffLines, NumLines),
@@ -251,7 +251,9 @@ clefCond(Clef,
   ccxEtiqsCond(Clef, Etiq),
   delay(clef_shape_etiq(Shape, Etiq)),
   ccxOrigin(Clef, point(X, Y)),
-  nth1(N, StaffLines, Line),
+  length(StaffLines, NumLines),
+  { Index == NumLines - N + 1 },
+  nth1(Index, StaffLines, Line),
   segStart(Line, point(SegX, SegY)),
   eps(Eps, SegY, Y),
   eps(Eps, SegX + Unit * LeftMargin, X).
