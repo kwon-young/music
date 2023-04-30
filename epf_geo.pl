@@ -1,6 +1,7 @@
 :- module(epf_geo, [termp//1, terms//1, selectp//1, find//2, vertical_layout//3]).
 
 :- use_module(library(delay)).
+:- use_module(library(clpBNR)).
 :- use_module(ccx).
 :- use_module(seg).
 :- use_module(epf).
@@ -88,6 +89,10 @@ vertical_layout(Goal, Margin, PrevBox, SequenceIn) -->
   reify(call(Goal, Box, SequenceIn, SequenceOut), Result),
   vertical_layout(Result, Goal, Margin, Box, SequenceIn, SequenceOut).
 vertical_layout(true, Goal, Margin, Box, _, Sequence) -->
+  {
+    Box = box(_, point(_, Y)),
+    global_minimize(Y, Y)
+  },
   vertical_layout(Goal, Margin, Box, Sequence).
 vertical_layout(false, _, _, _, [], _) -->
   [].
