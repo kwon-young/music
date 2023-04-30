@@ -14,8 +14,11 @@
 :- setting(thickness, pair, real(0, 1)-0.15, 'line thickness in unit').
 :- setting(barLineThickness, pair, real(0, 1)-0.30, 'barline thickness in unit').
 :- setting(measureMinWidth, pair, real(0, 100)-15, 'The minimal measure width in MEI units').
-:- setting(leftMarginClef, pair, real(0, 2)-1, 'The minimal measure width in MEI units').
+:- setting(leftMarginClef, pair, real(0, 2)-1, 'The left margin for clef in MEI units').
 :- setting(spacingStaff, pair, real(0, 48)-12, 'The staff minimal spacing in MEI units').
+:- setting(gClefWidth, pair, real(3, 9)-5.16, 'The G clef width in MEI units').
+:- setting(gClefHeight, pair, real(10, 20)-13.9, 'The G clef height in MEI units').
+:- setting(gClefYOffset, pair, real(4, 16)-8.7, 'The G clef origin vertical offset from the top in MEI units').
 % :- setting(noteStem, number, 0.16, 'stem note vertical jonction').
 
 label_setting(eps, Value) :-

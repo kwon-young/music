@@ -244,23 +244,32 @@ clef_shape_etiq('F', fClef).
 
 clefCond(Clef,
          [element(clef, ['xml:id'=Id, shape=Shape, line=NAtom], [])],
-         StaffLines, LeftMargin, Unit, Eps) :-
+         StaffLines, LeftMargin, Width, Height, YOffset, Unit, Eps) :-
   add_id(Id),
   delay(atom_number(NAtom, N)),
   ccxEtiqsCond(Clef, 1, 'clef'),
   ccxEtiqsCond(Clef, Etiq),
   delay(clef_shape_etiq(Shape, Etiq)),
   ccxOrigin(Clef, point(X, Y)),
+  ccxLeft(Clef, Left),
+  eps(Eps, X, Left),
   length(StaffLines, NumLines),
   { Index == NumLines - N + 1 },
   nth1(Index, StaffLines, Line),
   segStart(Line, point(SegX, SegY)),
   eps(Eps, SegY, Y),
-  eps(Eps, SegX + Unit * LeftMargin, X).
+  eps(Eps, SegX + Unit * LeftMargin, X),
+  ccxWidth(Clef, ClefWidth),
+  eps(Eps, ClefWidth, Width*Unit),
+  ccxHeight(Clef, ClefHeight),
+  eps(Eps, ClefHeight, Height*Unit),
+  ccxTop(Clef, Top),
+  eps(Eps, Top + YOffset*Unit, Y).
 
 clef -->
+  termp(Clef),
   statep(clefCond(Clef), [o(staffDef), o(staffLines), o(leftMarginClef),
-                          o(unit), o(eps)]),
-  termp(Clef).
+                          o(gClefWidth), o(gClefHeight), o(gClefYOffset),
+                          o(unit), o(eps)]).
 clef -->
   state(o(staffDef([]))).
