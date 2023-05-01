@@ -153,6 +153,7 @@ measure(element(measure, ['xml:id'=Id, n=NAtom], [Staff]), Id) -->
   add_id(Id),
   statep(nCond(NAtom), [-(measureN)]),
   debug(measure, "staff pre ~p~n", [NAtom]),
+  state(+(staffN, 0)),
   scope(staff(Staff)),
   debug(measure, "barline pre ~p~n", [NAtom]),
   barline,
@@ -164,7 +165,7 @@ measure(element(measure, ['xml:id'=Id, n=NAtom], [Staff]), Id) -->
 staff(element(staff, ['xml:id'=Id, n=NAtom], [Layer]), Id) -->
   debug(staff, "start ~p~n", [NAtom]),
   add_id(Id),
-  statep(atom_number(NAtom), [o(staffN)]),
+  statep(nCond(NAtom), [-(staffN)]),
   stafflines,
   clef,
   scope(layer(Layer)).
