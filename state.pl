@@ -34,8 +34,9 @@ state_(-(Key, OldValue, NewValue), [OldValue, NewValue]), [StateOut] -->
   [StateIn],
   { rb_update(StateIn, Key, OldValue, NewValue, StateOut) }.
 
-state_([Term | Terms], Values) -->
-  sequence3(state_, [Term | Terms], Values).
+state_([Term | Terms], [Values]) -->
+  sequence3(state_, [Term | Terms], ListValues),
+  { append(ListValues, Values) }.
 
 sequence3(Goal, L1, L2) -->
   sequence3_(L1, L2, Goal).
@@ -66,7 +67,7 @@ add_args(Mod:Goal, Args, Mod:NewGoal) :-
 :- meta_predicate statep(:, ?, ?, ?).
 
 statep(Goal, KeyValues) -->
-  sequence3(stateValues, KeyValues, ListValues),
+  stateValues(KeyValues, ListValues),
   {
     append(ListValues, Values),
     add_args(Goal, Values, NewGoal),
@@ -159,8 +160,12 @@ test('statep(Goal, KeyValues)') :-
          [state(T2)], [state(_T3)]).
 test('statep(Goal, KeyValues)') :-
   list_to_rbtree([key1-value1, key2-value2], T2),
-  phrase(statep([_Value1, _OldNewValue2, _Value3]>>(true),
-                [o(key1, value1), [-(key2, value2, newvalue2)], +(key3, value3)]),
+  phrase(statep([value1,
+                 [value1, value2, newvalue2],
+                 value3]>>(true),
+                [o(key1, value1),
+                 [o(key1, value1), -(key2, value2, newvalue2)],
+                 +(key3, value3)]),
          [state(T2)], [state(_T3)]).
 test('statep(Goal, [o(key1)])') :-
   rb_new(T0),
