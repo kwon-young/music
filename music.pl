@@ -98,7 +98,7 @@ staffGrp(element(staffGrp, ['xml:id'=Id], [StaffDef])) -->
 staffDef(element(staffDef, ['xml:id'=Id, n=NAtom, lines=Lines], Childs)) -->
   add_id(Id),
   nCond(staffN, NAtom),
-  statep(atom_number(Lines), [o(staffNumLines, 5)]),
+  statep(atom_number(Lines), [o(NAtom-staffNumLines, 5)]),
   state(+(staffDef, Childs)).
 
 section(element(section, ['xml:id'=Id], Measures)) -->
@@ -166,7 +166,7 @@ staff(element(staff, ['xml:id'=Id, n=NAtom], [Layer]), Id) -->
   debug(staff, "start ~p~n", [NAtom]),
   add_id(Id),
   statep(nCond(NAtom), [-(staffN)]),
-  stafflines,
+  stafflines(NAtom),
   clef,
   scope(layer(Layer)).
 
@@ -201,9 +201,9 @@ stafflinesCond(StaffLines, NumLines, Unit, Width, Thickness, Eps) :-
   maplist(horizontalSeg(Eps, Unit), StaffLines),
   maplist(segWidth, StaffLines, Widths),
   maplist(eps(Eps, Width), Widths).
-stafflines -->
+stafflines(N) -->
   debug(stafflines, "start~n", []),
-  statep(stafflinesCond, [-(staffLines, _, StaffLines), o(bbox), o(staffNumLines),
+  statep(stafflinesCond, [-(staffLines, _, StaffLines), o(bbox), o(N-staffNumLines),
                           o(unit), +(staffWidth), o(thickness), o(eps)]),
   sequence(termp, StaffLines),
   debug(stafflines, "end ~p~n", [StaffLines]).
