@@ -53,6 +53,7 @@ mainTest(XmlFile, StructFile, SettingsFile) :-
   open(StructFile, read, S),
   read(S, Struct),
   close(S),
+  forall(setting(Mod:Name, _), restore_setting(Mod:Name)),
   get_settings(domain, Settings),
   makeState(State, Settings),
   once(phrase(mei(Xml), [State, Struct], [_, _Rest])),
