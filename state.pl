@@ -1,4 +1,5 @@
-:- module(state, [makeState/2, state//1, states//1, statep//2, scope//1, scope//2,
+:- module(state, [makeState/2, state//1, states//1, statep//2,
+                  scope//1, scope//2, pop_scope//1,
                   bbox//2, nCond/3, nCond//2]).
 
 :- use_module(library(rbtrees)).
@@ -88,6 +89,14 @@ scope(Mod:Goal, Arg) -->
     NewGoal =.. NewL
   },
   scope(Mod:NewGoal).
+
+:- meta_predicate pop_scope(0, ?, ?).
+
+pop_scope(Goal) -->
+  state(-(scope, [Scope | Scopes], Scopes)),
+  Goal,
+  state(-(scope, Scopes, [Scope | Scopes])).
+
 
 :- meta_predicate bbox(2, ?, ?, ?).
 

@@ -92,6 +92,10 @@ scoreDef(element(scoreDef, ['xml:id'=Id], [StaffGrp])) -->
   add_id(Id),
   staffGrp(StaffGrp).
 
+% staffGrp(element(staffGrp, ['xml:id'=Id, 'bar.thru'='true'], [StaffDef1, StaffDef2])) -->
+%   add_id(Id),
+%   staffDef(StaffDef1),
+%   staffDef(StaffDef2).
 staffGrp(element(staffGrp, ['xml:id'=Id], [StaffDef])) -->
   add_id(Id),
   staffDef(StaffDef).
@@ -147,11 +151,8 @@ measure(element(measure, ['xml:id'=Id, n=NAtom], [Staff]), Id) -->
   add_id(Id),
   statep(nCond(NAtom), [-(measureN)]),
   state(+(staffN, 0)),
-  bbox(measure(Staff), Box),
+  bbox(scope(staff(Staff)), Box),
   statep(measureCond(Box), [o(staffWidth), o(measureMinWidth), o(unit), o(eps)]).
-measure(Staff) -->
-  scope(staff(Staff)),
-  barline.
 
 staff(element(staff, ['xml:id'=Id, n=NAtom], [Layer]), Id) -->
   debug(staff, "start ~p~n", [NAtom]),
@@ -159,7 +160,8 @@ staff(element(staff, ['xml:id'=Id, n=NAtom], [Layer]), Id) -->
   statep(nCond(NAtom), [-(staffN)]),
   stafflines(NAtom),
   clef(NAtom),
-  scope(layer(Layer)).
+  scope(layer(Layer)),
+  pop_scope(barline).
 
 stafflinesCond([L | Lines], StaffLines, _, NumLines, Unit, Width, Thickness, Eps) :-
   maplist(segEnd, [L | Lines], Ends),
