@@ -94,5 +94,5 @@ vertical_layout(true, Goal, Margin, Box, _, Sequence) -->
     global_minimize(Y, Y)
   },
   vertical_layout(Goal, Margin, Box, Sequence).
-vertical_layout(false, _, _, _, [], _) -->
-  [].
+vertical_layout(false, _, _, box(_, point(X, _)), [], _) -->
+  { global_minimize(X, X) }.
