@@ -92,19 +92,9 @@ scoreDef(element(scoreDef, ['xml:id'=Id], [StaffGrp])) -->
   add_id(Id),
   staffGrp(StaffGrp).
 
-% staffGrp(element(staffGrp, ['xml:id'=Id, 'bar.thru'='true'], [StaffDef1, StaffDef2])) -->
-%   add_id(Id),
-%   staffDef(StaffDef1),
-%   staffDef(StaffDef2).
-staffGrp(element(staffGrp, ['xml:id'=Id], [StaffDef])) -->
+staffGrp(element(staffGrp, ['xml:id'=Id], StaffDefs)) -->
   add_id(Id),
-  staffDef(StaffDef).
-
-staffDef(element(staffDef, ['xml:id'=Id, n=NAtom, lines=Lines], Childs)) -->
-  add_id(Id),
-  nCond(staffN, NAtom),
-  statep(atom_number(Lines), [+(NAtom-staffNumLines, 5)]),
-  state(+(NAtom-staffDef, Childs)).
+  state(+(staffDefs, StaffDefs)).
 
 section(element(section, ['xml:id'=Id], Measures)) -->
   add_id(Id),
@@ -147,24 +137,36 @@ measureCond(StaffBox, StaffWidth, MeasureMinWidth, Unit, Eps) :-
   boxWidth(StaffBox, StaffBoxWidth),
   eps(Eps, StaffWidth, StaffBoxWidth).
 
-measure(element(measure, ['xml:id'=Id, n=NAtom], [Staff]), Id) -->
+measure(element(measure, ['xml:id'=Id, n=NAtom], Staffs), Id) -->
   add_id(Id),
   statep(nCond(NAtom), [-(measureN)]),
-  state([+(staffN, 0), +(staffWidth)]),
-  bbox(scope(staff(Staff)), Box),
+  state([+(staffN, 0), +(staffWidth), o(staffDefs, StaffDefs)]),
+  bbox(staffs(Staffs, StaffDefs), Box),
   statep(measureCond(Box), [o(staffWidth), o(measureMinWidth), o(unit), o(eps)]).
 
-staff(element(staff, ['xml:id'=Id, n=NAtom], [Layer]), Id) -->
-  debug(staff, "start ~p~n", [NAtom]),
+staffs([Staff | Staffs], [StaffDef | StaffDefs]) -->
+  staffs(Staffs, Staff, StaffDefs, StaffDef).
+staffs([], Staff, [], StaffDef) -->
+  scope(staff(Staff, StaffDef)).
+staffs([NextStaff | Staffs], Staff, [NextStaffDef | StaffDefs], StaffDef) -->
+  scope(staff(Staff, StaffDef)),
+  staffs(Staffs, NextStaff, StaffDefs, NextStaffDef).
+
+staff(element(staff, ['xml:id'=Id, n=NAtom], [Layer]),
+      element(staffDef, ['xml:id'=DefId, n=NAtom, lines=LinesAtom], Childs),
+      Id) -->
   add_id(Id),
+  add_id(DefId),
   statep(nCond(NAtom), [-(staffN)]),
-  stafflines(NAtom),
-  clef(NAtom),
+  { delay(atom_number(LinesAtom, NumLines)) },
+  stafflines(NumLines),
+  clef(Childs),
   scope(layer(Layer)),
   pop_scope(barline).
 
-stafflinesCond([L | Lines], StaffLines, _, NumLines, Unit, Width, Thickness, Eps) :-
+stafflinesCond([L | Lines], StaffLines, NumLines, _, Unit, Width, Thickness, Eps) :-
   maplist(segEnd, [L | Lines], Ends),
+  length([L | Lines], NumLines),
   length(StaffLines, NumLines),
   maplist(segStart, StaffLines, Starts),
   maplist(eps(p, Eps), Ends, Starts),
@@ -173,7 +175,8 @@ stafflinesCond([L | Lines], StaffLines, _, NumLines, Unit, Width, Thickness, Eps
   debug(stafflinesCond, "End ~p~n", [End]),
   debug(stafflinesCond, "Start ~p~n", [Start]),
   stafflinesCond(StaffLines, NumLines, Unit, Width, Thickness, Eps).
-stafflinesCond(noEl, StaffLines, [Box | _], NumLines, Unit, Width, Thickness, Eps) :-
+stafflinesCond(noEl, StaffLines, NumLines, [Box | _], Unit, Width, Thickness, Eps) :-
+  NumLines = 5,
   stafflinesCond(StaffLines, NumLines, Unit, Width, Thickness, Eps),
   StaffLines = [TopLine | _],
   segStart(TopLine, Start),
@@ -194,12 +197,11 @@ stafflinesCond(StaffLines, NumLines, Unit, Width, Thickness, Eps) :-
   maplist(segWidth, StaffLines, Widths),
   maplist(eps(Eps, Width), Widths).
 
-stafflines(N) -->
-  debug(stafflines, "start~n", []),
-  statep(stafflinesCond, [-(staffLines, _, StaffLines), o(bbox), o(N-staffNumLines),
-                          o(unit), o(staffWidth), o(thickness), o(eps)]),
-  sequence(termp, StaffLines),
-  debug(stafflines, "end ~p~n", [StaffLines]).
+stafflines(NumLines) -->
+  state(-(staffLines, PrevStaffLines, StaffLines)),
+  statep(stafflinesCond(PrevStaffLines, StaffLines, NumLines),
+         [o(bbox), o(unit), o(staffWidth), o(thickness), o(eps)]),
+  sequence(termp, StaffLines).
 
 layer(element(layer, ['xml:id'=Id, n='1'], []), Id) -->
   add_id(Id),
@@ -231,25 +233,22 @@ debug(Topic, Fmt, Args) -->
 
 :- multifile delay:mode/1.
 
-delay:mode(music:clef_shape_etiq(ground, _)).
-delay:mode(music:clef_shape_etiq(_, ground)).
-clef_shape_etiq('G', gClef).
-clef_shape_etiq('F', fClef).
+delay:mode(music:clefCond(ground, _, _, _, _)).
+delay:mode(music:clefCond(_, ground, ground, _, _)).
+clefCond(gClef, 'G', 2, [Settings | _], Settings).
+clefCond(fClef, 'F', 4, [_, Settings | _], Settings).
 
-clefCond(Clef,
-         [element(clef, ['xml:id'=Id, shape=Shape, line=NAtom], [])],
-         StaffLines, LeftMargin, Width, Height, YOffset, Unit, Eps) :-
-  add_id(Id),
-  delay(atom_number(NAtom, N)),
+clefCond(Shape, N, Clef,
+         StaffLines, LeftMargin, Settings, Unit, Eps) :-
   ccxEtiqsCond(Clef, 1, 'clef'),
   ccxEtiqsCond(Clef, Etiq),
-  delay(clef_shape_etiq(Shape, Etiq)),
+  delay(clefCond(Etiq, Shape, N, Settings, [Width, Height, YOffset])),
   ccxOrigin(Clef, point(X, Y)),
   ccxLeft(Clef, Left),
   eps(Eps, X, Left),
   length(StaffLines, NumLines),
   { Index == NumLines - N + 1 },
-  nth1(Index, StaffLines, Line),
+  freeze(Index, nth1(Index, StaffLines, Line)),
   segStart(Line, point(SegX, SegY)),
   eps(Eps, SegY, Y),
   eps(Eps, SegX + Unit * LeftMargin, X),
@@ -260,10 +259,14 @@ clefCond(Clef,
   ccxTop(Clef, Top),
   eps(Eps, Top + YOffset*Unit, Y).
 
-clef(NAtom) -->
-  statep(clefCond(Clef), [o(NAtom-staffDef), o(staffLines), o(leftMarginClef),
-                          o(gClefWidth), o(gClefHeight), o(gClefYOffset),
-                          o(unit), o(eps)]),
+clef([element(clef, ['xml:id'=Id, shape=Shape, line=LineAtom], [])]) -->
+  add_id(Id),
+  { delay(atom_number(LineAtom, Line)) },
+  statep(clefCond(Shape, Line, Clef),
+         [o(staffLines), o(leftMarginClef),
+          [[o(gClefWidth), o(gClefHeight), o(gClefYOffset)],
+           [o(fClefWidth), o(fClefHeight), o(fClefYOffset)]],
+          o(unit), o(eps)]),
   termp(Clef).
-clef(NAtom) -->
-  state(o(NAtom-staffDef, [])).
+clef([]) -->
+  [].
