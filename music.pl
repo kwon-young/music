@@ -133,12 +133,9 @@ measures(Measures) -->
   state(o(spacingStaff, Spacing)),
   vertical_layout(measureLine, Spacing, Measures).
 
-measureLine(Box, MeasuresIn, MeasuresOut) -->
+measureLine(MeasuresIn, MeasuresOut) -->
   state(+(staffLines, noEl)),
-  bbox(epf:longuest_notempty_sequence(state:scope(music:measure), MeasuresIn, MeasuresOut),
-       Box),
-  debug(measureLine, "Box ~p~n", [Box]).
-
+  longuest_notempty_sequence(state:scope(music:measure), MeasuresIn, MeasuresOut).
 
 measureEndCond([Line | _], StaffWidth, BarLineThickness, MeasureMinWidth, Unit) :-
   debug(measureEndCond, "Line Before ~p~n", [Line]),

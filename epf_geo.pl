@@ -71,12 +71,12 @@ find_(noEl, Goal, Arg) -->
   state(+(cursor, cursor(Term))),
   call(Goal, Arg).
 
-:- meta_predicate vertical_layout(5, ?, ?, ?, ?).
+:- meta_predicate vertical_layout(4, ?, ?, ?, ?).
 
 vertical_layout(Goal, Margin, SequenceIn) -->
   state(o(bbox, [box(P, _) | _])),
   {Box = box(P, _)},
-  reify(call(Goal, Box, SequenceIn, SequenceOut), Result),
+  reify(bbox(call(Goal, SequenceIn, SequenceOut), Box), Result),
   vertical_layout(Result, Goal, Margin, Box, SequenceIn, SequenceOut).
 
 vertical_layoutCond(Margin, PrevBox, Box, Unit, Eps) :-
@@ -86,7 +86,7 @@ vertical_layoutCond(Margin, PrevBox, Box, Unit, Eps) :-
 
 vertical_layout(Goal, Margin, PrevBox, SequenceIn) -->
   statep(vertical_layoutCond(Margin, PrevBox, Box), [o(unit), o(eps)]),
-  reify(call(Goal, Box, SequenceIn, SequenceOut), Result),
+  reify(bbox(call(Goal, SequenceIn, SequenceOut), Box), Result),
   vertical_layout(Result, Goal, Margin, Box, SequenceIn, SequenceOut).
 vertical_layout(true, Goal, Margin, Box, _, Sequence) -->
   {
