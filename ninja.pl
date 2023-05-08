@@ -45,6 +45,7 @@ swipl -->
 stem_page(_, 1).
 
 stem("stafflines").
+stem("double-stafflines").
 stem("staff").
 stem("clef-G-2").
 
