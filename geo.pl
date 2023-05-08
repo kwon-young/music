@@ -2,7 +2,8 @@
   geo, [
     eps/3, eps/4, above/4, leftof/2, horizontalSeg/3, slope/2, segYAtX/3, inside/2,
     intersect/2,
-    box/1, boxArgs/2, boxLeftTopRightBottom/3, remove_scopes/2,
+    box/1, boxArgs/2, boxLeftTopRightBottom/3, boxWidth/2,
+    remove_scopes/2,
     ground_elem/2
   ]).
 
@@ -66,6 +67,9 @@ box(Box) :-
 
 boxLeftTopRightBottom(Box, LeftTop, RightBottom) :-
   boxArgs(Box, [LeftTop, RightBottom]).
+
+boxWidth(box(point(Left, _), point(Right, _)), Width) :-
+  { Width == Right - Left }.
 
 delay:mode(geo:contour(nonvar, _)).
 contour(El, Box) :-

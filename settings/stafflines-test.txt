@@ -1,5 +1,5 @@
 ﻿/*  Saved settings
-    Date: Sun Apr 30 13:55:46 2023
+    Date: Mon May  8 13:55:05 2023
 */
 
 
@@ -34,4 +34,4 @@ setting(music_settings:thickness, real(0.1384138135997078,0.15050918595810742)-0
 setting(music_settings:barLineThickness, real(0.2935319140680803,0.3065046709498873)-0.3).
 
 %	The minimal measure width in MEI units
-setting(music_settings:measureMinWidth, real(0,16.0582226417506)-15).
+setting(music_settings:measureMinWidth, real(0,16.35175455581868)-15).

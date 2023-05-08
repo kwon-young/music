@@ -1,5 +1,5 @@
 ﻿/*  Saved settings
-    Date: Sun Apr 30 13:55:46 2023
+    Date: Mon May  8 13:55:05 2023
 */
 
 
@@ -10,7 +10,7 @@ setting(music_settings:pageWidth, real(0,inf)-2100.0).
 setting(music_settings:pageHeight, real(0,inf)-2970.0).
 
 %	page top margin
-setting(music_settings:topMargin, real(0,80.02400000000002)-104).
+setting(music_settings:topMargin, real(0,80.024)-104).
 
 %	page left margin
 setting(music_settings:leftMargin, real(0,50)-50).
@@ -22,28 +22,28 @@ setting(music_settings:bottomMargin, real(0,2764.84)-50).
 setting(music_settings:rightMargin, real(0,1838.8)-50).
 
 %	Global Eps in pixels
-setting(music_settings:eps, real(0.07199999999999562,0.07276239013671439)-0).
+setting(music_settings:eps, real(633318697599r8796093022208,83889324315219329r1152921504606846976)-0).
 
 %	The MEI unit (1⁄2 of the distance between the staff lines)
-setting(music_settings:unit, real(8.963618804931642,9.036381195068358)-9).
+setting(music_settings:unit, real(8.963618804931635,9.036381195068365)-9).
 
 %	line thickness in unit
-setting(music_settings:thickness, real(0.13581073920753314,0.1531482339902097)-0.15).
+setting(music_settings:thickness, real(0.13581073920753226,0.15314823399021057)-0.15).
 
 %	barline thickness in unit
-setting(music_settings:barLineThickness, real(0.2907400156267324,0.3093351525179969)-0.3).
+setting(music_settings:barLineThickness, real(0.2907400156267314,0.309335152517998)-0.3).
 
 %	The minimal measure width in MEI units
-setting(music_settings:measureMinWidth, real(0,23.279289789065302)-15).
+setting(music_settings:measureMinWidth, real(0,23.570029804692055)-15).
 
 %	The left margin for clef in MEI units
-setting(music_settings:leftMarginClef, real(0.9879217595131281,1.0121762858930408)-1).
+setting(music_settings:leftMarginClef, real(0.9879217595131266,1.0121762858930423)-1).
 
 %	The G clef width in MEI units
-setting(music_settings:gClefWidth, real(5.147108848755402,5.205125675856154)-5.16).
+setting(music_settings:gClefWidth, real(5.1471088487553995,5.205125675856157)-5.16).
 
 %	The G clef height in MEI units
-setting(music_settings:gClefHeight, real(13.839969221098928,13.968550550280973)-13.9).
+setting(music_settings:gClefHeight, real(13.83996922109892,13.96855055028098)-13.9).
 
-%	The G clef origin vertical offset
-setting(music_settings:gClefYOffset, real(8.621065881149333,8.707282637587795)-8.7).
+%	The G clef origin vertical offset from the top in MEI units
+setting(music_settings:gClefYOffset, real(8.621065881149324,8.707282637587802)-8.7).

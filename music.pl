@@ -138,27 +138,20 @@ measureLine(MeasuresIn, MeasuresOut) -->
   state(+(staffLines, noEl)),
   longuest_notempty_sequence(state:scope(music:measure), MeasuresIn, MeasuresOut).
 
-measureEndCond([Line | _], StaffWidth, BarLineThickness, MeasureMinWidth, Unit) :-
-  debug(measureEndCond, "Line Before ~p~n", [Line]),
-  { StaffWidth >= (BarLineThickness + MeasureMinWidth) * Unit },
-  debug(measureEndCond, "StaffWidth ~p~n", [StaffWidth]),
-  debug(measureEndCond, "Line After ~p~n", [Line]).
-  % segStartEnd(Line, point(XStart, YStart), point(XEnd, YEnd)),
-  % Vars = [XStart, YStart, XEnd, YEnd],
-  % maplist(global_minimize, Vars, Vars).
+measureCond(StaffBox, StaffWidth, MeasureMinWidth, Unit, Eps) :-
+  { StaffWidth >= MeasureMinWidth * Unit },
+  boxWidth(StaffBox, StaffBoxWidth),
+  eps(Eps, StaffWidth, StaffBoxWidth).
+
 measure(element(measure, ['xml:id'=Id, n=NAtom], [Staff]), Id) -->
-  debug(measure, "start ~p~n", [NAtom]),
   add_id(Id),
   statep(nCond(NAtom), [-(measureN)]),
-  debug(measure, "staff pre ~p~n", [NAtom]),
   state(+(staffN, 0)),
+  bbox(measure(Staff), Box),
+  statep(measureCond(Box), [o(staffWidth), o(measureMinWidth), o(unit), o(eps)]).
+measure(Staff) -->
   scope(staff(Staff)),
-  debug(measure, "barline pre ~p~n", [NAtom]),
-  barline,
-  debug(measure, "barline post ~p~n", [NAtom]),
-  statep(measureEndCond, [o(staffLines, StaffLines), o(staffWidth), o(barLineThickness),
-                          o(measureMinWidth), o(unit)]),
-  debug(measure, "end ~p ~p~n", [NAtom, StaffLines]).
+  barline.
 
 staff(element(staff, ['xml:id'=Id, n=NAtom], [Layer]), Id) -->
   debug(staff, "start ~p~n", [NAtom]),
@@ -186,7 +179,6 @@ stafflinesCond(noEl, StaffLines, [Box | _], NumLines, Unit, Width, Thickness, Ep
   debug(stafflinesCond, "LeftTop ~p~n", [LeftTop]),
   debug(stafflinesCond, "Start ~p~n", [Start]),
   eps(px, Eps, LeftTop, Start).
-
 stafflinesCond(StaffLines, NumLines, Unit, Width, Thickness, Eps) :-
   length(StaffLines, NumLines),
   maplist(segStartEndThickness, StaffLines, Starts, Ends, Thicknesses),
@@ -199,6 +191,7 @@ stafflinesCond(StaffLines, NumLines, Unit, Width, Thickness, Eps) :-
   maplist(horizontalSeg(Eps, Unit), StaffLines),
   maplist(segWidth, StaffLines, Widths),
   maplist(eps(Eps, Width), Widths).
+
 stafflines(N) -->
   debug(stafflines, "start~n", []),
   statep(stafflinesCond, [-(staffLines, _, StaffLines), o(bbox), o(N-staffNumLines),
@@ -266,9 +259,9 @@ clefCond(Clef,
   eps(Eps, Top + YOffset*Unit, Y).
 
 clef(NAtom) -->
-  termp(Clef),
   statep(clefCond(Clef), [o(NAtom-staffDef), o(staffLines), o(leftMarginClef),
                           o(gClefWidth), o(gClefHeight), o(gClefYOffset),
-                          o(unit), o(eps)]).
+                          o(unit), o(eps)]),
+  termp(Clef).
 clef(NAtom) -->
   state(o(NAtom-staffDef([]))).
