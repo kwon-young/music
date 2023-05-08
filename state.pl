@@ -1,4 +1,4 @@
-:- module(state, [makeState/2, state//1, states//1, statep//2,
+:- module(state, [makeState/2, state//1, statep//2,
                   scope//1, scope//2, pop_scope//1,
                   bbox//2, nCond/3, nCond//2]).
 
@@ -14,21 +14,28 @@ state(Term) -->
   stateValues(Term, _).
 stateValues(Term, Values), [state(StateOut)] -->
   [state(StateIn)],
-  { state_(Term, Values, StateIn, StateOut) }.
+  { phrase(state_(Term, Values), [StateIn], [StateOut]) }.
 
-state_(o(Key), Values, StateIn, StateOut) :-
-  state_(o(Key, _), Values, StateIn, StateOut).
-state_(o(Key, Value), [Value], State, State) :-
-  rb_lookup(Key, Value, State).
-state_(+(Key), Values, StateIn, StateOut) :-
-  state_(+(Key, _), Values, StateIn, StateOut).
-state_(+(Key, Value), [Value], StateIn, StateOut) :-
-  rb_insert(StateIn, Key, Value, StateOut).
+state_(o(Key), Values) -->
+  state_(o(Key, _), Values).
+state_(o(Key, Value), [Value]), [State] -->
+  [State],
+  { rb_lookup(Key, Value, State) }.
 
-state_(-(Key), Values, StateIn, StateOut) :-
-  state_(-(Key, _, _), Values, StateIn, StateOut).
-state_(-(Key, OldValue, NewValue), [OldValue, NewValue], StateIn, StateOut) :-
-  rb_update(StateIn, Key, OldValue, NewValue, StateOut).
+state_(+(Key), Values) -->
+  state_(+(Key, _), Values).
+state_(+(Key, Value), [Value]), [StateOut] -->
+  [StateIn],
+  { rb_insert(StateIn, Key, Value, StateOut) }.
+
+state_(-(Key), Values) -->
+  state_(-(Key, _, _), Values).
+state_(-(Key, OldValue, NewValue), [OldValue, NewValue]), [StateOut] -->
+  [StateIn],
+  { rb_update(StateIn, Key, OldValue, NewValue, StateOut) }.
+
+state_([Term | Terms], Values) -->
+  sequence3(state_, [Term | Terms], Values).
 
 sequence3(Goal, L1, L2) -->
   sequence3_(L1, L2, Goal).
@@ -37,9 +44,6 @@ sequence3_([A | L1], [B | L2], Goal) -->
   sequence3_(L1, L2, Goal).
 sequence3_([], [], _Goal) -->
   [].
-
-states(KeyValues) -->
-  sequence(state, KeyValues).
 
 nCond(NAtom, PrevN, N) :-
   N::integer(1, _),
@@ -121,7 +125,7 @@ test('state(o(key, Value))') :-
   rb_insert_new(TreeIn, key, value, TreeOut),
   phrase(state(o(key, Value)), [state(TreeOut)], [state(TreeOut)]),
   Value == value.
-test('state(o(newkey, Value))') :-
+test('state(o(newkey, Value))', [fail]) :-
   rb_new(T0),
   phrase(state(o(newkey, Value)), [state(T0)], [state(T1)]),
   rb_lookup(newkey, Value, T1).
@@ -144,7 +148,7 @@ test('states') :-
   rb_new(T0),
   rb_insert_new(T0, key1, value1, T1),
   rb_insert_new(T1, key2, value2, T2),
-  phrase(states([o(key1, value1), -(key2, value2, newvalue2), +(key3, value3)]),
+  phrase(state([[o(key1, value1), -(key2, value2, newvalue2), +(key3, value3)]]),
          [state(T2)], [state(_T3)]).
 test('statep(Goal, KeyValues)') :-
   rb_new(T0),
@@ -152,6 +156,11 @@ test('statep(Goal, KeyValues)') :-
   rb_insert_new(T1, key2, value2, T2),
   phrase(statep([_Value1, _OldValue2, _NewValue2, _Value3]>>(true),
                 [o(key1, value1), -(key2, value2, newvalue2), +(key3, value3)]),
+         [state(T2)], [state(_T3)]).
+test('statep(Goal, KeyValues)') :-
+  list_to_rbtree([key1-value1, key2-value2], T2),
+  phrase(statep([_Value1, _OldNewValue2, _Value3]>>(true),
+                [o(key1, value1), [-(key2, value2, newvalue2)], +(key3, value3)]),
          [state(T2)], [state(_T3)]).
 test('statep(Goal, [o(key1)])') :-
   rb_new(T0),

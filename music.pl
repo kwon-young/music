@@ -65,7 +65,7 @@ mainTest(XmlFile, StructFile, SettingsFile) :-
 mei([pi('xml-model href="https://music-encoding.org/schema/dev/mei-all.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"'),
      pi('xml-model href="https://music-encoding.org/schema/dev/mei-all.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"'),
      element(mei, [xmlns='http://www.music-encoding.org/ns/mei', meiversion='5.0.0-dev'], [MeiHead, Music])]) -->
-  states([
+  state([
     +(pageId, 0),
     +(measureN, 0),
     +(staffN, 0),
@@ -150,7 +150,7 @@ measureCond(StaffBox, StaffWidth, MeasureMinWidth, Unit, Eps) :-
 measure(element(measure, ['xml:id'=Id, n=NAtom], [Staff]), Id) -->
   add_id(Id),
   statep(nCond(NAtom), [-(measureN)]),
-  states([+(staffN, 0), +(staffWidth)]),
+  state([+(staffN, 0), +(staffWidth)]),
   bbox(scope(staff(Staff)), Box),
   statep(measureCond(Box), [o(staffWidth), o(measureMinWidth), o(unit), o(eps)]).
 
