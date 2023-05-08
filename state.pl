@@ -18,11 +18,8 @@ stateValues(Term, Values), [state(StateOut)] -->
 
 state_(o(Key), Values, StateIn, StateOut) :-
   state_(o(Key, _), Values, StateIn, StateOut).
-state_(o(Key, Value), [Value], StateIn, StateOut) :-
-  ( rb_lookup(Key, Value, StateIn)
-  ->  StateIn = StateOut
-  ; rb_insert_new(StateIn, Key, Value, StateOut)
-  ).
+state_(o(Key, Value), [Value], State, State) :-
+  rb_lookup(Key, Value, State).
 state_(+(Key), Values, StateIn, StateOut) :-
   state_(+(Key, _), Values, StateIn, StateOut).
 state_(+(Key, Value), [Value], StateIn, StateOut) :-
