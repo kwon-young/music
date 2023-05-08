@@ -16,7 +16,9 @@
 	<score xml:id="id2">
 	  <scoreDef xml:id="id3">
 	    <staffGrp xml:id="id4">
-	      <staffDef xml:id="id8" n="1" lines="5"/>
+	      <staffDef xml:id="id8" n="1" lines="5">
+		<clef xml:id="id9" shape="F" line="4"/>
+	      </staffDef>
 	    </staffGrp>
 	  </scoreDef>
 	  <section xml:id="id5">

@@ -1,0 +1,49 @@
+﻿/*  Saved settings
+    Date: Mon May  8 18:53:20 2023
+*/
+
+
+%	page width
+setting(music_settings:pageWidth, real(0,inf)-2100.0).
+
+%	page height
+setting(music_settings:pageHeight, real(0,inf)-2970.0).
+
+%	page top margin
+setting(music_settings:topMargin, real(0,103.928)-104).
+
+%	page left margin
+setting(music_settings:leftMargin, real(0,50)-50).
+
+%	page bottom margin
+setting(music_settings:bottomMargin, real(0,2794.0)-50).
+
+%	page right margin
+setting(music_settings:rightMargin, real(0,1835.4)-50).
+
+%	Global Eps in pixels
+setting(music_settings:eps, real(40532396646335r140737488355328,0.28876074218750386)-0).
+
+%	The MEI unit (1⁄2 of the distance between the staff lines)
+setting(music_settings:unit, real(8.855619628906247,9.144380371093753)-9).
+
+%	line thickness in unit
+setting(music_settings:thickness, real(0.11058586987578933,0.17940706678519922)-0.15).
+
+%	barline thickness in unit
+setting(music_settings:barLineThickness, real(0.263685363027401,0.33749877111158677)-0.3).
+
+%	The minimal measure width in MEI units
+setting(music_settings:measureMinWidth, real(0,24.26580744736982)-15).
+
+%	The left margin for clef in MEI units
+setting(music_settings:leftMarginClef, real(0.9307617260451361,1.0263269113908475)-1).
+
+%	The F clef width in MEI units
+setting(music_settings:fClefWidth, real(5.4327616789491,5.67512639975422)-5.5).
+
+%	The F clef height in MEI units
+setting(music_settings:fClefHeight, real(6.5193306532022515,6.797125809887781)-6.6).
+
+%	The F clef origin vertical offset from the top in MEI units
+setting(music_settings:fClefYOffset, real(1.9447177978320969,2.0733456846153224)-2).

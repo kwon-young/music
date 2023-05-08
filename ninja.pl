@@ -45,9 +45,10 @@ swipl -->
 stem_page(_, 1).
 
 stem("stafflines").
-stem("double-stafflines").
+% stem("double-stafflines").
 stem("staff").
 stem("clef-G-2").
+stem("clef-F-4").
 
 dir -->
    "data".

@@ -19,9 +19,9 @@
 :- setting(gClefWidth, pair, real(3, 9)-5.16, 'The G clef width in MEI units').
 :- setting(gClefHeight, pair, real(10, 20)-13.9, 'The G clef height in MEI units').
 :- setting(gClefYOffset, pair, real(4, 16)-8.7, 'The G clef origin vertical offset from the top in MEI units').
-:- setting(fClefWidth, pair, real(3, 9)-5.16, 'The F clef width in MEI units').
-:- setting(fClefHeight, pair, real(10, 20)-13.9, 'The F clef height in MEI units').
-:- setting(fClefYOffset, pair, real(4, 16)-8.7, 'The F clef origin vertical offset from the top in MEI units').
+:- setting(fClefWidth, pair, real(3, 9)-5.5, 'The F clef width in MEI units').
+:- setting(fClefHeight, pair, real(3, 9)-6.6, 'The F clef height in MEI units').
+:- setting(fClefYOffset, pair, real(0, 4)-2, 'The F clef origin vertical offset from the top in MEI units').
 % :- setting(noteStem, number, 0.16, 'stem note vertical jonction').
 
 label_setting(eps, Value) :-

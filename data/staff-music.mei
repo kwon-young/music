@@ -16,83 +16,83 @@
 	<score xml:id="id2">
 	  <scoreDef xml:id="id3">
 	    <staffGrp xml:id="id4">
-	      <staffDef xml:id="id5" n="1" lines="5"/>
+	      <staffDef xml:id="id8" n="1" lines="5"/>
 	    </staffGrp>
 	  </scoreDef>
-	  <section xml:id="id6">
-	    <measure xml:id="id7" n="1">
-	      <staff xml:id="id8" n="1">
-		<layer xml:id="id79" n="1"/>
+	  <section xml:id="id5">
+	    <measure xml:id="id6" n="1">
+	      <staff xml:id="id7" n="1">
+		<layer xml:id="id10" n="1"/>
 	      </staff>
 	    </measure>
-	    <measure xml:id="id80" n="2">
-	      <staff xml:id="id81" n="1">
-		<layer xml:id="id147" n="1"/>
+	    <measure xml:id="id11" n="2">
+	      <staff xml:id="id12" n="1">
+		<layer xml:id="id13" n="1"/>
 	      </staff>
 	    </measure>
-	    <measure xml:id="id148" n="3">
-	      <staff xml:id="id149" n="1">
-		<layer xml:id="id210" n="1"/>
+	    <measure xml:id="id14" n="3">
+	      <staff xml:id="id15" n="1">
+		<layer xml:id="id16" n="1"/>
 	      </staff>
 	    </measure>
-	    <measure xml:id="id211" n="4">
-	      <staff xml:id="id212" n="1">
-		<layer xml:id="id268" n="1"/>
+	    <measure xml:id="id17" n="4">
+	      <staff xml:id="id18" n="1">
+		<layer xml:id="id19" n="1"/>
 	      </staff>
 	    </measure>
-	    <measure xml:id="id269" n="5">
-	      <staff xml:id="id270" n="1">
-		<layer xml:id="id321" n="1"/>
+	    <measure xml:id="id20" n="5">
+	      <staff xml:id="id21" n="1">
+		<layer xml:id="id22" n="1"/>
 	      </staff>
 	    </measure>
-	    <measure xml:id="id322" n="6">
-	      <staff xml:id="id323" n="1">
-		<layer xml:id="id369" n="1"/>
+	    <measure xml:id="id23" n="6">
+	      <staff xml:id="id24" n="1">
+		<layer xml:id="id25" n="1"/>
 	      </staff>
 	    </measure>
-	    <measure xml:id="id370" n="7">
-	      <staff xml:id="id371" n="1">
-		<layer xml:id="id412" n="1"/>
+	    <measure xml:id="id26" n="7">
+	      <staff xml:id="id27" n="1">
+		<layer xml:id="id28" n="1"/>
 	      </staff>
 	    </measure>
-	    <measure xml:id="id413" n="8">
-	      <staff xml:id="id414" n="1">
-		<layer xml:id="id450" n="1"/>
+	    <measure xml:id="id29" n="8">
+	      <staff xml:id="id30" n="1">
+		<layer xml:id="id31" n="1"/>
 	      </staff>
 	    </measure>
-	    <measure xml:id="id451" n="9">
-	      <staff xml:id="id452" n="1">
-		<layer xml:id="id483" n="1"/>
+	    <measure xml:id="id32" n="9">
+	      <staff xml:id="id33" n="1">
+		<layer xml:id="id34" n="1"/>
 	      </staff>
 	    </measure>
-	    <measure xml:id="id484" n="10">
-	      <staff xml:id="id485" n="1">
-		<layer xml:id="id511" n="1"/>
+	    <measure xml:id="id35" n="10">
+	      <staff xml:id="id36" n="1">
+		<layer xml:id="id37" n="1"/>
 	      </staff>
 	    </measure>
-	    <measure xml:id="id512" n="11">
-	      <staff xml:id="id513" n="1">
-		<layer xml:id="id534" n="1"/>
+	    <measure xml:id="id38" n="11">
+	      <staff xml:id="id39" n="1">
+		<layer xml:id="id40" n="1"/>
 	      </staff>
 	    </measure>
-	    <measure xml:id="id535" n="12">
-	      <staff xml:id="id536" n="1">
-		<layer xml:id="id552" n="1"/>
+	    <measure xml:id="id41" n="12">
+	      <staff xml:id="id42" n="1">
+		<layer xml:id="id43" n="1"/>
 	      </staff>
 	    </measure>
-	    <measure xml:id="id553" n="13">
-	      <staff xml:id="id554" n="1">
-		<layer xml:id="id565" n="1"/>
+	    <measure xml:id="id44" n="13">
+	      <staff xml:id="id45" n="1">
+		<layer xml:id="id46" n="1"/>
 	      </staff>
 	    </measure>
-	    <measure xml:id="id566" n="14">
-	      <staff xml:id="id567" n="1">
-		<layer xml:id="id573" n="1"/>
+	    <measure xml:id="id47" n="14">
+	      <staff xml:id="id48" n="1">
+		<layer xml:id="id49" n="1"/>
 	      </staff>
 	    </measure>
-	    <measure xml:id="id576" n="15">
-	      <staff xml:id="id577" n="1">
-		<layer xml:id="id578" n="1"/>
+	    <measure xml:id="id52" n="15">
+	      <staff xml:id="id53" n="1">
+		<layer xml:id="id54" n="1"/>
 	      </staff>
 	    </measure>
 	  </section>

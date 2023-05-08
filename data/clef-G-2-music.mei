@@ -16,14 +16,14 @@
 	<score xml:id="id2">
 	  <scoreDef xml:id="id3">
 	    <staffGrp xml:id="id4">
-	      <staffDef xml:id="id5" n="1" lines="5">
+	      <staffDef xml:id="id8" n="1" lines="5">
 		<clef xml:id="id9" shape="G" line="2"/>
 	      </staffDef>
 	    </staffGrp>
 	  </scoreDef>
-	  <section xml:id="id6">
-	    <measure xml:id="id7" n="1">
-	      <staff xml:id="id8" n="1">
+	  <section xml:id="id5">
+	    <measure xml:id="id6" n="1">
+	      <staff xml:id="id7" n="1">
 		<layer xml:id="id10" n="1"/>
 	      </staff>
 	    </measure>
