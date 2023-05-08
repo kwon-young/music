@@ -79,7 +79,7 @@ scope(Mod:Goal) -->
   call(Mod:Goal, Scope),
   state(-(scope, [Scope-Name | Scopes], Scopes)).
 
-:- meta_predicate scope(4, ?, ?).
+:- meta_predicate scope(4, ?, ?, ?).
 
 scope(Mod:Goal, Arg) -->
   {
