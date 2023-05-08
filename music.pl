@@ -100,7 +100,7 @@ staffDef(element(staffDef, ['xml:id'=Id, n=NAtom, lines=Lines], Childs)) -->
   add_id(Id),
   nCond(staffN, NAtom),
   statep(atom_number(Lines), [o(NAtom-staffNumLines, 5)]),
-  state(+(staffDef, Childs)).
+  state(+(NAtom-staffDef, Childs)).
 
 section(element(section, ['xml:id'=Id], Measures)) -->
   add_id(Id),
@@ -165,7 +165,7 @@ staff(element(staff, ['xml:id'=Id, n=NAtom], [Layer]), Id) -->
   add_id(Id),
   statep(nCond(NAtom), [-(staffN)]),
   stafflines(NAtom),
-  clef,
+  clef(NAtom),
   scope(layer(Layer)).
 
 stafflinesCond([L | Lines], StaffLines, _, NumLines, Unit, Width, Thickness, Eps) :-
@@ -265,10 +265,10 @@ clefCond(Clef,
   ccxTop(Clef, Top),
   eps(Eps, Top + YOffset*Unit, Y).
 
-clef -->
+clef(NAtom) -->
   termp(Clef),
-  statep(clefCond(Clef), [o(staffDef), o(staffLines), o(leftMarginClef),
+  statep(clefCond(Clef), [o(NAtom-staffDef), o(staffLines), o(leftMarginClef),
                           o(gClefWidth), o(gClefHeight), o(gClefYOffset),
                           o(unit), o(eps)]).
-clef -->
-  state(o(staffDef([]))).
+clef(NAtom) -->
+  state(o(NAtom-staffDef([]))).
