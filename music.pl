@@ -158,11 +158,17 @@ staff(element(staff, ['xml:id'=Id, n=NAtom], [Layer]),
   add_id(Id),
   add_id(DefId),
   statep(nCond(NAtom), [-(staffN)]),
+  state(o(staffLines, StaffLines)),
   { delay(atom_number(LinesAtom, NumLines)) },
   stafflines(NumLines),
-  clef(Childs),
+  lineStart(StaffLines, Childs),
   scope(layer(Layer)),
   pop_scope(barline).
+
+lineStart(noEl, Childs) -->
+  clef(Childs).
+lineStart([_ | _], _) -->
+  [].
 
 stafflinesCond([L | Lines], StaffLines, NumLines, _, Unit, Width, Thickness, Eps) :-
   maplist(segEnd, [L | Lines], Ends),

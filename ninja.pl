@@ -49,6 +49,7 @@ stem("stafflines").
 stem("staff").
 stem("clef-G-2").
 stem("clef-F-4").
+stem("clef-staff").
 
 dir -->
    "data".
