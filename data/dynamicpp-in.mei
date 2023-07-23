@@ -29,6 +29,7 @@
                      <staff n="2">
                         <layer n="1" />
                      </staff>
+                     <dynam place="between" staff="1 2" tstamp="1">pp</dynam>
                   </measure>
                </section>
             </score>

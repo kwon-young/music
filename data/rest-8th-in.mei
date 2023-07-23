@@ -16,18 +16,16 @@
                <scoreDef>
                   <staffGrp>
                      <staffDef n="1" lines="5">
-                     </staffDef>
-                     <staffDef n="2" lines="5">
+                        <meterSig count="4" unit="4" />
                      </staffDef>
                   </staffGrp>
                </scoreDef>
                <section>
                   <measure n="1">
                      <staff n="1">
-                        <layer n="1" />
-                     </staff>
-                     <staff n="2">
-                        <layer n="1" />
+                        <layer n="1">
+                           <rest dur="8" />
+                        </layer>
                      </staff>
                   </measure>
                </section>

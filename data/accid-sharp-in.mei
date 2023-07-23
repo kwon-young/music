@@ -16,18 +16,20 @@
                <scoreDef>
                   <staffGrp>
                      <staffDef n="1" lines="5">
-                     </staffDef>
-                     <staffDef n="2" lines="5">
+                        <clef shape="G" line="2" />
+                        <keySig sig="0" />
+                        <meterSig count="4" unit="4" />
                      </staffDef>
                   </staffGrp>
                </scoreDef>
                <section>
                   <measure n="1">
                      <staff n="1">
-                        <layer n="1" />
-                     </staff>
-                     <staff n="2">
-                        <layer n="1" />
+                        <layer n="1">
+                           <note dur="1" oct="4" pname="c">
+                              <accid accid="s"/>
+                           </note>
+                        </layer>
                      </staff>
                   </measure>
                </section>

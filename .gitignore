@@ -6,3 +6,6 @@ build.ninja
 dataset
 examples
 tags
+graph.pdf
+*.prof
+*.bak

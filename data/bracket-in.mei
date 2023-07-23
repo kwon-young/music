@@ -15,6 +15,7 @@
             <score>
                <scoreDef>
                   <staffGrp>
+                     <grpSym symbol="bracket" />
                      <staffDef n="1" lines="5">
                      </staffDef>
                      <staffDef n="2" lines="5">
