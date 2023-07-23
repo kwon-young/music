@@ -92,7 +92,7 @@ scope(Mod:Goal, Arg) -->
   },
   scope(Mod:NewGoal).
 
-:- meta_predicate pop_scope(0, ?, ?).
+:- meta_predicate pop_scope(2, ?, ?).
 
 pop_scope(Goal) -->
   state(-(scope, [Scope | Scopes], Scopes)),
