@@ -4,8 +4,14 @@ from pathlib import Path as PLPath
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 import json
+import io
 
-from svgelements import Length, Rect, Viewbox, Matrix, Path, Point, Ellipse, Polygon
+from svgelements import Length, Rect, Viewbox, Matrix, Path, Point, Ellipse, \
+    Polygon, Group
+import cairosvg
+from PIL import Image
+import numpy as np
+from pycocotools import mask
 
 
 def make_args():
@@ -45,8 +51,25 @@ class IdClass:
         return f"{id}-'{self.c}'"
 
 
+def dtorle(d, x, y, width, height, parent_width, parent_height):
+    g = Group()
+    g.append(Path(d=d, fill='white', x=-x, y=-y))
+    xml = g.string_xml()
+    img = cairosvg.svg2png(
+        xml, parent_width=width,
+        parent_height=height)
+    img = Image.open(io.BytesIO(img)).convert('L')
+    arr = np.array(img)
+    background = np.zeros([parent_height, parent_width], dtype=np.uint8)
+    background[round(y):round(y)+arr.shape[0],
+               round(x):round(x)+arr.shape[1]] = arr
+    rs = segmentationToCocoMask(background, 255)
+    return rs
+
+
 @dataclass
 class Seg:
+    d: str | None
     start: Point
     end: Point
     etiq: list
@@ -56,9 +79,36 @@ class Seg:
         return f"seg({pointtopl(self.start)}, {pointtopl(self.end)}, " \
                 f"{listtopl(self.etiq[::-1])}, {self.thickness})"
 
+    def bbox(self):
+        delta = self.thickness / 2
+        x = min(self.start.x, self.end.x) - delta
+        xmax = max(self.start.x, self.end.x) + delta
+        width = xmax - x
+        y = min(self.start.y, self.end.y) - delta
+        ymax = max(self.start.y, self.end.y) + delta
+        height = ymax - y
+        return (x, y, width, height)
+
+    def tococo(self, parent_width, parent_height):
+        bbox = self.bbox()
+        rle = dtorle(self.d, *bbox, parent_width, parent_height)
+        _, _, width, height = bbox
+        area = width * height
+        return {
+            'category': 'seg',
+            'segmentation': rle,
+            'area': area,
+            'bbox': bbox,
+            'iscrowd': 0,
+            'keypoints': [self.start.x, self.start.y, 2,
+                          self.end.x, self.end.y, 2],
+            'num_keypoints': 2,
+        }
+
 
 @dataclass
 class Ccx:
+    d: str
     lefttop: Point
     rightbottom: Point
     etiq: list[tuple[Optional[str], str]]
@@ -69,6 +119,27 @@ class Ccx:
                f"{pointtopl(self.rightbottom)}, " \
                f"{listtopl(self.etiq[::-1])}, " \
                f"{pointtopl(self.origin)})"
+
+    def bbox(self):
+        x, y = self.lefttop.x, self.lefttop.y
+        xmax, ymax = self.rightbottom.x, self.rightbottom.y
+        width, height = xmax - x, ymax - y
+        return x, y, width, height
+
+    def tococo(self, parent_width, parent_height):
+        bbox = self.bbox()
+        rle = dtorle(self.d, *bbox, parent_width, parent_height)
+        _, _, width, height = bbox
+        area = width * height
+        return {
+            'category': self.etiq[-1].c,
+            'segmentation': rle,
+            'area': area,
+            'bbox': bbox,
+            'iscrowd': 0,
+            'keypoints': [self.origin.x, self.origin.y, 2],
+            'num_keypoints': 1,
+        }
 
 
 ns = {'svg': "{http://www.w3.org/2000/svg}",
@@ -155,7 +226,7 @@ def parse_svgnode(node, transforms, defs, scopes):
             width = Length(w)
             height = Length(h)
             transforms.append(Rect(0, 0, width, height))
-            res = Ccx(Point(0, 0), Point(width.value(), height.value()),
+            res = Ccx(None, Point(0, 0), Point(width.value(), height.value()),
                       scopes.copy(), Point(0, 0))
     if viewBox := node.attrib.get('viewBox'):
         transforms.append(Viewbox(viewBox))
@@ -174,7 +245,11 @@ def parse_g(node, transforms, defs, scopes):
     if transform := node.attrib.get('transform'):
         transforms.append(Matrix(transform))
     if gclass := node.attrib.get('class'):
-        scopes.append(IdClass(node.attrib.get('id', None), gclass))
+        for scope in scopes:
+            if gclass == scope.c:
+                break
+        else:
+            scopes.append(IdClass(node.attrib.get('id', None), gclass))
 
 
 def seg_swap(direction, start, end):
@@ -185,23 +260,57 @@ def seg_swap(direction, start, end):
     return start, end
 
 
+def poly_swap(direction, points):
+    if direction == 'h':
+        return sorted(points, key=lambda p: (p.x, p.y))
+    if direction == 'v':
+        return sorted(points, key=lambda p: (p.y, p.x))
+
+
+def segmentationToCocoMask(labelMap, labelId):
+    '''
+    Encodes a segmentation mask using the Mask API.
+    :param labelMap: [h x w] segmentation map that indicates the label of each pixel
+    :param labelId: the label from labelMap that will be encoded
+    :return: Rs - the encoded label mask for label 'labelId'
+    '''
+    labelMask = labelMap == labelId
+    labelMask = np.expand_dims(labelMask, axis=2)
+    labelMask = labelMask.astype('uint8')
+    labelMask = np.asfortranarray(labelMask)
+    Rs = mask.encode(labelMask)
+    assert len(Rs) == 1
+    Rs = Rs[0]
+
+    return Rs
+
+
 @backtrack
 def parse_path(node, transforms, defs, scopes):
     p = Path(**node.attrib)
     p = apply_transforms(p, transforms)
     p.reify()
     h_lines = ['staff', 'ledgerLines below', 'ledgerLines above']
-    v_lines = ['barLine', 'system']
+    v_lines = ['barLine', 'system', 'stem']
     if scopes and scopes[-1].c in h_lines + v_lines:
         points = [point for point in p.as_points()]
         if scopes[-1].c in h_lines:
             start, end = seg_swap('h', points[0], points[-1])
         elif scopes[-1].c in v_lines:
             start, end = seg_swap('v', points[0], points[-1])
-        return Seg(start, end, scopes.copy(), p.stroke_width)
+        return Seg(p.d(), start, end, scopes.copy(), p.stroke_width)
+    elif scopes and scopes[-1].c == 'beam':
+        p1, p2, width = poly_to_hseg(p.as_points())
+        return Seg(p.d(), p1, p2, scopes.copy(), width)
     else:
         left, top, right, bottom = p.bbox()
-        return Ccx(Point(left, top), Point(right, bottom), [])
+        origin = Point(float(node.attrib.get('x', left)),
+                       float(node.attrib.get('y', top)))
+        ccx_scopes = scopes.copy()
+        if label := node.attrib.get('class', None):
+            ccx_scopes.append(IdClass(p.id, label))
+        return Ccx(p.d(), Point(left, top), Point(right, bottom), ccx_scopes,
+                   origin)
 
 
 @backtrack
@@ -219,7 +328,7 @@ def parse_use(node, transforms, defs, scopes):
     [ccx] = parse_node(symbol, transforms, defs, scopes)
     ccx.origin = origin
     glyphcode = href.split('-')[0]
-    ccx.etiq.extend(scopes.copy() + [IdClass(None, glyphcode)])
+    ccx.etiq.append(IdClass(node.attrib.get('id', None), glyphcode))
     return [ccx]
 
 
@@ -237,7 +346,7 @@ def parse_rect(node, transforms, defs, scopes):
     if scopes[-1].c == 'stem':
         x, y, w, h = r.x, r.y, r.width, r.height
         x = x + (w / 2)
-        return Seg(Point(x, y), Point(x, y + h), scopes.copy(), w)
+        return Seg(r.d(), Point(x, y), Point(x, y + h), scopes.copy(), w)
 
 
 def parse_ellipse(node, transforms, defs, scopes):
@@ -246,8 +355,8 @@ def parse_ellipse(node, transforms, defs, scopes):
     e.reify()
     if scopes[-1].c == 'dots':
         left, top, right, bottom = e.bbox()
-        return Ccx(Point(left, top), Point(right, bottom), scopes.copy(),
-                   Point(e.cx, e.cy))
+        return Ccx(e.d(), Point(left, top), Point(right, bottom),
+                   scopes.copy(), Point(e.cx, e.cy))
 
 
 def parse_polygon(node, transforms, defs, scopes):
@@ -255,13 +364,19 @@ def parse_polygon(node, transforms, defs, scopes):
     r = apply_transforms(r, transforms)
     r.reify()
     if scopes[-1].c == 'beam':
-        lefttop, righttop, rightbottom, leftbottom = r.points
-        p1 = Point((lefttop.x + leftbottom.x) / 2,
-                   (lefttop.y + leftbottom.y) / 2)
-        p2 = Point((righttop.x + rightbottom.x) / 2,
-                   (righttop.y + rightbottom.y) / 2)
-        width = abs(leftbottom.y - lefttop.y)
-        return Seg(p1, p2, scopes.copy(), width)
+        p1, p2, width = poly_to_hseg(r.points)
+        return Seg(r.d(), p1, p2, scopes.copy(), width)
+
+
+def poly_to_hseg(points):
+    lefttop, leftbottom, righttop, rightbottom = sorted(
+        set(points), key=lambda p: (p.x, p.y))
+    p1 = Point((lefttop.x + leftbottom.x) / 2,
+               (lefttop.y + leftbottom.y) / 2)
+    p2 = Point((righttop.x + rightbottom.x) / 2,
+               (righttop.y + rightbottom.y) / 2)
+    width = abs(leftbottom.y - lefttop.y)
+    return p1, p2, width
 
 
 # def parse_text(node, transforms, defs, scopes):
@@ -331,6 +446,8 @@ def main(args):
     # __import__('pprint').pprint(res)
     with args.output.open('w') as f:
         f.write(listtopl(res, '\n\t', '\n\t', '\n') + '.')
+    # for el in res[1:]:
+    #     __import__('pprint').pprint(el.tococo(5568, 7326))
     return
 
 
