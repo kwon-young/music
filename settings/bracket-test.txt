@@ -1,5 +1,5 @@
 ﻿/*  Saved settings
-    Date: Sun Oct 15 11:57:26 2023
+    Date: Sun Oct 15 16:25:27 2023
 */
 
 
@@ -40,7 +40,7 @@ setting(music_settings:measureMinWidth, real(0,16.646718131168758)-15).
 setting(music_settings:spacingStaff, real(0,11.890537218909273)-12).
 
 %	The bracket group symbol margin in MEI units
-setting(music_settings:bracketMargin, real(0.9912501933345265,1.0025586668398263)-1).
+setting(music_settings:bracketMargin, real(0.9912501933345272,1.0025586668398254)-1).
 
 %	The bracket thickness in MEI units
 setting(music_settings:bracketThickness, real(0.9968194918266357,1.0081279653319315)-1.0).

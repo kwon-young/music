@@ -1,4 +1,4 @@
-:- module(state, [makeState/2, state//1, statep//2,
+:- module(state, [makeState/2, state//1, statep//2, stateg//2,
                   scope//1, scope//2, scope//3, scope//4, pop_scope//1, push_scope//2,
                   bbox//2, nCond/2, nCond/3, nCond//2,
                   add_id//1, ground_all_ids/1]).
@@ -84,6 +84,16 @@ statep(Goal, KeyValues) -->
     add_args(Goal, Values, NewGoal),
     call(NewGoal)
   }.
+
+:- meta_predicate stateg(:, ?, ?, ?).
+
+stateg(Goal, KeyValues) -->
+  stateValues(KeyValues, ListValues),
+  {
+    append(ListValues, Values),
+    add_args(Goal, Values, NewGoal)
+  },
+  call(NewGoal).
 
 :- meta_predicate scope(3, ?, ?).
 

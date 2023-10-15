@@ -101,44 +101,12 @@ score(element(score, ['xml:id'=Id], [ScoreDef, Section])) -->
   scoreDef(ScoreDef),
   section(Section).
 
-scoreDef(element(scoreDef, ['xml:id'=Id], [element(staffGrp, _, _)])) -->
-  add_id(Id).
-
-systemLineCond(SystemLine, Staffs, Thickness, Unit, Eps) :-
-  segHV(v, left, top, SystemLine, SystemLineLeftTop),
-  Staffs = [TopStaff, NextStaff | OtherStaffs],
-  TopStaff = [TopStaffLine | OtherStaffLines],
-  segStart(TopStaffLine, TopStaffLineLeft),
-  eps(p, Eps, SystemLineLeftTop, TopStaffLineLeft),
-  when(nonvar(OtherStaffLines), systemLineCond_(SystemLine, OtherStaffLines,
-                                                [NextStaff | OtherStaffs], Eps)),
-  segThickness(SystemLine, SystemLineThickness),
-  eps(Eps, Unit*Thickness, SystemLineThickness),
-  etiqsCond(SystemLine, system).
-
-systemLineCond_(SystemLine, [_ | OtherStaffLines], OtherStaffs, Eps) :-
-  when(nonvar(OtherStaffLines), systemLineCond_(SystemLine, OtherStaffLines, OtherStaffs, Eps)).
-systemLineCond_(SystemLine, [], [Staff | OtherStaffs], Eps) :-
-  when(nonvar(Staff), systemLineCond_(SystemLine, Staff, OtherStaffs, Eps)).
-systemLineCond_(SystemLine, [LastStaffLine], [], Eps) :-
-  segHV(v, left, bottom, SystemLine, SystemLineLeftBottom),
-  segStart(LastStaffLine, LastStaffLineLeft),
-  eps(p, Eps, SystemLineLeftBottom, LastStaffLineLeft).
-
-systemLine(SystemLine, SystemStaffLines) -->
-  statep(systemLineCond(SystemLine, SystemStaffLines), [o(barLineThickness), o(unit), o(eps)]),
-  termp(SystemLine).
-systemLine(no, [_]) -->
-  [].
-
 gatherStaffDefs_([]) -->
   [].
 gatherStaffDefs_([El | Childs]) -->
-  gatherStaffDefs(El),
+  when(nonvar(El), gatherStaffDefs(El)),
   when(nonvar(Childs), gatherStaffDefs_(Childs)).
 
-gatherStaffDefs(element(scoreDef, _, [StaffGrp]), StaffDefs) -->
-  { phrase(gatherStaffDefs(StaffGrp), StaffDefs) }.
 gatherStaffDefs(element(grpSym, _, _)) -->
   [].
 gatherStaffDefs(element(staffDef, Attr, Childs)) -->
@@ -146,143 +114,10 @@ gatherStaffDefs(element(staffDef, Attr, Childs)) -->
 gatherStaffDefs(element(staffGrp, _, Childs)) -->
   when(nonvar(Childs), gatherStaffDefs_(Childs)).
 
-gather_grpSym(element(scoreDef, _, [element(staffGrp, ['xml:id'=Id], StaffDefs)]), StaffDefs, _, no) -->
-  add_id(Id).
-gather_grpSym(element(scoreDef, _, Childs), StaffDefs, SystemStaffLines, SystemLine) -->
-  { Childs = [element(staffGrp, _, _)] },
-  gather_grpSym_(Childs, _, StaffDefs, SystemStaffLines, SystemLine).
-
-gather_grpSym_([element(staffGrp, ['xml:id'=Id | _], [GrpSym | NewChilds]) | NewRest], [NewSystemStaffLines | NewRestStaffLines], Childs, SystemStaffLines, Left) -->
+scoreDef(element(scoreDef, ['xml:id'=Id], [StaffGrp])) -->
+  { StaffGrp = element(staffGrp, _, _) },
   add_id(Id),
-  scope(grpSym(GrpSym, Childs, SystemStaffLines, GroupChildsTmp, GroupStaffLinesTmp, RestChilds, RestStaffLines, Left, NewLeft)),
-  gather_grpSym_(NewChilds, NewSystemStaffLines, GroupChildsTmp, GroupStaffLinesTmp, NewLeft),
-  gather_grpSym_(NewRest, NewRestStaffLines, RestChilds, RestStaffLines, Left).
-gather_grpSym_([StaffDef | NewChilds], [StaffLines | NewSystemStaffLines], [StaffDef | Childs], [StaffLines | SystemStaffLines], Left) -->
-  { StaffDef = element(staffDef, _, _) },
-  gather_grpSym_(NewChilds, NewSystemStaffLines, Childs, SystemStaffLines, Left).
-gather_grpSym_([], [], [], [], _) --> [].
-gather_grpSym_([element(staffGrp, ['xml:id'=Id | _], NewChilds) | NewRest], [NewSystemStaffLines | NewRestStaffLines], Childs, SystemStaffLines, Left) -->
-  add_id(Id),
-  { gather_split(Childs, SystemStaffLines, GroupChildsTmp, GroupStaffLinesTmp, RestChilds, RestStaffLines) },
-  gather_grpSym_(NewChilds, NewSystemStaffLines, GroupChildsTmp, GroupStaffLinesTmp, Left),
-  gather_grpSym_(NewRest, NewRestStaffLines, RestChilds, RestStaffLines, Left).
-
-gather_split([El1 | L1], [El2 | L2], [El1 | Grouped1], [El2 | Grouped2], Rest1, Rest2) :-
-  gather_split(L1, L2, Grouped1, Grouped2, Rest1, Rest2).
-gather_split(Rest1, Rest2, [], [], Rest1, Rest2).
-
-braceCond([StaffDef | StaffDefs], [[FirstStaffLine | OtherStaffLines] | SystemStaffLines],
-          [StaffDef | BracedStaffDefs], [[FirstStaffLine | OtherStaffLines] | BracedStaffLines],
-          OtherStaffDefs, OtherSystemStaffLines,
-          Anchor, Brace, BraceWidth, BraceVerticalMargin, GrpSymMargin, Unit, Eps) :-
-  contour(Anchor, box(point(AnchorLeft, _), _)),
-  ccxRight(Brace, BraceRight),
-  eps(Eps, AnchorLeft - GrpSymMargin * Unit, BraceRight),
-  segStartY(FirstStaffLine, FirstStaffLineY),
-  ccxTop(Brace, BraceTop),
-  eps(Eps, FirstStaffLineY + BraceVerticalMargin * Unit, BraceTop),
-  ccxWidth(Brace, Width),
-  eps(Eps, BraceWidth * Unit, Width),
-  debug(braceCond, "~p~n", [Brace]),
-  etiqsCond(Brace, brace),
-  when(nonvar(StaffDefs),
-    braceCondPost(StaffDefs, SystemStaffLines,
-                  BracedStaffDefs, BracedStaffLines,
-                  OtherStaffDefs, OtherSystemStaffLines,
-                  Brace, BraceVerticalMargin, Unit, Eps)).
-braceCondPost([StaffDef | StaffDefs], [StaffLines | SystemStaffLines],
-              [StaffDef | BracedStaffDefs], [StaffLines | BracedStaffLines],
-              OtherStaffDefs, OtherSystemStaffLines,
-              Brace, BraceVerticalMargin, Unit, Eps) :-
-  when(nonvar(StaffDefs),
-    braceCondPost(StaffDefs, SystemStaffLines,
-                  BracedStaffDefs, BracedStaffLines,
-                  OtherStaffDefs, OtherSystemStaffLines,
-                  Brace, BraceVerticalMargin, Unit, Eps)).
-braceCondPost([StaffDef | OtherStaffDefs], [StaffLines | OtherSystemStaffLines],
-              [StaffDef], [StaffLines],
-              OtherStaffDefs, OtherSystemStaffLines,
-              Brace, BraceVerticalMargin, Unit, Eps) :-
-  delay(last(StaffLines, BottomStaffLine)),
-  segStartY(BottomStaffLine, BottomStaffLineY),
-  ccxBottom(Brace, BraceBottom),
-  eps(Eps, BottomStaffLineY - BraceVerticalMargin * Unit, BraceBottom).
-
-bracketCond([StaffDef | StaffDefs], [[TopStaffLine | OtherStaffLines] | SystemStaffLines],
-            [StaffDef | GroupedStaffDefs], [[TopStaffLine | OtherStaffLines] | GroupedStaffLines],
-            OtherStaffDefs, OtherSystemStaffLines,
-            Anchor, BracketSeg, BracketTop, BracketBottom,
-            BracketThickness, BracketVerticalOffset, BracketOverlap, GrpSymMargin, Unit, Eps) :-
-  contour(Anchor, box(point(AnchorLeft, _), _)),
-  segThickness(BracketSeg, Thickness),
-  eps(Eps, BracketThickness * Unit, Thickness),
-  segHV(v, right, top, BracketSeg, point(BStartX, BStartY)),
-  eps(Eps, AnchorLeft - GrpSymMargin * Unit, BStartX),
-  debug(bracketCond, '~p~n', [GrpSymMargin]),
-  segHV(v, right, bottom, BracketSeg, point(BEndX, _)),
-  eps(Eps, AnchorLeft - GrpSymMargin * Unit, BEndX),
-  segStartY(TopStaffLine, TopStaffLineY),
-  eps(Eps, TopStaffLineY - BracketVerticalOffset * Unit, BStartY),
-  ccxLeft(BracketTop, BracketTopLeft),
-  ccxBottom(BracketTop, BracketTopBottom),
-  etiqsCond(BracketTop, bracketTop),
-  segHV(v, left, top, BracketSeg, BracketSegLeftTop),
-  eps(p, Eps, BracketSegLeftTop, point(BracketTopLeft, BracketTopBottom-BracketOverlap)),
-  ccxLeft(BracketBottom, BracketBottomLeft),
-  ccxTop(BracketBottom, BracketBottomBottom),
-  etiqsCond(BracketBottom, bracketBottom),
-  segHV(v, left, bottom, BracketSeg, BracketSegLeftBottom),
-  eps(p, Eps, BracketSegLeftBottom, point(BracketBottomLeft, BracketBottomBottom+BracketOverlap)),
-  when(nonvar(StaffDefs),
-    bracketCondPost(StaffDefs, SystemStaffLines,
-                    GroupedStaffDefs, GroupedStaffLines,
-                    OtherStaffDefs, OtherSystemStaffLines,
-                    BracketSeg, BracketVerticalOffset, Unit, Eps)).
-bracketCondPost([StaffDef | StaffDefs], [StaffLines | SystemStaffLines],
-                [StaffDef | GroupedStaffDefs], [StaffLines | GroupedStaffLines],
-                OtherStaffDefs, OtherSystemStaffLines,
-                BracketSeg, BracketVerticalOffset, Unit, Eps) :-
-  when(nonvar(StaffDefs),
-    bracketCondPost(StaffDefs, SystemStaffLines,
-                    GroupedStaffDefs, GroupedStaffLines,
-                    OtherStaffDefs, OtherSystemStaffLines,
-                    BracketSeg, BracketVerticalOffset, Unit, Eps)).
-bracketCondPost([StaffDef | OtherStaffDefs], [StaffLines | OtherSystemStaffLines],
-                [StaffDef], [StaffLines],
-                OtherStaffDefs, OtherSystemStaffLines,
-                BracketSeg, BracketVerticalOffset, Unit, Eps) :-
-  delay(last(StaffLines, BottomStaffLine)),
-  segStartY(BottomStaffLine, BottomStaffLineY),
-  segEndY(BracketSeg, BEndY),
-  eps(Eps, BottomStaffLineY + BracketVerticalOffset * Unit, BEndY).
-
-grpSym(element(grpSym, ['xml:id'=DefId, symbol=brace], []),
-       StaffDefs,
-       SystemStaffLines,
-       BracedStaffDefs,
-       BracedStaffLines,
-       OtherStaffDefs, OtherStaffLines, Anchor, Brace, _RealId) -->
-  add_id(DefId),
-  termp(Brace),
-  statep(braceCond(StaffDefs, SystemStaffLines,
-                   BracedStaffDefs, BracedStaffLines,
-                   OtherStaffDefs, OtherStaffLines,
-                   Anchor, Brace), [o(braceWidth), o(braceVerticalMargin), o(braceMargin), o(unit), o(eps)]).
-grpSym(element(grpSym, ['xml:id'=DefId, symbol=bracket], []),
-       StaffDefs, SystemStaffLines,
-       GroupedStaffDefs, GroupedSystemStaffLines,
-       OtherStaffDefs, OtherSystemStaffLines,
-       Anchor, BracketSeg, _RealId) -->
-  add_id(DefId),
-  statep(bracketCond(
-      StaffDefs, SystemStaffLines,
-      GroupedStaffDefs, GroupedSystemStaffLines,
-      OtherStaffDefs, OtherSystemStaffLines,
-      Anchor, BracketSeg, BracketTop, BracketBottom),
-    [o(bracketThickness), o(bracketVerticalOffset), o(bracketOverlap), o(bracketMargin), o(unit), o(eps)]),
-  termp(BracketTop),
-  termp(BracketBottom),
-  termp(BracketSeg).
+  statep(phrase(gatherStaffDefs(StaffGrp)), [+(staffDefs)]).
 
 section(element(section, ['xml:id'=Id], Measures)) -->
   add_id(Id),
@@ -321,29 +156,205 @@ page(MeasuresIn, MeasuresOut, PageId) -->
   vertical_layout_seq(state:scope(music:system), Spacing, MeasuresIn, MeasuresOut).
 
 system([Measure | MeasuresIn], MeasuresOut, _Id) -->
-  state(o(scoreDef, ScoreDef)),
-  gatherStaffDefs(ScoreDef, StaffDefs),
   longuest_notempty_sequence(
     measureLineN,
-    state:scope(music:measure(StaffDefs)),
+    state:scope(music:measure),
     [Measure | MeasuresIn], MeasuresOut).
 
-measure(StaffDefs, element(measure, ['xml:id'=Id, n=NAtom], Staffs), Id) -->
+measure(element(measure, ['xml:id'=Id, n=NAtom], Staffs), Id) -->
   add_id(Id),
   nCond(measureN, NAtom),
-  state([o(spacingStaff, Spacing), +(staffWidth), +(staffN, 0)]),
+  state([o(spacingStaff, Spacing), +(staffWidth), +(staffN, 0),
+         o(staffDefs, StaffDefs), +(systemStaffLines, SystemStaffLines)]),
   vertical_layout_args(state:scope(music:staff), Spacing, [Staffs, StaffDefs, SystemStaffLines]),
   state(o(measureLineN, MeasureLineN)),
-  pop_scope(measureLineN(MeasureLineN, StaffDefs, SystemStaffLines)),
+  pop_scope(measureLineN(MeasureLineN)),
   state(o(scoreDef, ScoreDef)),
   scope(barLine(ScoreDef, SystemStaffLines)).
 
-measureLineN(1, StaffDefs, SystemStaffLines) -->
-  state(o(scoreDef, ScoreDef)),
-  systemLine(SystemLine, SystemStaffLines),
-  gather_grpSym(ScoreDef, StaffDefs, SystemStaffLines, SystemLine).
-measureLineN(N, _, _) -->
+measureLineN(N) -->
   { dif(N, 1) }.
+measureLineN(1) -->
+  reify(systemLine, _),
+  stateg(gather_grpSym, [o(scoreDef), o(staffDefs), o(systemStaffLines)]).
+
+systemLineCond(SystemLine, Anchor, Staffs, Thickness, Unit, Eps) :-
+  segHV(v, left, top, SystemLine, SystemLineLeftTop),
+  Staffs = [[TopStaffLine | _], _ | _],
+  segStart(TopStaffLine, TopStaffLineLeft),
+  eps(p, Eps, SystemLineLeftTop, TopStaffLineLeft),
+  last(Staffs, LastStaff),
+  last(LastStaff, LastStaffLine),
+  segHV(v, left, bottom, SystemLine, SystemLineLeftBottom),
+  segStart(LastStaffLine, LastStaffLineLeft),
+  eps(p, Eps, SystemLineLeftBottom, LastStaffLineLeft),
+  segThickness(SystemLine, SystemLineThickness),
+  eps(Eps, Unit*Thickness, SystemLineThickness),
+  etiqsCond(SystemLine, system),
+  SystemLineLeftTop = point(LeftTop, _),
+  SystemLineLeftBottom = point(LeftBottom, _),
+  { Anchor == min(LeftTop, LeftBottom) }.
+
+systemLine -->
+  statep(systemLineCond(SystemLine),
+         [+(anchor-grpSym), o(systemStaffLines), o(barLineThickness), o(unit), o(eps)]),
+  termp(SystemLine).
+
+gather_grpSym(element(scoreDef, _, Childs), StaffDefs, SystemStaffLines) -->
+  gather_grpSym_(Childs, StaffDefs, SystemStaffLines).
+gather_grpSym_([element(staffGrp, ['xml:id'=Id | _], [GrpSym | Childs]) | Rest],
+              StaffDefs,
+              SystemStaffLines) -->
+  add_id(Id),
+  scope(grpSym(GrpSym,
+               StaffDefs, SystemStaffLines,
+               GroupStaffDefs, GroupStaffLines,
+               RestStaffDefs, RestStaffLines)),
+  gather_grpSym_(Childs, GroupStaffDefs, GroupStaffLines),
+  gather_grpSym_(Rest, RestStaffDefs, RestStaffLines).
+gather_grpSym_([StaffDef | Childs], [StaffDef | StaffDefs], [_ | SystemStaffLines]) -->
+  { StaffDef = element(staffDef, _, _) },
+  gather_grpSym_(Childs, StaffDefs, SystemStaffLines).
+gather_grpSym_([], [], []) --> [].
+gather_grpSym_([element(staffGrp, ['xml:id'=Id | _], Childs) | Rest],
+              StaffDefs,
+              SystemStaffLines) -->
+  add_id(Id),
+  { gather_split(StaffDefs, SystemStaffLines,
+                 GroupStaffDefs, GroupStaffLines,
+                 RestChilds, RestStaffLines) },
+  gather_grpSym_(Childs, GroupStaffDefs, GroupStaffLines),
+  gather_grpSym_(Rest, RestChilds, RestStaffLines).
+
+gather_split([El1 | L1], [El2 | L2],
+             [El1 | Grouped1], [El2 | Grouped2],
+             Rest1, Rest2) :-
+  gather_split(L1, L2, Grouped1, Grouped2, Rest1, Rest2).
+gather_split(Rest1, Rest2, [], [], Rest1, Rest2).
+
+braceCond(Brace,
+          [StaffDef | StaffDefs],
+          [[FirstStaffLine | OtherStaffLines] | SystemStaffLines],
+          [StaffDef | BracedStaffDefs],
+          [[FirstStaffLine | OtherStaffLines] | BracedStaffLines],
+          OtherStaffDefs, OtherSystemStaffLines,
+          Anchor, NewAnchor,
+          BraceWidth, BraceVerticalMargin, GrpSymMargin, Unit, Eps) :-
+  ccxLeft(Brace, NewAnchor),
+  ccxRight(Brace, BraceRight),
+  eps(Eps, Anchor - GrpSymMargin * Unit, BraceRight),
+  segStartY(FirstStaffLine, FirstStaffLineY),
+  ccxTop(Brace, BraceTop),
+  eps(Eps, FirstStaffLineY + BraceVerticalMargin * Unit, BraceTop),
+  ccxWidth(Brace, Width),
+  eps(Eps, BraceWidth * Unit, Width),
+  etiqsCond(Brace, brace),
+  when(nonvar(StaffDefs),
+    braceCondPost(StaffDefs, SystemStaffLines,
+                  BracedStaffDefs, BracedStaffLines,
+                  OtherStaffDefs, OtherSystemStaffLines,
+                  Brace, BraceVerticalMargin, Unit, Eps)).
+braceCondPost([StaffDef | StaffDefs], [StaffLines | SystemStaffLines],
+              [StaffDef | BracedStaffDefs], [StaffLines | BracedStaffLines],
+              OtherStaffDefs, OtherSystemStaffLines,
+              Brace, BraceVerticalMargin, Unit, Eps) :-
+  when(nonvar(StaffDefs),
+    braceCondPost(StaffDefs, SystemStaffLines,
+                  BracedStaffDefs, BracedStaffLines,
+                  OtherStaffDefs, OtherSystemStaffLines,
+                  Brace, BraceVerticalMargin, Unit, Eps)).
+braceCondPost([StaffDef | OtherStaffDefs], [StaffLines | OtherSystemStaffLines],
+              [StaffDef], [StaffLines],
+              OtherStaffDefs, OtherSystemStaffLines,
+              Brace, BraceVerticalMargin, Unit, Eps) :-
+  delay(last(StaffLines, BottomStaffLine)),
+  segStartY(BottomStaffLine, BottomStaffLineY),
+  ccxBottom(Brace, BraceBottom),
+  eps(Eps, BottomStaffLineY - BraceVerticalMargin * Unit, BraceBottom).
+
+bracketCond(BracketSeg, BracketTop, BracketBottom,
+            [StaffDef | StaffDefs],
+            [[TopStaffLine | OtherStaffLines] | SystemStaffLines],
+            [StaffDef | GroupedStaffDefs],
+            [[TopStaffLine | OtherStaffLines] | GroupedStaffLines],
+            OtherStaffDefs, OtherSystemStaffLines,
+            Anchor, NewAnchor,
+            BracketThickness, BracketVerticalOffset, BracketOverlap, GrpSymMargin,
+            Unit, Eps) :-
+  segThickness(BracketSeg, Thickness),
+  eps(Eps, BracketThickness * Unit, Thickness),
+  segHV(v, right, top, BracketSeg, point(BStartX, BStartY)),
+  eps(Eps, Anchor - GrpSymMargin * Unit, BStartX),
+  segHV(v, right, bottom, BracketSeg, point(BEndX, _)),
+  eps(Eps, Anchor - GrpSymMargin * Unit, BEndX),
+  segStartY(TopStaffLine, TopStaffLineY),
+  eps(Eps, TopStaffLineY - BracketVerticalOffset * Unit, BStartY),
+  ccxLeft(BracketTop, BracketTopLeft),
+  ccxBottom(BracketTop, BracketTopBottom),
+  etiqsCond(BracketTop, bracketTop),
+  segHV(v, left, top, BracketSeg, BracketSegLeftTop),
+  eps(p, Eps, BracketSegLeftTop,
+      point(BracketTopLeft, BracketTopBottom-BracketOverlap)),
+  ccxLeft(BracketBottom, BracketBottomLeft),
+  ccxTop(BracketBottom, BracketBottomBottom),
+  etiqsCond(BracketBottom, bracketBottom),
+  segHV(v, left, bottom, BracketSeg, BracketSegLeftBottom),
+  eps(p, Eps, BracketSegLeftBottom,
+      point(BracketBottomLeft, BracketBottomBottom+BracketOverlap)),
+  BracketSegLeftTop = point(LeftTop, _),
+  BracketSegLeftBottom = point(LeftBottom, _),
+  { NewAnchor == min(LeftTop, LeftBottom) },
+  when(nonvar(StaffDefs),
+    bracketCondPost(StaffDefs, SystemStaffLines,
+                    GroupedStaffDefs, GroupedStaffLines,
+                    OtherStaffDefs, OtherSystemStaffLines,
+                    BracketSeg, BracketVerticalOffset, Unit, Eps)).
+bracketCondPost([StaffDef | StaffDefs], [StaffLines | SystemStaffLines],
+                [StaffDef | GroupedStaffDefs], [StaffLines | GroupedStaffLines],
+                OtherStaffDefs, OtherSystemStaffLines,
+                BracketSeg, BracketVerticalOffset, Unit, Eps) :-
+  when(nonvar(StaffDefs),
+    bracketCondPost(StaffDefs, SystemStaffLines,
+                    GroupedStaffDefs, GroupedStaffLines,
+                    OtherStaffDefs, OtherSystemStaffLines,
+                    BracketSeg, BracketVerticalOffset, Unit, Eps)).
+bracketCondPost([StaffDef | OtherStaffDefs], [StaffLines | OtherSystemStaffLines],
+                [StaffDef], [StaffLines],
+                OtherStaffDefs, OtherSystemStaffLines,
+                BracketSeg, BracketVerticalOffset, Unit, Eps) :-
+  delay(last(StaffLines, BottomStaffLine)),
+  segStartY(BottomStaffLine, BottomStaffLineY),
+  segEndY(BracketSeg, BEndY),
+  eps(Eps, BottomStaffLineY + BracketVerticalOffset * Unit, BEndY).
+
+grpSym(element(grpSym, ['xml:id'=DefId, symbol=brace], []),
+       StaffDefs,
+       SystemStaffLines,
+       BracedStaffDefs,
+       BracedStaffLines,
+       OtherStaffDefs, OtherStaffLines, _RealId) -->
+  add_id(DefId),
+  statep(braceCond(Brace, StaffDefs, SystemStaffLines,
+                   BracedStaffDefs, BracedStaffLines,
+                   OtherStaffDefs, OtherStaffLines),
+         [-(anchor-grpSym), o(braceWidth), o(braceVerticalMargin), o(braceMargin),
+          o(unit), o(eps)]),
+  termp(Brace).
+grpSym(element(grpSym, ['xml:id'=DefId, symbol=bracket], []),
+       StaffDefs, SystemStaffLines,
+       GroupedStaffDefs, GroupedSystemStaffLines,
+       OtherStaffDefs, OtherSystemStaffLines,
+       _RealId) -->
+  add_id(DefId),
+  statep(bracketCond(BracketSeg, BracketTop, BracketBottom,
+                     StaffDefs, SystemStaffLines,
+                     GroupedStaffDefs, GroupedSystemStaffLines,
+                     OtherStaffDefs, OtherSystemStaffLines),
+         [-(anchor-grpSym), o(bracketThickness), o(bracketVerticalOffset),
+          o(bracketOverlap), o(bracketMargin), o(unit), o(eps)]),
+  termp(BracketTop),
+  termp(BracketBottom),
+  termp(BracketSeg).
 
 staff(element(staff, ['xml:id'=Id, n=NAtom], [Layer]),
       element(staffDef, ['xml:id'=DefId, n=NAtom, lines='5'], StaffDefChilds),
