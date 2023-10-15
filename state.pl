@@ -46,6 +46,10 @@ state_([Term | Terms], [Values]) -->
   sequence3(state_, [Term | Terms], ListValues),
   { append(ListValues, Values) }.
 
+state_([Value]:Key, [Value]) -->
+  state_(-(Key, [Value | R], R), _).
+
+
 sequence3(Goal, L1, L2) -->
   sequence3_(L1, L2, Goal).
 sequence3_([A | L1], [B | L2], Goal) -->

@@ -170,7 +170,7 @@ measure(element(measure, ['xml:id'=Id, n=NAtom], Staffs), Id) -->
   state(o(measureLineN, MeasureLineN)),
   pop_scope(measureLineN(MeasureLineN)),
   state(o(scoreDef, ScoreDef)),
-  scope(barLine(ScoreDef, SystemStaffLines)).
+  scope(barLine(ScoreDef)).
 
 measureLineN(N) -->
   { dif(N, 1) }.
@@ -334,12 +334,12 @@ grpSym(element(grpSym, ['xml:id'=DefId, symbol=brace], []),
        BracedStaffLines,
        OtherStaffDefs, OtherStaffLines, _RealId) -->
   add_id(DefId),
+  termp(Brace),
   statep(braceCond(Brace, StaffDefs, SystemStaffLines,
                    BracedStaffDefs, BracedStaffLines,
                    OtherStaffDefs, OtherStaffLines),
          [-(anchor-grpSym), o(braceWidth), o(braceVerticalMargin), o(braceMargin),
-          o(unit), o(eps)]),
-  termp(Brace).
+          o(unit), o(eps)]).
 grpSym(element(grpSym, ['xml:id'=DefId, symbol=bracket], []),
        StaffDefs, SystemStaffLines,
        GroupedStaffDefs, GroupedSystemStaffLines,
@@ -519,29 +519,30 @@ barlineCond(BarLine, TopLine, BottomLine, Thickness, Unit, Eps) :-
   segThickness(BarLine, BarLineThickness),
   eps(Eps, Unit*Thickness, BarLineThickness).
 
-barLine(element(scoreDef, _, [StaffGrp]), SystemStaffLines, _Id) -->
-  barline(StaffGrp, SystemStaffLines, []).
-barline(element(staffGrp, ['xml:id'=_Id | StaffGrpAttr], Childs), SystemStaffLines, OtherSystemStaffLines) -->
-  staffGrpAttr(StaffGrpAttr, SystemStaffLines, OtherSystemStaffLines),
-  barline(Childs, SystemStaffLines, OtherSystemStaffLines).
-barline(element(staffDef, _, _), [StaffLines | OtherSystemStaffLines], OtherSystemStaffLines) -->
-  barline(StaffLines).
-barline(element(grpSym, _, _), SystemStaffLines, SystemStaffLines) --> [].
-barline([Child | Childs], SystemStaffLines, OtherSystemStaffLines) -->
-  barline(Child, SystemStaffLines, ChildsStaffLines),
-  barline(Childs, ChildsStaffLines, OtherSystemStaffLines).
-barline([], SystemStaffLines, SystemStaffLines) --> [].
+barLine(element(scoreDef, _, [StaffGrp]), _Id) -->
+  state([o(systemStaffLines, SystemStaffLines), +(dcg, SystemStaffLines)]),
+  barline(StaffGrp, SystemStaffLines, []),
+  state([o(dcg, [])]).
+barline(element(staffGrp, ['xml:id'=_Id | StaffGrpAttr], Childs), L, R) -->
+  barline(Childs, L1, []),
+  { append(L1, R, L) },
+  staffGrpAttr(StaffGrpAttr, L1).
+barline(element(staffDef, _, _), [StaffLines | R], R) -->
+  state([StaffLines]:dcg),
+  barline_(StaffLines).
+barline(element(grpSym, _, _), L, L) --> [].
+barline([Child | Childs], L, R) -->
+  barline(Child, L, L1),
+  barline(Childs, L1, R).
+barline([], L, L) --> [].
 
-barline(StaffLines) -->
+barline_(StaffLines) -->
   statep(barlineCond(BarLine, StaffLines), [o(barLineThickness), o(unit), o(eps)]),
   termp(BarLine).
 
-staffGrpAttr(['bar.thru'='true'], SystemStaffLines, OtherSystemStaffLines) -->
-  systemBarLine(SystemStaffLines, OtherSystemStaffLines).
-staffGrpAttr([], _, _) --> [].
-
-systemBarLine([H | T], Rest) -->
-  foldlg(systemBarLine, T, H, _, Rest).
+staffGrpAttr(['bar.thru'='true'], [H | T]) -->
+  foldlg(systemBarLine, T, H, _).
+staffGrpAttr([], _) --> [].
 
 systemBarLineCond(BarLine, TopStaffLines, BottomStaffLines, Thickness, Unit, Eps) :-
   last(TopStaffLines, TopLine),
@@ -549,7 +550,8 @@ systemBarLineCond(BarLine, TopStaffLines, BottomStaffLines, Thickness, Unit, Eps
   barlineCond(BarLine, TopLine, BottomLine, Thickness, Unit, Eps).
 
 systemBarLine(BottomGroup, TopGroup, BottomGroup) -->
-  statep(systemBarLineCond(BarLine, TopGroup, BottomGroup), [o(barLineThickness), o(unit), o(eps)]),
+  statep(systemBarLineCond(BarLine, TopGroup, BottomGroup),
+         [o(barLineThickness), o(unit), o(eps)]),
   termp(BarLine).
 
 debug(Topic, Fmt, Args) -->

@@ -6,7 +6,8 @@
                 foldlg//4, foldlg//5, longuest_foldlg//5,
                 longuest_sequence//2, longuest_sequences//2,
                 longuest_notempty_sequence//4,
-                longuest_notempty_sequences//2]).
+                longuest_notempty_sequences//2,
+                longuest_notempty_sequence//1]).
 
 :- use_module(library(clpBNR)).
 :- use_module(state).
@@ -191,6 +192,18 @@ longuest_notempty_sequences(true, Goal, _, Seqs) -->
   longuest_notempty_sequences(Goal, Seqs).
 longuest_notempty_sequences(false, _, Seqs, _) -->
   { maplist(=([]), Seqs) }.
+
+:- meta_predicate longuest_notempty_sequence(2, ?, ?).
+
+longuest_notempty_sequence(Goal) -->
+  Goal,
+  longuest_notempty_sequence_(Goal).
+longuest_notempty_sequence_(Goal) -->
+  ( Goal
+  *-> longuest_notempty_sequence_(Goal)
+  ; []
+  ).
+
 
 :- begin_tests(epf).
 

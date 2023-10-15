@@ -1,5 +1,5 @@
 ﻿/*  Saved settings
-    Date: Sun Oct 15 16:25:26 2023
+    Date: Sun Oct 15 17:44:35 2023
 */
 
 
@@ -13,7 +13,7 @@ setting(music_settings:pageHeight, 2970.0-2970).
 setting(music_settings:topMargin, real(0,103.35000000000001)-50).
 
 %	page left margin
-setting(music_settings:leftMargin, real(0,23.020927650915247)-50).
+setting(music_settings:leftMargin, real(0,23.02092765091525)-50).
 
 %	page bottom margin
 setting(music_settings:bottomMargin, real(0,2613.3500000000004)-50).
@@ -40,13 +40,13 @@ setting(music_settings:measureMinWidth, real(0,16.646718131168758)-15).
 setting(music_settings:spacingStaff, real(0,11.890537218909273)-12).
 
 %	The brace group symbol margin in MEI units
-setting(music_settings:braceMargin, real(0.967953930431569,0.9792624039368657)-1).
+setting(music_settings:braceMargin, real(0.9679539304315682,0.9792624039368665)-1).
 
 %	The brace width in MEI units
-setting(music_settings:braceWidth, real(2.0202584366151655,2.0315669101204614)-2.0).
+setting(music_settings:braceWidth, real(2.020258436615164,2.0315669101204628)-2.0).
 
 %	The brace top/bottom margin from the top/bottom staffline of the group in MEI units
-setting(music_settings:braceVerticalMargin, real(0.02652486330664185,0.03783333681194079)-0.0).
+setting(music_settings:braceVerticalMargin, real(0.026524863306640264,0.03783333681194237)-0.0).
 
 %	The bracket thickness in MEI units
 setting(music_settings:bracketThickness, real(0.49999999999999994,2)-1.0).
