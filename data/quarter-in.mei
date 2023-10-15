@@ -17,8 +17,8 @@
                   <staffGrp>
                      <staffDef n="1" lines="5">
                         <clef shape="G" line="2" />
-                        <keySig sig="0" />
                         <meterSig count="4" unit="4" />
+                        <keySig sig="0" />
                      </staffDef>
                   </staffGrp>
                </scoreDef>
@@ -26,8 +26,8 @@
                   <measure n="1">
                      <staff n="1">
                         <layer n="1">
-                           <note dur="4" oct="4" pname="b">
-                              <stem dir="down" />
+                           <note dur="4" oct="5" pname="c">
+                              <stem len="7" dir="down"/>
                            </note>
                         </layer>
                      </staff>

@@ -67,8 +67,8 @@ noteheadDuration('noteheadDoubleWhole', Duration, Division) :-
   {Duration / Division == 8}.
 
 noteheadCond(Notehead, Duration, Division) :-
-  ccxEtiqsCond(Notehead, NoteheadEtiq),
-  ccxEtiqsCond(Notehead, 1, notehead),
+  etiqsCond(Notehead, NoteheadEtiq),
+  etiqsCond(Notehead, 1, notehead),
   delay(noteheadDuration(NoteheadEtiq, Duration, Division)),
   debug(note, "noteheadCond: Notehead ~p~n", [Notehead]),
   debug(note, "noteheadCond: Duration ~p~n", [Duration]),
@@ -101,7 +101,7 @@ stemDirCond(down, Notehead, Stem, NoteStem, Eps) :-
 stemFlagCond(Stem, Flag, Duration, Division, Dir, Eps) :-
   debug(note, "stemFlagCond: ~p, ~p, ~p, ~p~n", [Stem, Flag, Duration, Dir]),
   { Duration / Division =< 1r2 },
-  ccxEtiqsCond(Flag, FlagEtiq),
+  etiqsCond(Flag, FlagEtiq),
   flagValDir(FlagEtiq, Val, FlagDir),
   flagDuration(Val, Duration, Division),
   flagDirCond(Dir, FlagDir, Stem, Flag, Eps).
@@ -164,13 +164,13 @@ durationNoFlagBeam(Duration, Division) :-
   debug(note, "Division: ~p~n", [Division]).
 
 dotCond(Ref, Dot, NumIntervals, Interline, Eps) :-
-  ccxEtiqsCond(Ref, 1, 'notehead'),
+  etiqsCond(Ref, 1, 'notehead'),
   ccxRight(Ref, NoteX),
   ccxOrigin(Ref, point(_, NoteY)),
   { PredX == NoteX + 1r2 * Interline },
   dotCondStart(NumIntervals, PredX, NoteY, Dot, Interline, Eps).
 dotCond(Ref, Dot, _, Interline, Eps) :-
-  ccxEtiqsCond(Ref, 'dots'),
+  etiqsCond(Ref, 'dots'),
   ccxOrigin(Ref, point(RefX, RefY)),
   { PredX == RefX + 3r4 * Interline },
   dotCond_(point(PredX, RefY), Dot, Eps).
@@ -184,7 +184,7 @@ dotCondStart(NumIntervals, PredX, NoteY, Dot, _, Eps) :-
   { NumIntervals == 2 * N + 1 },
   dotCond_(point(PredX, NoteY), Dot, Eps).
 dotCond_(Point, Dot, Eps) :-
-  ccxEtiqsCond(Dot, 'dots'),
+  etiqsCond(Dot, 'dots'),
   ccxOrigin(Dot, DotCenter),
   eps(p, Eps, DotCenter, Point).
 
@@ -227,7 +227,7 @@ note(element(note, [], [Rest, Duration, Type])) -->
   rest(Rest).
 
 chordCond(Stem, Notehead, Eps) :-
-  ccxEtiqsCond(Notehead, 1, notehead),
+  etiqsCond(Notehead, 1, notehead),
   ccxLeftRight(Notehead, NoteLeft, NoteRight),
   ccxOrigin(Notehead, point(_, NoteheadY)),
   segTop(v, Stem, StemTop),
@@ -256,27 +256,27 @@ chord -->
   selectp(Notehead).
 
 restCond(Rest, Duration, Division, Stafflines, Eps) :-
-  ccxEtiqsCond(Rest, 1, 'rest'),
+  etiqsCond(Rest, 1, 'rest'),
   delay(restCond_(Rest, Duration, Division, Stafflines, Eps)).
 
 delay:mode(note:restCond_(ground, _, _, _)).
 delay:mode(note:restCond_(_, ground, ground, _)).
 restCond_(Rest, Duration, Division, Stafflines, Eps) :-
-  ccxEtiqsCond(Rest, 'restWhole'),
+  etiqsCond(Rest, 'restWhole'),
   { Duration / Division == 4 },
   ccxOrigin(Rest, point(RestX, RestY)),
   nth1(4, Stafflines, Line),
   segYAtX(Line, LineY, RestX),
   eps(Eps, LineY, RestY).
 restCond_(Rest, Duration, Division, Stafflines, Eps) :-
-  ccxEtiqsCond(Rest, 'restHalf'),
+  etiqsCond(Rest, 'restHalf'),
   { Duration / Division == 2 },
   ccxOrigin(Rest, point(RestX, RestY)),
   nth1(3, Stafflines, Line),
   segYAtX(Line, LineY, RestX),
   eps(Eps, LineY, RestY).
 restCond_(Rest, Duration, Division, Stafflines, Eps) :-
-  ccxEtiqsCond(Rest, 'restQuarter'),
+  etiqsCond(Rest, 'restQuarter'),
   { Duration / Division == 1 },
   ccxOrigin(Rest, point(RestX, RestY)),
   nth1(3, Stafflines, Line),
@@ -284,7 +284,7 @@ restCond_(Rest, Duration, Division, Stafflines, Eps) :-
   eps(Eps, LineY, RestY).
 restCond_(Rest, Duration, Division, Stafflines, Eps) :-
   restVal(RestName, Val),
-  ccxEtiqsCond(Rest, RestName),
+  etiqsCond(Rest, RestName),
   { Duration / Division == 4 / Val },
   ccxOrigin(Rest, point(RestX, RestY)),
   nth1(3, Stafflines, Line),
@@ -443,8 +443,8 @@ accidentalCond(Accidental, AccidentalName, Notehead, Step, Octave,
                Alter, KeySteps, KeyAlter,
                AccidStepsOctaves, [AccidentalName-Step-Octave | AccidStepsOctaves],
                Eps) :-
-  ccxEtiqsCond(Accidental, AccidentalEtiq),
-  ccxEtiqsCond(Accidental, 1, accid),
+  etiqsCond(Accidental, AccidentalEtiq),
+  etiqsCond(Accidental, 1, accid),
   ccxOrigin(Notehead, point(NoteX, NoteY)),
   ccxOrigin(Accidental, point(AccidX, AccidY)),
   eps(Eps, NoteY, AccidY),

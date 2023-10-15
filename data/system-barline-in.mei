@@ -14,22 +14,20 @@
          <mdiv>
             <score>
                <scoreDef>
-                  <staffGrp>
+                  <staffGrp bar.thru="true">
                      <staffDef n="1" lines="5">
-                        <clef shape="G" line="2" />
-                        <meterSig count="4" unit="4" />
-                        <keySig sig="0" />
+                     </staffDef>
+                     <staffDef n="2" lines="5">
                      </staffDef>
                   </staffGrp>
                </scoreDef>
                <section>
                   <measure n="1">
                      <staff n="1">
-                        <layer n="1">
-                           <note dur="1" oct="4" pname="c">
-                              <accid accid="s"/>
-                           </note>
-                        </layer>
+                        <layer n="1" />
+                     </staff>
+                     <staff n="2">
+                        <layer n="1" />
                      </staff>
                   </measure>
                </section>

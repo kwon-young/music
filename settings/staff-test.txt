@@ -1,40 +1,43 @@
 ﻿/*  Saved settings
-    Date: Mon May  8 18:53:21 2023
+    Date: Sun Oct 15 11:57:31 2023
 */
 
 
 %	page width
-setting(music_settings:pageWidth, real(0,inf)-2100.0).
+setting(music_settings:pageWidth, 2100.0-2100).
 
 %	page height
-setting(music_settings:pageHeight, real(0,inf)-2970.0).
+setting(music_settings:pageHeight, 2970.0-2970).
 
 %	page top margin
-setting(music_settings:topMargin, real(0,104)-104).
+setting(music_settings:topMargin, real(0,103.35000000000001)-50).
 
 %	page left margin
-setting(music_settings:leftMargin, real(0,50)-50).
+setting(music_settings:leftMargin, real(0,50.00000000000001)-50).
 
 %	page bottom margin
-setting(music_settings:bottomMargin, real(0,2506.0)-50).
+setting(music_settings:bottomMargin, real(0,2505.3500000000004)-50).
 
 %	page right margin
-setting(music_settings:rightMargin, real(0,48.80000000000018)-50).
+setting(music_settings:rightMargin, real(0,48.75)-50).
 
 %	Global Eps in pixels
 setting(music_settings:eps, real(0.049999999999954525,0.05076255798335297)-0).
 
 %	The MEI unit (1⁄2 of the distance between the staff lines)
-setting(music_settings:unit, real(8.97461872100832,9.02538127899168)-9).
+setting(music_settings:unit, 8.97779138088228-9).
 
 %	line thickness in unit
-setting(music_settings:thickness, real(0.1384138135997078,0.15050918595810742)-0.15).
+setting(music_settings:thickness, real(0.1391475240421414,0.15045599754742897)-0.15).
 
 %	barline thickness in unit
-setting(music_settings:barLineThickness, real(0.2935319140680803,0.3065046709498873)-0.3).
+setting(music_settings:barLineThickness, real(0.2950878818211408,0.3063963553264284)-0.3).
 
 %	The minimal measure width in MEI units
-setting(music_settings:measureMinWidth, real(0,15.861483031558768)-15).
+setting(music_settings:measureMinWidth, real(0,15.855877745289487)-15).
 
-%	The staff minimal spacing in MEI units
-setting(music_settings:spacingStaff, real(0,24.073531062911783)-12).
+%	The system minimal spacing in MEI units
+setting(music_settings:spacingSystem, real(0,23.920221961860634)-12).
+
+%	The bracket thickness in MEI units
+setting(music_settings:bracketThickness, real(0.49999999999999994,2)-1.0).

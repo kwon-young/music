@@ -16,15 +16,12 @@
                <scoreDef>
                   <staffGrp>
                      <grpSym symbol="bracket" />
-                        <staffGrp>
-                           <grpSym symbol="brace" />
-                        <staffDef n="1" lines="5">
-                        </staffDef>
-                        <staffDef n="2" lines="5">
-                        </staffDef>
+                     <staffGrp bar.thru="true">
+                        <grpSym symbol="brace" />
+                        <staffDef n="1" lines="5" />
+                        <staffDef n="2" lines="5" />
                      </staffGrp>
-                     <staffDef n="3" lines="5">
-                     </staffDef>
+                     <staffDef n="3" lines="5" />
                   </staffGrp>
                </scoreDef>
                <section>

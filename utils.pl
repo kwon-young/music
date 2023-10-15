@@ -1,16 +1,19 @@
 :- module(utils, [convlist2/3, maplist2/2, maplist2/3, chain/2, chaing/2,
                   nth0u/3, nth1u/3, epsGround/3, lower_bound/2,
                   reify//2, reify/2,
-                  add_id/1, add_id//1,
                   debug_unif/2]).
 
 :- use_module(library(delay)).
 :- use_module(library(clpBNR)).
+:- use_module(state).
 
 :- multifile delay:mode/1.
 
 delay:mode(system:atom_number(ground, _)).
 delay:mode(system:atom_number(_, ground)).
+
+delay:mode(system:downcase_atom(ground, _)).
+delay:mode(system:downcase_atom(_, ground)).
 
 delay:mode(system:length(ground, _)).
 delay:mode(system:length(_, ground)).
@@ -22,6 +25,8 @@ delay:mode(system:compound_name_arity(_, ground, nonvar)).
 
 delay:mode(system:compound_name_arguments(nonvar, _, _)).
 delay:mode(system:compound_name_arguments(_, ground, nonvar)).
+
+delay:mode(lists:last(list, _)).
 
 :- meta_predicate convlist2(3, ?, ?).
 :- meta_predicate maplist2(2, ?).
@@ -149,20 +154,6 @@ reify(Goal, Result) :-
    *-> Result = true
    ;  Result = false
    ).
-
-add_id(Id) :-
-  ( var(Id)
-  ->  gensym(id, Id)
-  ; true
-  ).
-
-add_id(Id) -->
-  {
-    ( var(Id)
-    ->  gensym(id, Id)
-    ; true
-    )
-  }.
 
 debug_unif(ccx(LeftTop1, RightBottom1, Etiqs1, O1),
            ccx(LeftTop2, RightBottom2, Etiqs2, O2)) :-

@@ -1,0 +1,91 @@
+﻿/*  Saved settings
+    Date: Fri Oct 13 08:24:43 2023
+*/
+
+
+%	page width
+setting(music_settings:pageWidth, 2100.0-2100).
+
+%	page height
+setting(music_settings:pageHeight, 2970.0-2970).
+
+%	page top margin
+setting(music_settings:topMargin, real(0,80.024)-50).
+
+%	page left margin
+setting(music_settings:leftMargin, real(0,50.00000000000001)-50).
+
+%	page bottom margin
+setting(music_settings:bottomMargin, real(0,2751.592)-50).
+
+%	page right margin
+setting(music_settings:rightMargin, real(0,1731.15)-50).
+
+%	Global Eps in pixels
+setting(music_settings:eps, real(0.04999999999989768,0.050762557983296125)-0).
+
+%	The MEI unit (1⁄2 of the distance between the staff lines)
+setting(music_settings:unit, 8.9904820203781-9).
+
+%	line thickness in unit
+setting(music_settings:thickness, real(0.13895110842612712,0.15024361929890043)-0.15).
+
+%	barline thickness in unit
+setting(music_settings:barLineThickness, real(0.2946713464319112,0.3059638573046845)-0.3).
+
+%	The minimal measure width in MEI units
+setting(music_settings:measureMinWidth, real(0,35.46536902418208)-15).
+
+%	The left margin for G clef in MEI units
+setting(music_settings:gClefLeftMargin, real(0.9954124174579385,1.006704928330714)-1).
+
+%	The right margin for G clef in MEI units
+setting(music_settings:gClefRightMargin, real(0.8348285249072251,2)-1).
+
+%	The G clef width in MEI units
+setting(music_settings:gClefWidth, real(5.175833435464646,5.18712594633742)-5.16).
+
+%	The G clef height in MEI units
+setting(music_settings:gClefHeight, real(13.913073532486322,13.924366043359099)-13.9).
+
+%	The G clef origin horizontal offset from the top in MEI units
+setting(music_settings:gClefXOffset, real(0.0023622139467681215,0.013654724819541704)-0).
+
+%	The G clef origin vertical offset from the top in MEI units
+setting(music_settings:gClefYOffset, real(8.667526086520052,8.678818597392832)-8.7).
+
+%	The bracket thickness in MEI units
+setting(music_settings:bracketThickness, real(0.49999999999999994,2)-1.0).
+
+%	The left margin for time signature 4 in MEI units
+setting(music_settings:timeSig4LeftMargin, real(0.8348285249072251,2)-1).
+
+%	The time signature 4 width in MEI units
+setting(music_settings:timeSig4Width, real(3.0936313958444472,3.104923906717221)-5.5).
+
+%	The time signature 4 height in MEI units
+setting(music_settings:timeSig4Height, real(4.006596905524072,4.017889416396847)-6.6).
+
+%	The time signature 4 origin horizontal offset from the top in MEI units
+setting(music_settings:timeSig4XOffset, real(-0.1658156430994811,-0.15452313222670275)-0).
+
+%	The time signature 4 origin vertical offset from the top in MEI units
+setting(music_settings:timeSig4YOffset, real(2.0044795597354192,2.015772070608195)-2).
+
+%	The whole notehead width in MEI units
+setting(music_settings:noteheadWholeWidth, real(3.2377838447412324,3.2490763556140063)-2.5).
+
+%	The whole notehead height in MEI units
+setting(music_settings:noteheadWholeHeight, real(2.124606600482741,2.135899111355515)-2.12).
+
+%	The sharp accidental width in MEI units
+setting(music_settings:accidentalSharpWidth, real(1.5720222130450707,1.5833147239178447)-5.5).
+
+%	The sharp accidental height in MEI units
+setting(music_settings:accidentalSharpHeight, real(5.55223149647291,5.563524007345685)-6.6).
+
+%	The sharp accidental origin horizontal offset from the top in MEI units
+setting(music_settings:accidentalSharpXOffset, real(-0.005646255436389162,0.005646255436389162)-0).
+
+%	The sharp accidental origin vertical offset from the top in MEI units
+setting(music_settings:accidentalSharpYOffset, real(2.837360375583497,2.848652886456276)-2).

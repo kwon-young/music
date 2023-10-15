@@ -1,11 +1,15 @@
 :- module(epf, [term//1, select//1, update//2,
                 termchk//1, selectchk//1, selectchk//2, updatechk//2,
-                add//1,
+                add//1, apply//2, when//2,
+                optional//3,
                 sequence2//2, sequence2//3, sequence2//5,
+                foldlg//4, foldlg//5, longuest_foldlg//5,
                 longuest_sequence//2, longuest_sequences//2,
-                longuest_notempty_sequence//3]).
+                longuest_notempty_sequence//4,
+                longuest_notempty_sequences//2]).
 
 :- use_module(library(clpBNR)).
+:- use_module(state).
 :- use_module(utils).
 
 term_(Mode, X, [CurX | L], L) :-
@@ -56,6 +60,39 @@ sequence2_([B1 | List1], A1, P) -->
   sequence2_(List1, B1, P).
 sequence2_([], _, _) --> {true}.
 
+:- meta_predicate foldlg(5, ?, ?, ?, ?, ?).
+
+foldlg(Goal, List, V0, V) -->
+  foldlg_(List, Goal, V0, V).
+
+foldlg_([H | T], Goal, V0, V) -->
+  call(Goal, H, V0, V1),
+  foldlg_(T, Goal, V1, V).
+foldlg_([], _, V, V) --> [].
+
+:- meta_predicate foldlg(5, ?, ?, ?, ?, ?, ?).
+
+foldlg(Goal, List, V0, V, Rest) -->
+  foldlg_(List, Goal, V0, V, Rest).
+
+foldlg_([H | T], Goal, V0, V, Rest) -->
+  call(Goal, H, V0, V1),
+  foldlg_(T, Goal, V1, V, Rest).
+foldlg_(Rest, _, V, V, Rest) --> [].
+
+:- meta_predicate longuest_foldlg(5, ?, ?, ?, ?, ?, ?).
+
+longuest_foldlg(Goal, List, V0, V, Rest) -->
+  longuest_foldlg_(List, Goal, V0, V, Rest).
+
+longuest_foldlg_(L, Goal, V0, V, Rest) -->
+  reify(head_(Goal, L, V0, V1), Res),
+  longuest_foldlg_(Res, L, Goal, V1, V, Rest).
+longuest_foldlg_(true, [_ | T], G, V1, V, Rest) -->
+  longuest_foldlg_(T, G, V1, V, Rest).
+longuest_foldlg_(false, Rest, _, V, V, Rest) --> [].
+
+
 :- meta_predicate sequence2(6, ?, ?, ?, ?).
 
 sequence2(Element, [Start1 | List1], [Start2 | List2]) -->
@@ -66,12 +103,12 @@ sequence2_([B1 | List1], [B2 | List2], A1, A2, P) -->
   sequence2_(List1, List2, B1, B2, P).
 sequence2_([], [], _, _, _) --> {true}.
 
-:- meta_predicate sequence2(9, ?, ?, ?, ?, ?, ?).
+:- meta_predicate sequence2(:, ?, ?, ?, ?, ?, ?).
 
 sequence2(Element, [S1 | L1], [S2 | L2], [S3 | L3], [S4 | L4]) -->
   sequence2_(L1, L2, L3, L4, S1, S2, S3, S4, Element).
 sequence2_([B1 | L1], [B2 | L2], [B3 | L3], [B4 | L4], A1, A2, A3, A4, P) -->
-  call(P, A1, B1, A2, B2, A3, B3, A4, B4),
+  apply(P, [A1, B1, A2, B2, A3, B3, A4, B4]),
   !,
   sequence2_(L1, L2, L3, L4, B1, B2, B3, B4, P).
 sequence2_([], [], [], [], _, _, _, _, _) --> {true}.
@@ -80,6 +117,36 @@ sequence2_([], [], [], [], _, _, _, _, _) --> {true}.
 
 head_(Goal, [H | _]) -->
   call(Goal, H).
+
+:- meta_predicate head_(5, ?, ?, ?, ?, ?).
+
+head_(Goal, [H | _], Arg1, Arg2) -->
+  call(Goal, H, Arg1, Arg2).
+
+:- meta_predicate apply(:, ?, ?, ?).
+
+apply(Goal, Args, L, R) :-
+  append(Args, [L, R], NewArgs),
+  apply(Goal, NewArgs).
+
+:- meta_predicate when(?, 2, ?, ?).
+
+when(Cond, Mod:Goal, L, R) :-
+  when(Cond, call(Mod:Goal, L, R)).
+
+:- meta_predicate heads_(:, ?, ?, ?, ?).
+
+heads_(Goal, SeqsIn, SeqsOut) -->
+  { maplist(lists:selectchk, Args, SeqsIn, SeqsOut) },
+  apply(Goal, Args).
+
+:- meta_predicate optional(3, ?, ?, ?, ?).
+
+optional(Goal, L, R) -->
+  reify(head_(Goal, L), Result),
+  optional_(Result, L, R).
+optional_(true, [_ | L], L) --> [].
+optional_(false, L, L) --> [].
 
 :- meta_predicate longuest_sequence(3, ?, ?, ?).
 
@@ -101,17 +168,29 @@ longuest_sequences(true, Goal, _, Sequence) -->
 longuest_sequences(false, _, [], _) -->
   [].
 
-:- meta_predicate longuest_notempty_sequence(3, ?, ?, ?, ?).
+:- meta_predicate longuest_notempty_sequence(?, 3, ?, ?, ?, ?).
 
-longuest_notempty_sequence(Goal, SequenceIn, SequenceOut) -->
-  longuest_notempty_sequence([], Goal, SequenceIn, SequenceOut).
-longuest_notempty_sequence(Acc, Goal, SequenceIn, SequenceOut) -->
+longuest_notempty_sequence(PredN, Goal, SequenceIn, SequenceOut) -->
+  state(+(PredN, 0)),
+  longuest_notempty_sequence([], PredN, Goal, SequenceIn, SequenceOut).
+longuest_notempty_sequence(Acc, PredN, Goal, SequenceIn, SequenceOut) -->
+  nCond(PredN, _),
   reify(head_(Goal, SequenceIn), Result),
-  longuest_notempty_sequence(Result, Acc, Goal, SequenceIn, SequenceOut).
-longuest_notempty_sequence(true, Acc, Goal, [Element | SequenceIn], SequenceOut) -->
-  longuest_notempty_sequence([Element | Acc], Goal, SequenceIn, SequenceOut).
-longuest_notempty_sequence(false, [_ | _], _, Sequence, Sequence) -->
+  longuest_notempty_sequence(Result, Acc, PredN, Goal, SequenceIn, SequenceOut).
+longuest_notempty_sequence(true, Acc, PredN, Goal, [Element | SequenceIn], SequenceOut) -->
+  longuest_notempty_sequence([Element | Acc], PredN, Goal, SequenceIn, SequenceOut).
+longuest_notempty_sequence(false, [_ | _], _, _, Sequence, Sequence) -->
   [].
+
+:- meta_predicate longuest_notempty_sequences(:, ?, ?, ?).
+
+longuest_notempty_sequences(Goal, SeqsIn) -->
+  reify(heads_(Goal, SeqsIn, SeqsOut), Result),
+  longuest_notempty_sequences(Result, Goal, SeqsIn, SeqsOut).
+longuest_notempty_sequences(true, Goal, _, Seqs) -->
+  longuest_notempty_sequences(Goal, Seqs).
+longuest_notempty_sequences(false, _, Seqs, _) -->
+  { maplist(=([]), Seqs) }.
 
 :- begin_tests(epf).
 

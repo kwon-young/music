@@ -1,8 +1,10 @@
 :- module(
   geo, [
     eps/3, eps/4, above/4, leftof/2, horizontalSeg/3, slope/2, segYAtX/3, inside/2,
+    contour/2,
+    union/3, unions/2,
     intersect/2,
-    box/1, boxArgs/2, boxLeftTopRightBottom/3, boxWidth/2,
+    box/1, boxArgs/2, boxLeftTopRightBottom/3, boxLeftTop/2, boxLeftBottom/2, boxWidth/2,
     remove_scopes/2,
     ground_elem/2
   ]).
@@ -68,6 +70,12 @@ box(Box) :-
 boxLeftTopRightBottom(Box, LeftTop, RightBottom) :-
   boxArgs(Box, [LeftTop, RightBottom]).
 
+boxLeftTop(Box, LeftTop) :-
+  boxArgs(Box, [LeftTop, _]).
+
+boxLeftBottom(Box, point(Left, Bottom)) :-
+  boxArgs(Box, [point(Left, _), point(_, Bottom)]).
+
 boxWidth(box(point(Left, _), point(Right, _)), Width) :-
   { Width == Right - Left }.
 
@@ -76,8 +84,8 @@ contour(El, Box) :-
   delay(compound_name_arity(El, Name, _)),
   contour_(Name, El, Box).
 contour_(seg, Seg, Box) :-
-  segStartEnd(Seg, Start, End),
-  contour(Start, End, Box).
+  segCorners(Seg, C1, C2, C3, C4),
+  union(box(C1, C3), box(C2, C4), Box).
 contour_(ccx, Ccx, Box) :-
   ccxLeftTopRightBottom(Ccx, LeftTop, RightBottom),
   boxLeftTopRightBottom(Box, LeftTop, RightBottom).
@@ -99,6 +107,19 @@ contour(point(X1, Y1), point(X2, Y2), Box) :-
   debug(contour, "~s: ~p~n", ["Xmin", Xmin]),
   debug(contour, "~s: ~p~n", ["Xmax", Xmax]),
   boxLeftTopRightBottom(Box, point(Xmin, Ymin), point(Xmax, Ymax)).
+
+union(box(point(B1X1, B1Y1), point(B1X2, B1Y2)),
+      box(point(B2X1, B2Y1), point(B2X2, B2Y2)),
+      box(point(X1, Y1), point(X2, Y2))) :-
+  {
+    min(B1X1, B2X1) == X1,
+    min(B1Y1, B2Y1) == Y1,
+    max(B1X2, B2X2) == X2,
+    max(B1Y2, B2Y2) == Y2
+  }.
+
+unions([H | T], Box) :-
+  foldl(union, T, H, Box).
 
 boxEq(box(point(X1, Y1), point(X2, Y2)), point(X, Y)) :-
   [X1, Y1, X2, Y2, X, Y]::real,
@@ -129,11 +150,26 @@ vdistanceAtX(X, Seg1, Seg2, Distance) :-
   {Distance == Y2 - Y1}.
 
 delay:mode(geo:inside(nonvar, nonvar)).
-inside(Term, Container) :-
-  contour(Term, box(P1, P2)),
-  contour(Container, Box),
-  boxEq(Box, P1),
-  boxEq(Box, P2).
+% inside(Term, Container) :-
+%   contour(Term, box(P1, P2)),
+%   contour(Container, Box),
+%   boxEq(Box, P1),
+%   boxEq(Box, P2).
+inside(box(LeftTop, RightBottom), Box) :-
+  boxEq(Box, LeftTop),
+  boxEq(Box, RightBottom).
+inside(ccx(LeftTop, RightBottom, _, _), Box) :-
+  boxEq(Box, LeftTop),
+  boxEq(Box, RightBottom).
+inside(Seg, Box) :-
+  Seg = seg(_, _, _, _),
+  segCorners(Seg, C1, C2, C3, C4),
+  boxEq(Box, C1),
+  boxEq(Box, C2),
+  boxEq(Box, C3),
+  boxEq(Box, C4).
+inside(point(X, Y), Box) :-
+  boxEq(point(X, Y), Box).
 
 ground_elem(Elem, GroundElem) :-
   term_variables(Elem, InVars),
@@ -141,8 +177,10 @@ ground_elem(Elem, GroundElem) :-
   % include(interval, InVars, Intervals),
   % solve(Intervals),
   maplist([X, Y]>>((interval(X) -> domain(X, Y) ; X = Y)), InVars, OutVars),
-  etiqs(Elem, Etiqs),
-  length(Etiqs, _).
+  ( etiqs(Elem, Etiqs)
+  -> length(Etiqs, _)
+  ; true
+  ).
 etiqs(ccx(_, _, Etiqs, _), Etiqs).
 etiqs(seg(_, _, Etiqs, _), Etiqs).
 etiqs(ccx(P1, P2, Etiqs, O), ccx(P1, P2, EtiqsNoScope, O), Etiqs, EtiqsNoScope).

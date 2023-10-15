@@ -245,11 +245,14 @@ def parse_g(node, transforms, defs, scopes):
     if transform := node.attrib.get('transform'):
         transforms.append(Matrix(transform))
     if gclass := node.attrib.get('class'):
+        if "ledgerLines" in gclass:
+            gclass = gclass.split(' ')[0]
+        node_id = node.attrib.get('id', None)
         for scope in scopes:
-            if gclass == scope.c:
+            if gclass == scope.c and node_id is None:
                 break
         else:
-            scopes.append(IdClass(node.attrib.get('id', None), gclass))
+            scopes.append(IdClass(node_id, gclass))
 
 
 def seg_swap(direction, start, end):
@@ -318,6 +321,8 @@ def parse_use(node, transforms, defs, scopes):
     attrib = node.attrib
     x = Length(attrib['x'])
     y = Length(attrib['y'])
+    if 'transform' in attrib:
+        transforms.append(Matrix(attrib['transform']))
     origin = apply_transforms(Point(x, y), transforms)
     transforms.append(Matrix.translate(x, y))
     if w := attrib.get('width'):
@@ -343,7 +348,7 @@ def parse_rect(node, transforms, defs, scopes):
     r = Rect(**node.attrib)
     r = apply_transforms(r, transforms)
     r.reify()
-    if scopes[-1].c == 'stem':
+    if scopes[-1].c in ['stem', 'grpSym']:
         x, y, w, h = r.x, r.y, r.width, r.height
         x = x + (w / 2)
         return Seg(r.d(), Point(x, y), Point(x, y + h), scopes.copy(), w)

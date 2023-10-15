@@ -1,0 +1,76 @@
+﻿/*  Saved settings
+    Date: Sun Oct 15 11:57:30 2023
+*/
+
+
+%	page width
+setting(music_settings:pageWidth, 2100.0-2100).
+
+%	page height
+setting(music_settings:pageHeight, 2970.0-2970).
+
+%	page top margin
+setting(music_settings:topMargin, real(0,103.35000000000001)-50).
+
+%	page left margin
+setting(music_settings:leftMargin, real(0,50.00000000000001)-50).
+
+%	page bottom margin
+setting(music_settings:bottomMargin, real(0,2793.3500000000004)-50).
+
+%	page right margin
+setting(music_settings:rightMargin, real(0,1858.15)-50).
+
+%	Global Eps in pixels
+setting(music_settings:eps, real(0.049999999999954525,0.05076255798335297)-0).
+
+%	The MEI unit (1⁄2 of the distance between the staff lines)
+setting(music_settings:unit, 8.97779138088228-9).
+
+%	line thickness in unit
+setting(music_settings:thickness, real(0.1391475240421414,0.15045599754742897)-0.15).
+
+%	barline thickness in unit
+setting(music_settings:barLineThickness, real(0.2950878818211408,0.3063963553264284)-0.3).
+
+%	The minimal measure width in MEI units
+setting(music_settings:measureMinWidth, real(0,21.36948325247557)-15).
+
+%	The bracket thickness in MEI units
+setting(music_settings:bracketThickness, real(0.49999999999999994,2)-1.0).
+
+%	The left margin for time signature 3 in MEI units
+setting(music_settings:timeSig3LeftMargin, real(1.887907250563776,1.899215724069067)-1).
+
+%	The right margin for time signature 3 in MEI units
+setting(music_settings:timeSig3RightMargin, real(0,1.9805659458288587)-1).
+
+%	The time signature 3 width in MEI units
+setting(music_settings:timeSig3Width, real(2.9777075794992998,2.9890160530045877)-5.5).
+
+%	The time signature 3 height in MEI units
+setting(music_settings:timeSig3Height, real(4.020280257221753,4.031588730727042)-6.6).
+
+%	The time signature 3 origin horizontal offset from the top in MEI units
+setting(music_settings:timeSig3XOffset, real(-0.166050033325328,-0.15474155982003857)-0).
+
+%	The time signature 3 origin vertical offset from the top in MEI units
+setting(music_settings:timeSig3YOffset, real(1.999293220405919,2.010601693911209)-2).
+
+%	The left margin for time signature 8 in MEI units
+setting(music_settings:timeSig8LeftMargin, real(1.9213230415164182,1.9326315150217095)-1).
+
+%	The right margin for time signature 8 in MEI units
+setting(music_settings:timeSig8RightMargin, real(0.019434054171141475,2)-1).
+
+%	The time signature 8 width in MEI units
+setting(music_settings:timeSig8Width, real(2.993747159156567,3.0050556326618554)-5.5).
+
+%	The time signature 8 height in MEI units
+setting(music_settings:timeSig8Height, real(3.998225835193011,4.009534308698299)-6.6).
+
+%	The time signature 8 origin horizontal offset from the top in MEI units
+setting(music_settings:timeSig8XOffset, real(-0.08585213503898714,-0.07454366153369771)-0).
+
+%	The time signature 8 origin vertical offset from the top in MEI units
+setting(music_settings:timeSig8YOffset, real(1.9932783780344447,2.0045868515397376)-2).

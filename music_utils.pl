@@ -39,7 +39,7 @@ interlineAt(Stafflines, Getter, Interline, Interlines) :-
   average(Interlines, Interline).
 
 ccxOnStaffline(Stafflines, Ccx, Etiq, NumStaffline, Eps) :-
-  ccxEtiqsCond(Ccx, Etiq),
+  etiqsCond(Ccx, Etiq),
   nth1(NumStaffline, Stafflines, Staffline),
   ccxOnSegCond(Staffline, Ccx, Eps).
 

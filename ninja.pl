@@ -11,6 +11,7 @@ stem_page(_, 1).
 
 stem("stafflines").
 stem("double-stafflines").
+stem("system-barline").
 stem("brace").
 stem("bracket").
 stem("brace-bracket").
@@ -83,7 +84,14 @@ graph -->
     foreach(stem(Stem), pl(Stem, "music"), " "),
     foreach(stem(Stem), mei(Stem, "music"), " "),
     foreach(stem(Stem), setting(Stem, "reco"), " ")
-  ]).
+  ]),
+  build(["test"], phony, [
+    foreach(stem(Stem), setting(Stem, "test"), " ")
+  ]),
+  build(["dataset/IMSLP318757.pl"], svg2pl,
+        ["svg2pl.py", "dataset/IMSLP318757_001.svg", "data/glyphnames.json"]),
+        build(["dataset/IMSLP318757-music.mei", "settings/IMSLP318757-reco.txt"], reco,
+        ["dataset/IMSLP318757.pl", "settings/default.txt"], [implicit_ins([deps])]).
 
 graph(Stem) -->
   build([id(Stem)], add_ids, [input(Stem)]),
@@ -95,7 +103,8 @@ graph(Stem) -->
         [implicit_ins([deps])]),
   build([mei(Stem, "music"), setting(Stem, "reco")], reco,
         [pl_noscope(Stem), setting(Stem, "test")], [implicit_ins([deps])]),
-  build([pl(Stem, "music")], gen, [id(Stem)], [implicit_ins([deps])]).
+  build([pl(Stem, "music")], gen, [id(Stem)], [implicit_ins([deps])]),
+  build([Stem], phony, [pl(Stem, "music"), mei(Stem, "music")]).
 
 main :-
   phrase(graph, L),

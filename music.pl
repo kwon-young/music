@@ -17,6 +17,8 @@
 :- use_module(music_settings).
 :- use_module(pitch_cond).
 
+:- multifile delay:mode/1.
+
 main :-
   current_prolog_flag(argv, [Goal | Args]),
   main(Goal, Args).
@@ -25,8 +27,8 @@ main(Goal, Args) :-
 
 mainGen(XmlFile, StructFile) :-
   load_xml(XmlFile, Xml, [space(remove), number(integer)]),
-  get_settings(value, Settings),
-  makeState(State, Settings),
+  get_settings(value, _Settings, AllSettings),
+  makeState(State, AllSettings),
   once(phrase(mei(Xml), [State, Struct], [_, []])),
   maplist(ground_elem, Struct, GroundStruct),
   open(StructFile, write, S),
@@ -38,15 +40,25 @@ mainReco(StructFile, TestSettingsFile, XmlFile, RecoSettingsFile) :-
   read(S, Struct),
   close(S),
   load_settings(TestSettingsFile),
-  get_settings(domain, Settings),
-  makeState(State, Settings),
-  once(phrase(mei(Xml), [State, Struct], [_, []])),
-  % print_term(Rest, []),
+  get_settings(domain, Settings, AllSettings),
+  makeState(StateIn, AllSettings),
+  once(phrase(mei(Xml), [StateIn, Struct], [StateOut, Rest])),
+  ground_all_ids(StateOut),
+  print_term(Rest, []),
   % Rest == [],
-  open(XmlFile, write, XmlS),
-  xml_write(XmlS, Xml, []),
-  close(XmlS),
   update_settings(Settings),
+  term_attvars(Xml, AttVars),
+  format("~n~p~n", [AttVars]),
+  include(interval, AttVars, Intervals),
+  splitsolve(Intervals, 3),
+  maplist(midpoint, Intervals, Intervals),
+  print_term(Xml, []),
+  open(XmlFile, write, XmlS),
+  ( ground(Xml)
+  -> xml_write(XmlS, Xml, [])
+  ; print_term(Xml, [output(XmlS)])
+  ),
+  close(XmlS),
   save_settings(RecoSettingsFile).
 mainTest(XmlFile, StructFile, SettingsFile) :-
   load_xml(XmlFile, Xml, [space(remove), number(integer)]),
@@ -54,10 +66,10 @@ mainTest(XmlFile, StructFile, SettingsFile) :-
   read(S, Struct),
   close(S),
   forall(setting(Mod:Name, _), restore_setting(Mod:Name)),
-  get_settings(domain, Settings),
-  makeState(State, Settings),
-  once(phrase(mei(Xml), [State, Struct], [_, _Rest])),
-  % print_term(Rest, []),
+  get_settings(domain, Settings, AllSettings),
+  makeState(State, AllSettings),
+  once(phrase(mei(Xml), [State, Struct], [_, Rest])),
+  print_term(Rest, []),
   % Rest == [],
   update_settings(Settings),
   save_settings(SettingsFile).
@@ -68,8 +80,8 @@ mei([pi('xml-model href="https://music-encoding.org/schema/dev/mei-all.rng" type
   state([
     +(pageId, 0),
     +(measureN, 0),
-    +(staffN, 0),
-    +(staffLines, noEl)
+    +(staffs, _),
+    +(pitchAnchor, no)
   ]),
   {
     MeiHead = element(meiHead, [], [element(fileDesc, [], [element(titleStmt, [], [element(title, [], [])])])])
@@ -85,25 +97,206 @@ body(element(body, [], [element(mdiv, ['xml:id'=Id], [Score])])) -->
 
 score(element(score, ['xml:id'=Id], [ScoreDef, Section])) -->
   add_id(Id),
+  state(+(scoreDef, ScoreDef)),
   scoreDef(ScoreDef),
   section(Section).
 
-scoreDef(element(scoreDef, ['xml:id'=Id], [StaffGrp])) -->
-  add_id(Id),
-  staffGrp(StaffGrp).
+scoreDef(element(scoreDef, ['xml:id'=Id], [element(staffGrp, _, _)])) -->
+  add_id(Id).
 
-staffGrp(element(staffGrp, ['xml:id'=Id], StaffDefs)) -->
+systemLineCond(SystemLine, Staffs, Thickness, Unit, Eps) :-
+  segHV(v, left, top, SystemLine, SystemLineLeftTop),
+  Staffs = [TopStaff, NextStaff | OtherStaffs],
+  TopStaff = [TopStaffLine | OtherStaffLines],
+  segStart(TopStaffLine, TopStaffLineLeft),
+  eps(p, Eps, SystemLineLeftTop, TopStaffLineLeft),
+  when(nonvar(OtherStaffLines), systemLineCond_(SystemLine, OtherStaffLines,
+                                                [NextStaff | OtherStaffs], Eps)),
+  segThickness(SystemLine, SystemLineThickness),
+  eps(Eps, Unit*Thickness, SystemLineThickness),
+  etiqsCond(SystemLine, system).
+
+systemLineCond_(SystemLine, [_ | OtherStaffLines], OtherStaffs, Eps) :-
+  when(nonvar(OtherStaffLines), systemLineCond_(SystemLine, OtherStaffLines, OtherStaffs, Eps)).
+systemLineCond_(SystemLine, [], [Staff | OtherStaffs], Eps) :-
+  when(nonvar(Staff), systemLineCond_(SystemLine, Staff, OtherStaffs, Eps)).
+systemLineCond_(SystemLine, [LastStaffLine], [], Eps) :-
+  segHV(v, left, bottom, SystemLine, SystemLineLeftBottom),
+  segStart(LastStaffLine, LastStaffLineLeft),
+  eps(p, Eps, SystemLineLeftBottom, LastStaffLineLeft).
+
+systemLine(SystemLine, SystemStaffLines) -->
+  statep(systemLineCond(SystemLine, SystemStaffLines), [o(barLineThickness), o(unit), o(eps)]),
+  termp(SystemLine).
+systemLine(no, [_]) -->
+  [].
+
+gatherStaffDefs_([]) -->
+  [].
+gatherStaffDefs_([El | Childs]) -->
+  gatherStaffDefs(El),
+  when(nonvar(Childs), gatherStaffDefs_(Childs)).
+
+gatherStaffDefs(element(scoreDef, _, [StaffGrp]), StaffDefs) -->
+  { phrase(gatherStaffDefs(StaffGrp), StaffDefs) }.
+gatherStaffDefs(element(grpSym, _, _)) -->
+  [].
+gatherStaffDefs(element(staffDef, Attr, Childs)) -->
+  [element(staffDef, Attr, Childs)].
+gatherStaffDefs(element(staffGrp, _, Childs)) -->
+  when(nonvar(Childs), gatherStaffDefs_(Childs)).
+
+gather_grpSym(element(scoreDef, _, [element(staffGrp, ['xml:id'=Id], StaffDefs)]), StaffDefs, _, no) -->
+  add_id(Id).
+gather_grpSym(element(scoreDef, _, Childs), StaffDefs, SystemStaffLines, SystemLine) -->
+  { Childs = [element(staffGrp, _, _)] },
+  gather_grpSym_(Childs, _, StaffDefs, SystemStaffLines, SystemLine).
+
+gather_grpSym_([element(staffGrp, ['xml:id'=Id | _], [GrpSym | NewChilds]) | NewRest], [NewSystemStaffLines | NewRestStaffLines], Childs, SystemStaffLines, Left) -->
   add_id(Id),
-  state(+(staffDefs, StaffDefs)).
+  scope(grpSym(GrpSym, Childs, SystemStaffLines, GroupChildsTmp, GroupStaffLinesTmp, RestChilds, RestStaffLines, Left, NewLeft)),
+  gather_grpSym_(NewChilds, NewSystemStaffLines, GroupChildsTmp, GroupStaffLinesTmp, NewLeft),
+  gather_grpSym_(NewRest, NewRestStaffLines, RestChilds, RestStaffLines, Left).
+gather_grpSym_([StaffDef | NewChilds], [StaffLines | NewSystemStaffLines], [StaffDef | Childs], [StaffLines | SystemStaffLines], Left) -->
+  { StaffDef = element(staffDef, _, _) },
+  gather_grpSym_(NewChilds, NewSystemStaffLines, Childs, SystemStaffLines, Left).
+gather_grpSym_([], [], [], [], _) --> [].
+gather_grpSym_([element(staffGrp, ['xml:id'=Id | _], NewChilds) | NewRest], [NewSystemStaffLines | NewRestStaffLines], Childs, SystemStaffLines, Left) -->
+  add_id(Id),
+  { gather_split(Childs, SystemStaffLines, GroupChildsTmp, GroupStaffLinesTmp, RestChilds, RestStaffLines) },
+  gather_grpSym_(NewChilds, NewSystemStaffLines, GroupChildsTmp, GroupStaffLinesTmp, Left),
+  gather_grpSym_(NewRest, NewRestStaffLines, RestChilds, RestStaffLines, Left).
+
+gather_split([El1 | L1], [El2 | L2], [El1 | Grouped1], [El2 | Grouped2], Rest1, Rest2) :-
+  gather_split(L1, L2, Grouped1, Grouped2, Rest1, Rest2).
+gather_split(Rest1, Rest2, [], [], Rest1, Rest2).
+
+braceCond([StaffDef | StaffDefs], [[FirstStaffLine | OtherStaffLines] | SystemStaffLines],
+          [StaffDef | BracedStaffDefs], [[FirstStaffLine | OtherStaffLines] | BracedStaffLines],
+          OtherStaffDefs, OtherSystemStaffLines,
+          Anchor, Brace, BraceWidth, BraceVerticalMargin, GrpSymMargin, Unit, Eps) :-
+  contour(Anchor, box(point(AnchorLeft, _), _)),
+  ccxRight(Brace, BraceRight),
+  eps(Eps, AnchorLeft - GrpSymMargin * Unit, BraceRight),
+  segStartY(FirstStaffLine, FirstStaffLineY),
+  ccxTop(Brace, BraceTop),
+  eps(Eps, FirstStaffLineY + BraceVerticalMargin * Unit, BraceTop),
+  ccxWidth(Brace, Width),
+  eps(Eps, BraceWidth * Unit, Width),
+  debug(braceCond, "~p~n", [Brace]),
+  etiqsCond(Brace, brace),
+  when(nonvar(StaffDefs),
+    braceCondPost(StaffDefs, SystemStaffLines,
+                  BracedStaffDefs, BracedStaffLines,
+                  OtherStaffDefs, OtherSystemStaffLines,
+                  Brace, BraceVerticalMargin, Unit, Eps)).
+braceCondPost([StaffDef | StaffDefs], [StaffLines | SystemStaffLines],
+              [StaffDef | BracedStaffDefs], [StaffLines | BracedStaffLines],
+              OtherStaffDefs, OtherSystemStaffLines,
+              Brace, BraceVerticalMargin, Unit, Eps) :-
+  when(nonvar(StaffDefs),
+    braceCondPost(StaffDefs, SystemStaffLines,
+                  BracedStaffDefs, BracedStaffLines,
+                  OtherStaffDefs, OtherSystemStaffLines,
+                  Brace, BraceVerticalMargin, Unit, Eps)).
+braceCondPost([StaffDef | OtherStaffDefs], [StaffLines | OtherSystemStaffLines],
+              [StaffDef], [StaffLines],
+              OtherStaffDefs, OtherSystemStaffLines,
+              Brace, BraceVerticalMargin, Unit, Eps) :-
+  delay(last(StaffLines, BottomStaffLine)),
+  segStartY(BottomStaffLine, BottomStaffLineY),
+  ccxBottom(Brace, BraceBottom),
+  eps(Eps, BottomStaffLineY - BraceVerticalMargin * Unit, BraceBottom).
+
+bracketCond([StaffDef | StaffDefs], [[TopStaffLine | OtherStaffLines] | SystemStaffLines],
+            [StaffDef | GroupedStaffDefs], [[TopStaffLine | OtherStaffLines] | GroupedStaffLines],
+            OtherStaffDefs, OtherSystemStaffLines,
+            Anchor, BracketSeg, BracketTop, BracketBottom,
+            BracketThickness, BracketVerticalOffset, BracketOverlap, GrpSymMargin, Unit, Eps) :-
+  contour(Anchor, box(point(AnchorLeft, _), _)),
+  segThickness(BracketSeg, Thickness),
+  eps(Eps, BracketThickness * Unit, Thickness),
+  segHV(v, right, top, BracketSeg, point(BStartX, BStartY)),
+  eps(Eps, AnchorLeft - GrpSymMargin * Unit, BStartX),
+  debug(bracketCond, '~p~n', [GrpSymMargin]),
+  segHV(v, right, bottom, BracketSeg, point(BEndX, _)),
+  eps(Eps, AnchorLeft - GrpSymMargin * Unit, BEndX),
+  segStartY(TopStaffLine, TopStaffLineY),
+  eps(Eps, TopStaffLineY - BracketVerticalOffset * Unit, BStartY),
+  ccxLeft(BracketTop, BracketTopLeft),
+  ccxBottom(BracketTop, BracketTopBottom),
+  etiqsCond(BracketTop, bracketTop),
+  segHV(v, left, top, BracketSeg, BracketSegLeftTop),
+  eps(p, Eps, BracketSegLeftTop, point(BracketTopLeft, BracketTopBottom-BracketOverlap)),
+  ccxLeft(BracketBottom, BracketBottomLeft),
+  ccxTop(BracketBottom, BracketBottomBottom),
+  etiqsCond(BracketBottom, bracketBottom),
+  segHV(v, left, bottom, BracketSeg, BracketSegLeftBottom),
+  eps(p, Eps, BracketSegLeftBottom, point(BracketBottomLeft, BracketBottomBottom+BracketOverlap)),
+  when(nonvar(StaffDefs),
+    bracketCondPost(StaffDefs, SystemStaffLines,
+                    GroupedStaffDefs, GroupedStaffLines,
+                    OtherStaffDefs, OtherSystemStaffLines,
+                    BracketSeg, BracketVerticalOffset, Unit, Eps)).
+bracketCondPost([StaffDef | StaffDefs], [StaffLines | SystemStaffLines],
+                [StaffDef | GroupedStaffDefs], [StaffLines | GroupedStaffLines],
+                OtherStaffDefs, OtherSystemStaffLines,
+                BracketSeg, BracketVerticalOffset, Unit, Eps) :-
+  when(nonvar(StaffDefs),
+    bracketCondPost(StaffDefs, SystemStaffLines,
+                    GroupedStaffDefs, GroupedStaffLines,
+                    OtherStaffDefs, OtherSystemStaffLines,
+                    BracketSeg, BracketVerticalOffset, Unit, Eps)).
+bracketCondPost([StaffDef | OtherStaffDefs], [StaffLines | OtherSystemStaffLines],
+                [StaffDef], [StaffLines],
+                OtherStaffDefs, OtherSystemStaffLines,
+                BracketSeg, BracketVerticalOffset, Unit, Eps) :-
+  delay(last(StaffLines, BottomStaffLine)),
+  segStartY(BottomStaffLine, BottomStaffLineY),
+  segEndY(BracketSeg, BEndY),
+  eps(Eps, BottomStaffLineY + BracketVerticalOffset * Unit, BEndY).
+
+grpSym(element(grpSym, ['xml:id'=DefId, symbol=brace], []),
+       StaffDefs,
+       SystemStaffLines,
+       BracedStaffDefs,
+       BracedStaffLines,
+       OtherStaffDefs, OtherStaffLines, Anchor, Brace, _RealId) -->
+  add_id(DefId),
+  termp(Brace),
+  statep(braceCond(StaffDefs, SystemStaffLines,
+                   BracedStaffDefs, BracedStaffLines,
+                   OtherStaffDefs, OtherStaffLines,
+                   Anchor, Brace), [o(braceWidth), o(braceVerticalMargin), o(braceMargin), o(unit), o(eps)]).
+grpSym(element(grpSym, ['xml:id'=DefId, symbol=bracket], []),
+       StaffDefs, SystemStaffLines,
+       GroupedStaffDefs, GroupedSystemStaffLines,
+       OtherStaffDefs, OtherSystemStaffLines,
+       Anchor, BracketSeg, _RealId) -->
+  add_id(DefId),
+  statep(bracketCond(
+      StaffDefs, SystemStaffLines,
+      GroupedStaffDefs, GroupedSystemStaffLines,
+      OtherStaffDefs, OtherSystemStaffLines,
+      Anchor, BracketSeg, BracketTop, BracketBottom),
+    [o(bracketThickness), o(bracketVerticalOffset), o(bracketOverlap), o(bracketMargin), o(unit), o(eps)]),
+  termp(BracketTop),
+  termp(BracketBottom),
+  termp(BracketSeg).
 
 section(element(section, ['xml:id'=Id], Measures)) -->
   add_id(Id),
-  scope(page(Measures)).
+  pages(Measures).
+
+pages([Measure | MeasuresIn]) -->
+  scope(page([Measure | MeasuresIn], MeasuresOut)),
+  pages(MeasuresOut).
+pages([]) -->
+  [].
 
 pageCond(Page, PrevId, Id, [PageMargin], W, H, TopM, LeftM, BotM, RightM) :-
-  Id::integer(1, _),
-  { Id == PrevId + 1 },
-  ccxEtiqsCond(Page, 'page'),
+  nCond(PrevId, Id),
+  etiqsCond(Page, 'page'),
   ccxLeftTop(Page, point(0, 0)),
   ccxOrigin(Page, point(0, 0)),
   ccxWidth(Page, W),
@@ -117,80 +310,58 @@ pageCond(Page, PrevId, Id, [PageMargin], W, H, TopM, LeftM, BotM, RightM) :-
     RightWM == Right - RightM
   },
   boxArgs(PageMargin, [point(LeftWM, TopWM), point(RightWM, BottomWM)]),
-  box(PageMargin).
-page(Measures, PageId) -->
+  box(PageMargin),
+  debug(pageCond, "~p~n", [PageMargin]).
+
+page(MeasuresIn, MeasuresOut, PageId) -->
   statep(pageCond(Page), [-(pageId, _, PageId), +(bbox), o(pageWidth), o(pageHeight),
                           o(topMargin), o(leftMargin), o(bottomMargin), o(rightMargin)]),
   terms(Page),
-  measures(Measures).
+  state(o(spacingSystem, Spacing)),
+  vertical_layout_seq(state:scope(music:system), Spacing, MeasuresIn, MeasuresOut).
 
-measures(Measures) -->
-  state(o(spacingStaff, Spacing)),
-  vertical_layout(measureLine, Spacing, Measures).
+system([Measure | MeasuresIn], MeasuresOut, _Id) -->
+  state(o(scoreDef, ScoreDef)),
+  gatherStaffDefs(ScoreDef, StaffDefs),
+  longuest_notempty_sequence(
+    measureLineN,
+    state:scope(music:measure(StaffDefs)),
+    [Measure | MeasuresIn], MeasuresOut).
 
-measureLine(MeasuresIn, MeasuresOut) -->
-  state(+(staffLines, noEl)),
-  longuest_notempty_sequence(state:scope(music:measure), MeasuresIn, MeasuresOut).
-
-measureCond(StaffBox, StaffWidth, MeasureMinWidth, Unit, Eps) :-
-  { StaffWidth >= MeasureMinWidth * Unit },
-  boxWidth(StaffBox, StaffBoxWidth),
-  eps(Eps, StaffWidth, StaffBoxWidth).
-
-measure(element(measure, ['xml:id'=Id, n=NAtom], Staffs), Id) -->
+measure(StaffDefs, element(measure, ['xml:id'=Id, n=NAtom], Staffs), Id) -->
   add_id(Id),
-  statep(nCond(NAtom), [-(measureN)]),
-  state([+(staffN, 0), +(staffWidth), o(staffDefs, StaffDefs)]),
-  bbox(staffs(Staffs, StaffDefs), Box),
-  statep(measureCond(Box), [o(staffWidth), o(measureMinWidth), o(unit), o(eps)]).
+  nCond(measureN, NAtom),
+  state([o(spacingStaff, Spacing), +(staffWidth), +(staffN, 0)]),
+  vertical_layout_args(state:scope(music:staff), Spacing, [Staffs, StaffDefs, SystemStaffLines]),
+  state(o(measureLineN, MeasureLineN)),
+  pop_scope(measureLineN(MeasureLineN, StaffDefs, SystemStaffLines)),
+  state(o(scoreDef, ScoreDef)),
+  scope(barLine(ScoreDef, SystemStaffLines)).
 
-staffs([Staff | Staffs], [StaffDef | StaffDefs]) -->
-  staffs(Staffs, Staff, StaffDefs, StaffDef).
-staffs([], Staff, [], StaffDef) -->
-  scope(staff(Staff, StaffDef)).
-staffs([NextStaff | Staffs], Staff, [NextStaffDef | StaffDefs], StaffDef) -->
-  scope(staff(Staff, StaffDef)),
-  staffs(Staffs, NextStaff, StaffDefs, NextStaffDef).
+measureLineN(1, StaffDefs, SystemStaffLines) -->
+  state(o(scoreDef, ScoreDef)),
+  systemLine(SystemLine, SystemStaffLines),
+  gather_grpSym(ScoreDef, StaffDefs, SystemStaffLines, SystemLine).
+measureLineN(N, _, _) -->
+  { dif(N, 1) }.
 
 staff(element(staff, ['xml:id'=Id, n=NAtom], [Layer]),
-      element(staffDef, ['xml:id'=DefId, n=NAtom, lines=LinesAtom], Childs),
-      Id) -->
+      element(staffDef, ['xml:id'=DefId, n=NAtom, lines='5'], StaffDefChilds),
+      StaffLines, Id) -->
   add_id(Id),
   add_id(DefId),
-  statep(nCond(NAtom), [-(staffN)]),
-  state(o(staffLines, StaffLines)),
-  { delay(atom_number(LinesAtom, NumLines)) },
-  stafflines(NumLines),
-  lineStart(StaffLines, Childs),
-  scope(layer(Layer)),
-  pop_scope(barline).
+  nCond(staffN, NAtom),
+  state(o(measureLineN, MeasureLineN)),
+  stafflines(MeasureLineN, NAtom, 5, StaffLines),
+  staffDefChilds(MeasureLineN, StaffDefChilds),
+  scope(layer(Layer)).
 
-lineStart(noEl, Childs) -->
-  clef(Childs).
-lineStart([_ | _], _) -->
-  [].
-
-stafflinesCond([L | Lines], StaffLines, NumLines, _, Unit, Width, Thickness, Eps) :-
-  maplist(segEnd, [L | Lines], Ends),
-  length([L | Lines], NumLines),
-  length(StaffLines, NumLines),
-  maplist(segStart, StaffLines, Starts),
+stafflinesCond(NumLines, PrevStaffLines, StaffLines, Unit, Width, MinWidth, Thickness, Eps) :-
+  maplist(segEnd, PrevStaffLines, Ends),
   maplist(eps(p, Eps), Ends, Starts),
-  Ends = [End | _],
-  Starts = [Start | _],
-  debug(stafflinesCond, "End ~p~n", [End]),
-  debug(stafflinesCond, "Start ~p~n", [Start]),
-  stafflinesCond(StaffLines, NumLines, Unit, Width, Thickness, Eps).
-stafflinesCond(noEl, StaffLines, NumLines, [Box | _], Unit, Width, Thickness, Eps) :-
-  NumLines = 5,
-  stafflinesCond(StaffLines, NumLines, Unit, Width, Thickness, Eps),
-  StaffLines = [TopLine | _],
-  segStart(TopLine, Start),
-  boxArgs(Box, [LeftTop, _]),
-  debug(stafflinesCond, "LeftTop ~p~n", [LeftTop]),
-  debug(stafflinesCond, "Start ~p~n", [Start]),
-  eps(px, Eps, LeftTop, Start).
-stafflinesCond(StaffLines, NumLines, Unit, Width, Thickness, Eps) :-
+  maplist(segStart, StaffLines, Starts),
+  stafflinesCond(NumLines, StaffLines, Unit, Width, MinWidth, Thickness, Eps).
+stafflinesCond(NumLines, StaffLines, Unit, Width, MinWidth, Thickness, Eps) :-
   length(StaffLines, NumLines),
   maplist(segStartEndThickness, StaffLines, Starts, Ends, Thicknesses),
   maplist(leftof, Starts, Ends),
@@ -201,33 +372,174 @@ stafflinesCond(StaffLines, NumLines, Unit, Width, Thickness, Eps) :-
   maplist(eps(Eps, Thickness*Unit), Thicknesses),
   maplist(horizontalSeg(Eps, Unit), StaffLines),
   maplist(segWidth, StaffLines, Widths),
-  maplist(eps(Eps, Width), Widths).
+  maplist(eps(Eps, Width), Widths),
+  { Width >= MinWidth * Unit }.
 
-stafflines(NumLines) -->
-  state(-(staffLines, PrevStaffLines, StaffLines)),
-  statep(stafflinesCond(PrevStaffLines, StaffLines, NumLines),
-         [o(bbox), o(unit), o(staffWidth), o(thickness), o(eps)]),
-  sequence(termp, StaffLines).
+stafflines(MeasureLineN, StaffN, NumLines, StaffLines) -->
+  { dif(MeasureLineN, 1) },
+  stafflines(NumLines, StaffLines, -(StaffN-stafflines, _, StaffLines)).
+stafflines(1, StaffN, NumLines, StaffLines) -->
+  stafflines(NumLines, StaffLines, +(StaffN-stafflines, StaffLines)).
 
-layer(element(layer, ['xml:id'=Id, n='1'], []), Id) -->
+stafflines(NumLines, StaffLines, StaffLinesState) -->
+  statep(stafflinesCond(NumLines),
+         [StaffLinesState, o(unit), o(staffWidth), o(measureMinWidth),
+          o(thickness), o(eps)]),
+  sequence(termp, StaffLines),
+  state(+(stafflines, StaffLines)).
+
+staffDefChilds(N, StaffDefChilds) -->
+  state([o(stafflines, [Seg | _]), +(anchor, Anchor)]),
+  { segStartX(Seg, Anchor) },
+  staffDefChilds_(N, StaffDefChilds).
+staffDefChilds_(N, _) -->
+  { dif(N, 1) }.
+staffDefChilds_(1, StaffDefChilds) -->
+  staffDefChilds(StaffDefChilds).
+
+staffDefChilds(L) -->
+  foldlg(optional,
+         [scope(music:clef), scope(music:meterSig), scope(music:keySig)], L, []).
+
+layer(element(layer, ['xml:id'=Id, n='1'], Notes), Id) -->
   add_id(Id),
-  [].
+  sequence(scope(music:note), Notes).
+
+delay:mode(music:number_pname(ground, _)).
+delay:mode(music:number_pname(_, ground)).
+number_pname(0, c).
+number_pname(1, d).
+number_pname(2, e).
+number_pname(3, f).
+number_pname(4, g).
+number_pname(5, a).
+number_pname(6, b).
+
+pitch_octave_pname(Pitch, Octave, PName) :-
+  delay(number_pname(PNameNumber, PName)),
+  delay(atom_number(Octave, OctaveNumber)),
+  PNameNumber::integer(0, 6),
+  OctaveNumber::integer(0, 9),
+  { Pitch == OctaveNumber * 7 + PNameNumber }.
+
+delay:mode(music:noteHeadCond(ground, _)).
+delay:mode(music:noteHeadCond(_, ground)).
+noteHeadCond(noteheadWhole, '1').
+noteHeadCond(noteheadBlack, '4').
+
+noteHeadCond(Dur, Oct, PName, NoteHead, NoteHeadSettings, Anchor, NewAnchor,
+             BasePitch-BaseSeg, Unit, Eps) :-
+  etiqsCond(NoteHead, 1, notehead),
+  etiqsCond(NoteHead, Etiq),
+  freeze(Etiq, memberchk(Etiq-[LeftMargin, RightMargin, Width, Height], NoteHeadSettings)),
+  delay(noteHeadCond(Etiq, Dur)),
+  ccxWidthHeightCond(NoteHead, Width, Height, Unit, Eps),
+  ccxOrigin(NoteHead, Origin),
+  ccxLeftTopRightBottom(NoteHead, point(Left, Top), point(Right, Bottom)),
+  { Middle == (Top + Bottom) / 2 },
+  eps(p, Eps, Origin, point(Left, Middle)),
+  { Anchor + Unit * LeftMargin =< Left },
+  { Right + RightMargin * Unit =< NewAnchor },
+  pitch_octave_pname(Pitch, Oct, PName),
+  { RelativePitch == BasePitch - Pitch },
+  segYAtX(BaseSeg, BaseY, Left),
+  eps(Eps, BaseY + Unit * RelativePitch, Middle).
+
+note(element(note, ['xml:id'=Id, dur=Dur, oct=Oct, pname=PName], NoteChilds), Id) -->
+  add_id(Id),
+  statep(noteHeadCond(Dur, Oct, PName),
+         [+(notehead, NoteHead), o(noteheadSettings), -(anchor), o(pitchAnchor),
+          o(unit), o(eps)]),
+  termp(NoteHead),
+  foldlg(optional, [scope(stem), scope(accid)], NoteChilds, []).
+
+stemCond(Stem, down, StemLengthAtom, NoteHead, AllSettings, StemWidth, Unit, Eps) :-
+  segThickness(Stem, Thickness),
+  eps(Eps, StemWidth * Unit, Thickness),
+  etiqsCond(NoteHead, Etiq),
+  freeze(Etiq, memberchk(Etiq-[Offset], AllSettings)),
+  ccxOrigin(NoteHead, point(NoteHeadX, NoteHeadY)),
+  segHV(v, left, top, Stem, StemRightTop),
+  eps(p, Eps, point(NoteHeadX, NoteHeadY + Unit * Offset), StemRightTop),
+  segEndY(Stem, StemBottom),
+  delay(atom_number(StemLengthAtom, StemLength)),
+  { StemLength * Unit == StemBottom - NoteHeadY }.
+  
+stem(element(stem, ['xml:id'=Id, len=Len, dir=Dir], []), Id) -->
+  add_id(Id),
+  statep(stemCond(Stem, Dir, Len),
+         [o(notehead), o(stemSettings), o(stemWidth), o(unit), o(eps)]),
+  termp(Stem).
+
+delay:mode(music:accidCond(ground, _)).
+delay:mode(music:accidCond(_, ground)).
+accidCond(accidentalSharp, s).
+accidCond(accidentalFlat, f).
+accidCond(accidentalNatural, n).
+
+accidCond(Accidental, Shape, NoteHead, Settings, Unit, Eps) :-
+  etiqsCond(Accidental, Etiq),
+  delay(accidCond(Etiq, Shape)),
+  freeze(Etiq, memberchk(Etiq-[LeftMargin, RightMargin, Width, Height, XOffset, YOffset], Settings)),
+  ccxWidthHeightCond(Accidental, Width, Height, Unit, Eps),
+  ccxOrigin(Accidental, point(X, Y)),
+  ccxLeft(Accidental, Left),
+  eps(Eps, Left + XOffset*Unit, X),
+  ccxTop(Accidental, Top),
+  eps(Eps, Top + YOffset*Unit, Y),
+  ccxOrigin(NoteHead, point(_, NoteheadY)),
+  eps(Eps, Y, NoteheadY).
+
+accid(element(accid, ['xml:id'=Id, accid=Shape], []), Id) -->
+  add_id(Id),
+  statep(accidCond(Accidental, Shape), [o(notehead), o(accidentalSettings),
+                                        o(unit), o(eps)]),
+  termp(Accidental).
 
 barlineCond(BarLine, StaffLines, Thickness, Unit, Eps) :-
   nth1(1, StaffLines, TopLine),
   last(StaffLines, BottomLine),
+  barlineCond(BarLine, TopLine, BottomLine, Thickness, Unit, Eps).
+barlineCond(BarLine, TopLine, BottomLine, Thickness, Unit, Eps) :-
   maplist(segEnd, [TopLine, BottomLine], StaffLinesPoints),
   segHV(v, right, top, BarLine, BarLineTopRight),
   segHV(v, right, bottom, BarLine, BarLineBottomRight),
   maplist(eps(p, Eps), [BarLineTopRight, BarLineBottomRight], StaffLinesPoints),
   segThickness(BarLine, BarLineThickness),
   eps(Eps, Unit*Thickness, BarLineThickness).
-barline -->
-  debug(barline, "barline start ~n", []),
-  statep(barlineCond(BarLine), [o(staffLines), o(barLineThickness), o(unit), o(eps)]),
-  debug(barline, "barline mid ~p~n", [BarLine]),
-  termp(BarLine),
-  debug(barline, "barline end ~p~n", [BarLine]).
+
+barLine(element(scoreDef, _, [StaffGrp]), SystemStaffLines, _Id) -->
+  barline(StaffGrp, SystemStaffLines, []).
+barline(element(staffGrp, ['xml:id'=_Id | StaffGrpAttr], Childs), SystemStaffLines, OtherSystemStaffLines) -->
+  staffGrpAttr(StaffGrpAttr, SystemStaffLines, OtherSystemStaffLines),
+  barline(Childs, SystemStaffLines, OtherSystemStaffLines).
+barline(element(staffDef, _, _), [StaffLines | OtherSystemStaffLines], OtherSystemStaffLines) -->
+  barline(StaffLines).
+barline(element(grpSym, _, _), SystemStaffLines, SystemStaffLines) --> [].
+barline([Child | Childs], SystemStaffLines, OtherSystemStaffLines) -->
+  barline(Child, SystemStaffLines, ChildsStaffLines),
+  barline(Childs, ChildsStaffLines, OtherSystemStaffLines).
+barline([], SystemStaffLines, SystemStaffLines) --> [].
+
+barline(StaffLines) -->
+  statep(barlineCond(BarLine, StaffLines), [o(barLineThickness), o(unit), o(eps)]),
+  termp(BarLine).
+
+staffGrpAttr(['bar.thru'='true'], SystemStaffLines, OtherSystemStaffLines) -->
+  systemBarLine(SystemStaffLines, OtherSystemStaffLines).
+staffGrpAttr([], _, _) --> [].
+
+systemBarLine([H | T], Rest) -->
+  foldlg(systemBarLine, T, H, _, Rest).
+
+systemBarLineCond(BarLine, TopStaffLines, BottomStaffLines, Thickness, Unit, Eps) :-
+  last(TopStaffLines, TopLine),
+  BottomStaffLines = [BottomLine | _],
+  barlineCond(BarLine, TopLine, BottomLine, Thickness, Unit, Eps).
+
+systemBarLine(BottomGroup, TopGroup, BottomGroup) -->
+  statep(systemBarLineCond(BarLine, TopGroup, BottomGroup), [o(barLineThickness), o(unit), o(eps)]),
+  termp(BarLine).
 
 debug(Topic, Fmt, Args) -->
   state(o(scope, Scope)),
@@ -237,42 +549,78 @@ debug(Topic, Fmt, Args) -->
     debug(Topic, NewFmt, NewArgs)
   }.
 
-:- multifile delay:mode/1.
+delay:mode(music:clefCond(ground, _, _, _)).
+delay:mode(music:clefCond(_, ground, ground, _)).
+clefCond(gClef, 'G', 2, '4').
+clefCond(fClef, 'F', 4, '3').
 
-delay:mode(music:clefCond(ground, _, _, _, _)).
-delay:mode(music:clefCond(_, ground, ground, _, _)).
-clefCond(gClef, 'G', 2, [Settings | _], Settings).
-clefCond(fClef, 'F', 4, [_, Settings | _], Settings).
-
-clefCond(Shape, N, Clef,
-         StaffLines, LeftMargin, Settings, Unit, Eps) :-
-  ccxEtiqsCond(Clef, 1, 'clef'),
-  ccxEtiqsCond(Clef, Etiq),
-  delay(clefCond(Etiq, Shape, N, Settings, [Width, Height, YOffset])),
+clefCond(Shape, N, Clef, StaffLines, Anchor, NewAnchor, Pitch-Line,
+         AllSettings, Unit, Eps) :-
+  etiqsCond(Clef, Etiq),
+  freeze(Etiq, memberchk(Etiq-[LeftMargin, RightMargin, Width, Height, XOffset, YOffset], AllSettings)),
+  delay(clefCond(Etiq, Shape, N, Octave)),
+  delay(downcase_atom(Shape, PName)),
   ccxOrigin(Clef, point(X, Y)),
-  ccxLeft(Clef, Left),
-  eps(Eps, X, Left),
+  eps(Eps, Anchor + Unit * LeftMargin, X),
   length(StaffLines, NumLines),
   { Index == NumLines - N + 1 },
   freeze(Index, nth1(Index, StaffLines, Line)),
-  segStart(Line, point(SegX, SegY)),
+  segYAtX(Line, SegY, X),
   eps(Eps, SegY, Y),
-  eps(Eps, SegX + Unit * LeftMargin, X),
-  ccxWidth(Clef, ClefWidth),
-  eps(Eps, ClefWidth, Width*Unit),
-  ccxHeight(Clef, ClefHeight),
-  eps(Eps, ClefHeight, Height*Unit),
+  ccxWidthHeightCond(Clef, Width, Height, Unit, Eps),
+  ccxLeft(Clef, Left),
+  eps(Eps, Left + XOffset*Unit, X),
   ccxTop(Clef, Top),
-  eps(Eps, Top + YOffset*Unit, Y).
+  eps(Eps, Top + YOffset*Unit, Y),
+  ccxRight(Clef, ClefRight),
+  eps(Eps, ClefRight + RightMargin*Unit, NewAnchor),
+  pitch_octave_pname(Pitch, Octave, PName).
 
-clef([element(clef, ['xml:id'=Id, shape=Shape, line=LineAtom], [])]) -->
-  add_id(Id),
+clef(element(clef, ['xml:id'=IdDef, shape=Shape, line=LineAtom], []), _Id) -->
+  add_id(IdDef),
   { delay(atom_number(LineAtom, Line)) },
   statep(clefCond(Shape, Line, Clef),
-         [o(staffLines), o(leftMarginClef),
-          [[o(gClefWidth), o(gClefHeight), o(gClefYOffset)],
-           [o(fClefWidth), o(fClefHeight), o(fClefYOffset)]],
-          o(unit), o(eps)]),
+         [o(stafflines), -(anchor), +(pitchAnchor), o(clefSettings), o(unit), o(eps)]),
   termp(Clef).
-clef([]) -->
-  [].
+
+delay:mode(music:meterSigCond(ground, _, _)).
+delay:mode(music:meterSigCond(_, ground, _)).
+meterSigCond(Etiq, DigitAtom, N) :-
+  atom_concat(timeSig, DigitAtom, Etiq),
+  meterSigDown(N, DigitAtom).
+
+meterSigDown(2, _).
+meterSigDown(4, DigitAtom) :-
+  atom_number(DigitAtom, Digit),
+  Power::integer(1, 4),
+  { Digit == 2 ** Power }.
+
+meterSigCond(N, Count, MeterSig, Anchor, NewAnchor, StaffLines, AllSettings, Unit, Eps) :-
+  etiqsCond(MeterSig, Etiq),
+  freeze(Etiq, member(Etiq-[LeftMargin, RightMargin, Width, Height, XOffset, YOffset], AllSettings)),
+  delay(meterSigCond(Etiq, Count, N)),
+  ccxOrigin(MeterSig, point(X, Y)),
+  eps(Eps, Anchor + Unit * LeftMargin, X),
+  nth1(N, StaffLines, Line),
+  segYAtX(Line, SegY, X),
+  eps(Eps, SegY, Y),
+  ccxWidthHeightCond(MeterSig, Width, Height, Unit, Eps),
+  ccxLeft(MeterSig, Left),
+  eps(Eps, Left + XOffset*Unit, X),
+  ccxTop(MeterSig, Top),
+  eps(Eps, Top + YOffset*Unit, Y),
+  ccxRight(MeterSig, MeterSigRight),
+  eps(Eps, MeterSigRight + RightMargin*Unit, NewAnchor).
+
+meterSig(element(meterSig, ['xml:id'=IdDef, count=Count, unit=Unit], []), _Id) -->
+  add_id(IdDef),
+  statep(meterSigCond(2, Count, MeterSigUp),
+         [-(anchor, Anchor, NewAnchor), o(stafflines), o(timeSigSettings),
+          o(unit), o(eps)]),
+  termp(MeterSigUp),
+  statep(meterSigCond(4, Unit, MeterSigDown, Anchor, NewAnchor),
+         [o(stafflines), o(timeSigSettings), o(unit), o(eps)]),
+  termp(MeterSigDown).
+
+keySig(element(keySig, ['xml:id'=IdDef, sig='0'], []), _Id) -->
+  add_id(IdDef).

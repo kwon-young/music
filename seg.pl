@@ -10,12 +10,14 @@
     segStartEndThickness/4,
     segLength/2,
     segHV/5,
+    segHVCoeff/5,
     segTop/3,
     segBottom/3,
     segLeft/3,
     segRight/3,
     segHeight/2,
-    segWidth/2
+    segWidth/2,
+    segCorners/5
   ]).
 
 :- use_module(library(clpBNR)).
@@ -122,14 +124,20 @@ segHVCoeff(v, H, V, Seg, Point) :-
 segHVCoeff(h, H, V, Seg, Point) :-
   segInterpolate(Seg, H, HPoint),
   segCoeffOffset(Seg, 1-V, HPoint, Point).
+segCorners(Seg, P1, P2, P3, P4) :-
+  segStartEnd(Seg, Start, End),
+  segCoeffOffset(Seg, 0, Start, P1),
+  segCoeffOffset(Seg, 1, Start, P2),
+  segCoeffOffset(Seg, 0, End, P3),
+  segCoeffOffset(Seg, 1, End, P4).
 
 segTop(v, Seg, Top) :-
   segStartY(Seg, Top).
 segBottom(v, Seg, Bottom) :-
   segEndY(Seg, Bottom).
-segLeft(v, Seg, Left) :-
+segLeft(h, Seg, Left) :-
   segStartX(Seg, Left).
-segRight(v, Seg, Right) :-
+segRight(h, Seg, Right) :-
   segEndX(Seg, Right).
 
 segHeight(Seg, Height) :-
