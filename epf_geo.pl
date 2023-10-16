@@ -123,18 +123,3 @@ with(Name, Goal, New) -->
   state(-(Name, Old, [New | Old])),
   Goal,
   state(-(Name, [New | Old], Old)).
-%
-% call_options(Goal, Anchor, Options) -->
-%   {
-%     option(bbox(BBoxOption), Options, true),
-%     option(overlap(Overlap), Options, true),
-%     ( (BBoxOption ; Overlap)
-%     -> NewGoal = bbox(Goal, Anchor)
-%     ; NewGoal = with(anchor, Goal, Anchor)
-%     )
-%   },
-%   NewGoal.
-%
-% vertical_layout(Goal, Options) -->
-%   reify(call_options(Goal, Anchor, Options), Result),
-%   vertical_layout(Result, Goal, Anchor, Options).

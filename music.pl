@@ -520,9 +520,8 @@ barlineCond(BarLine, TopLine, BottomLine, Thickness, Unit, Eps) :-
   eps(Eps, Unit*Thickness, BarLineThickness).
 
 barLine(element(scoreDef, _, [StaffGrp]), _Id) -->
-  state([o(systemStaffLines, SystemStaffLines), +(dcg, SystemStaffLines)]),
-  barline(StaffGrp, SystemStaffLines, []),
-  state([o(dcg, [])]).
+  state([o(systemStaffLines, SystemStaffLines)]),
+  state_phrase(barline(StaffGrp, SystemStaffLines, []), SystemStaffLines:dcg).
 barline(element(staffGrp, ['xml:id'=_Id | StaffGrpAttr], Childs), L, R) -->
   barline(Childs, L1, []),
   { append(L1, R, L) },

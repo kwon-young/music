@@ -1,4 +1,4 @@
-:- module(state, [makeState/2, state//1, statep//2, stateg//2,
+:- module(state, [makeState/2, state//1, statep//2, stateg//2, state_phrase//2,
                   scope//1, scope//2, scope//3, scope//4, pop_scope//1, push_scope//2,
                   bbox//2, nCond/2, nCond/3, nCond//2,
                   add_id//1, ground_all_ids/1]).
@@ -49,6 +49,12 @@ state_([Term | Terms], [Values]) -->
 state_([Value]:Key, [Value]) -->
   state_(-(Key, [Value | R], R), _).
 
+:- meta_predicate state_phrase(2, ?, ?, ?).
+
+state_phrase(Goal, L:Key) -->
+  state(+(Key, L)),
+  Goal,
+  state(o(Key, [])).
 
 sequence3(Goal, L1, L2) -->
   sequence3_(L1, L2, Goal).

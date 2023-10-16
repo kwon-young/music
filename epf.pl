@@ -201,7 +201,6 @@ longuest_notempty_sequence(Goal) -->
 longuest_notempty_sequence_(Goal) -->
   ( Goal
   *-> longuest_notempty_sequence_(Goal)
-  ; []
   ).
 
 
