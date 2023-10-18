@@ -121,13 +121,7 @@ scoreDef(element(scoreDef, ['xml:id'=Id], [StaffGrp])) -->
 
 section(element(section, ['xml:id'=Id], Measures)) -->
   add_id(Id),
-  pages(Measures).
-
-pages([Measure | MeasuresIn]) -->
-  scope(page([Measure | MeasuresIn], MeasuresOut)),
-  pages(MeasuresOut).
-pages([]) -->
-  [].
+  state_phrase(longuest_notempty_sequence(state:scope(music:page)), Measures:measures).
 
 pageCond(Page, PrevId, Id, [PageMargin], W, H, TopM, LeftM, BotM, RightM) :-
   nCond(PrevId, Id),
@@ -148,25 +142,24 @@ pageCond(Page, PrevId, Id, [PageMargin], W, H, TopM, LeftM, BotM, RightM) :-
   box(PageMargin),
   debug(pageCond, "~p~n", [PageMargin]).
 
-page(MeasuresIn, MeasuresOut, PageId) -->
-  statep(pageCond(Page), [-(pageId, _, PageId), +(bbox), o(pageWidth), o(pageHeight),
-                          o(topMargin), o(leftMargin), o(bottomMargin), o(rightMargin)]),
+page(PageId) -->
+  statep(pageCond(Page),
+         [-(pageId, _, PageId), +(bbox), o(pageWidth), o(pageHeight),
+          o(topMargin), o(leftMargin), o(bottomMargin), o(rightMargin)]),
   terms(Page),
-  state(o(spacingSystem, Spacing)),
-  vertical_layout_seq(state:scope(music:system), Spacing, MeasuresIn, MeasuresOut).
+  longuest_notempty_sequence(systemN, state:scope(music:system)).
 
-system([Measure | MeasuresIn], MeasuresOut, _Id) -->
-  longuest_notempty_sequence(
-    measureLineN,
-    state:scope(music:measure),
-    [Measure | MeasuresIn], MeasuresOut).
+system(_Id) -->
+  longuest_notempty_sequence(measureLineN, state:scope(music:measure)).
 
-measure(element(measure, ['xml:id'=Id, n=NAtom], Staffs), Id) -->
+measure(Id) -->
+  state([element(measure, ['xml:id'=Id, n=NAtom], Staffs)]:measures),
   add_id(Id),
   nCond(measureN, NAtom),
-  state([o(spacingStaff, Spacing), +(staffWidth), +(staffN, 0),
-         o(staffDefs, StaffDefs), +(systemStaffLines, SystemStaffLines)]),
-  vertical_layout_args(state:scope(music:staff), Spacing, [Staffs, StaffDefs, SystemStaffLines]),
+  state([+(staffWidth), o(staffDefs, StaffDefs),
+         +(systemStaffLines, SystemStaffLines)]),
+  longuest_notempty_sequences(staffN, state:scope(music:staff),
+                              [Staffs, StaffDefs, SystemStaffLines]),
   state(o(measureLineN, MeasureLineN)),
   pop_scope(measureLineN(MeasureLineN)),
   state(o(scoreDef, ScoreDef)),
@@ -361,17 +354,24 @@ staff(element(staff, ['xml:id'=Id, n=NAtom], [Layer]),
       StaffLines, Id) -->
   add_id(Id),
   add_id(DefId),
-  nCond(staffN, NAtom),
+  statep(atom_number(NAtom), [o(staffN)]),
+  stafflines(5, StaffLines),
   state(o(measureLineN, MeasureLineN)),
-  stafflines(MeasureLineN, NAtom, 5, StaffLines),
   staffDefChilds(MeasureLineN, StaffDefChilds),
   scope(layer(Layer)).
 
-stafflinesCond(NumLines, PrevStaffLines, StaffLines, Unit, Width, MinWidth, Thickness, Eps) :-
+measureLineCond(PrevStaffLines, StaffLines, Eps) :-
   maplist(segEnd, PrevStaffLines, Ends),
   maplist(eps(p, Eps), Ends, Starts),
-  maplist(segStart, StaffLines, Starts),
-  stafflinesCond(NumLines, StaffLines, Unit, Width, MinWidth, Thickness, Eps).
+  maplist(segStart, StaffLines, Starts).
+
+systemCond(PrevStaffLines, StaffLines, MinSpacing, Unit) :-
+  last(PrevStaffLines, TopStaffLine),
+  segStartY(TopStaffLine, TopY),
+  StaffLines = [BottomStaffLine | _],
+  segStartY(BottomStaffLine, BottomY),
+  { TopY + MinSpacing * Unit =< BottomY }.
+
 stafflinesCond(NumLines, StaffLines, Unit, Width, MinWidth, Thickness, Eps) :-
   length(StaffLines, NumLines),
   maplist(segStartEndThickness, StaffLines, Starts, Ends, Thicknesses),
@@ -386,18 +386,19 @@ stafflinesCond(NumLines, StaffLines, Unit, Width, MinWidth, Thickness, Eps) :-
   maplist(eps(Eps, Width), Widths),
   { Width >= MinWidth * Unit }.
 
-stafflines(MeasureLineN, StaffN, NumLines, StaffLines) -->
-  { dif(MeasureLineN, 1) },
-  stafflines(NumLines, StaffLines, -(StaffN-stafflines, _, StaffLines)).
-stafflines(1, StaffN, NumLines, StaffLines) -->
-  stafflines(NumLines, StaffLines, +(StaffN-stafflines, StaffLines)).
-
-stafflines(NumLines, StaffLines, StaffLinesState) -->
-  statep(stafflinesCond(NumLines),
-         [StaffLinesState, o(unit), o(staffWidth), o(measureMinWidth),
-          o(thickness), o(eps)]),
-  sequence(termp, StaffLines),
-  state(+(stafflines, StaffLines)).
+stafflines(NumLines, StaffLines) -->
+  statep(stafflinesCond(NumLines, StaffLines),
+         [o(unit), o(staffWidth), o(measureMinWidth), o(thickness), o(eps)]),
+  state(o(staffN, StaffN)),
+  ( state(o(measureLineN, 1))
+  -> state(+(StaffN-stafflines, StaffLines))
+  ; statep(measureLineCond, [-(StaffN-stafflines, _, StaffLines), o(eps)])
+  ),
+  ( { StaffN = 1 }
+  -> state(+(stafflines, StaffLines))
+  ; statep(systemCond, [-(stafflines, _, StaffLines), o(spacingStaff), o(unit)])
+  ),
+  sequence(termp, StaffLines).
 
 staffDefChilds(N, StaffDefChilds) -->
   state([o(stafflines, [Seg | _]), +(anchor, Anchor)]),

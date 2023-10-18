@@ -23,8 +23,8 @@ state_(o(Key), Values) -->
 state_(o(Key, Value), [Value]), [State] -->
   [State],
   {
-    ( rb_lookup(Key, Value, State)
-    -> true
+    ( rb_lookup(Key, InValue, State)
+    -> Value = InValue
     ;  existence_error(key, Key, State)
     )
   }.

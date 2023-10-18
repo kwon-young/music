@@ -1,5 +1,5 @@
 ﻿/*  Saved settings
-    Date: Mon Oct 16 09:16:47 2023
+    Date: Wed Oct 18 13:59:01 2023
 */
 
 
@@ -37,7 +37,7 @@ setting(music_settings:barLineThickness, real(0.2950878818211373,0.3063963553264
 setting(music_settings:measureMinWidth, real(0,16.646718131168758)-15).
 
 %	The staff minimal spacing in MEI units
-setting(music_settings:spacingStaff, real(0,11.890537218909273)-12).
+setting(music_settings:spacingStaff, real(0,12.029684742951407)-12).
 
 %	The bracket group symbol margin in MEI units
 setting(music_settings:bracketMargin, real(0.9912501933345272,1.0025586668398254)-1).

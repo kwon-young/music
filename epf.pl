@@ -6,7 +6,8 @@
                 foldlg//4, foldlg//5, longuest_foldlg//5,
                 longuest_sequence//2, longuest_sequences//2,
                 longuest_notempty_sequence//4,
-                longuest_notempty_sequences//2,
+                longuest_notempty_sequences//3,
+                longuest_notempty_sequence//2,
                 longuest_notempty_sequence//1]).
 
 :- use_module(library(clpBNR)).
@@ -183,15 +184,33 @@ longuest_notempty_sequence(true, Acc, PredN, Goal, [Element | SequenceIn], Seque
 longuest_notempty_sequence(false, [_ | _], _, _, Sequence, Sequence) -->
   [].
 
-:- meta_predicate longuest_notempty_sequences(:, ?, ?, ?).
+:- meta_predicate longuest_notempty_sequences(?, :, ?, ?, ?).
 
-longuest_notempty_sequences(Goal, SeqsIn) -->
+longuest_notempty_sequences(PredN, Goal, SeqsIn) -->
+  state(+(PredN, 1)),
+  heads_(Goal, SeqsIn, SeqsOut),
+  longuest_notempty_sequences_(PredN, Goal, SeqsOut).
+longuest_notempty_sequences_(PredN, Goal, SeqsIn) -->
+  nCond(PredN, _),
   reify(heads_(Goal, SeqsIn, SeqsOut), Result),
-  longuest_notempty_sequences(Result, Goal, SeqsIn, SeqsOut).
-longuest_notempty_sequences(true, Goal, _, Seqs) -->
-  longuest_notempty_sequences(Goal, Seqs).
-longuest_notempty_sequences(false, _, Seqs, _) -->
+  longuest_notempty_sequences_(Result, PredN, Goal, SeqsIn, SeqsOut).
+longuest_notempty_sequences_(true, PredN, Goal, _, Seqs) -->
+  longuest_notempty_sequences_(PredN, Goal, Seqs).
+longuest_notempty_sequences_(false, _, _, Seqs, _) -->
   { maplist(=([]), Seqs) }.
+
+:- meta_predicate longuest_notempty_sequence(?, 2, ?, ?).
+
+longuest_notempty_sequence(PredN, Goal) -->
+  state(+(PredN, 1)),
+  Goal,
+  longuest_notempty_sequence_(PredN, Goal).
+longuest_notempty_sequence_(PredN, Goal) -->
+  nCond(PredN, _),
+  ( Goal
+  *-> longuest_notempty_sequence_(PredN, Goal)
+  ; []
+  ).
 
 :- meta_predicate longuest_notempty_sequence(2, ?, ?).
 
@@ -201,8 +220,8 @@ longuest_notempty_sequence(Goal) -->
 longuest_notempty_sequence_(Goal) -->
   ( Goal
   *-> longuest_notempty_sequence_(Goal)
+  ; []
   ).
-
 
 :- begin_tests(epf).
 

@@ -83,6 +83,13 @@ delay:mode(geo:contour(nonvar, _)).
 contour(El, Box) :-
   delay(compound_name_arity(El, Name, _)),
   contour_(Name, El, Box).
+contour_('[|]', L, Box) :-
+  ( is_list(L)
+  -> true
+  ; instantiation_error(L)
+  ),
+  maplist(contour, L, [Box0 | Boxes]),
+  foldl(union, Boxes, Box0, Box).
 contour_(seg, Seg, Box) :-
   segCorners(Seg, C1, C2, C3, C4),
   union(box(C1, C3), box(C2, C4), Box).
