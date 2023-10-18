@@ -15,7 +15,7 @@
 :- setting(barLineThickness, pair, real(0, 1)-0.30, 'barline thickness in unit').
 :- setting(measureMinWidth, pair, real(0, 100)-15, 'The minimal measure width in MEI units').
 :- setting(spacingStaff, pair, real(0, 48)-12, 'The staff minimal spacing in MEI units').
-:- setting(spacingSystem, pair, real(0, 48)-12, 'The system minimal spacing in MEI units').
+:- setting(spacingSystem, pair, real(0, 48)-24, 'The system minimal spacing in MEI units').
 :- setting(gClefLeftMargin, pair, real(0, 2)-1, 'The left margin for G clef in MEI units').
 :- setting(gClefRightMargin, pair, real(0, 2)-1, 'The right margin for G clef in MEI units').
 :- setting(gClefWidth, pair, real(3, 9)-5.16, 'The G clef width in MEI units').

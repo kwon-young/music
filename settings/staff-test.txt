@@ -1,5 +1,5 @@
 ﻿/*  Saved settings
-    Date: Wed Oct 18 13:59:05 2023
+    Date: Wed Oct 18 14:22:51 2023
 */
 
 
@@ -35,6 +35,9 @@ setting(music_settings:barLineThickness, real(0.2950878818211408,0.3063963553264
 
 %	The minimal measure width in MEI units
 setting(music_settings:measureMinWidth, real(0,15.855877745289487)-15).
+
+%	The system minimal spacing in MEI units
+setting(music_settings:spacingSystem, real(0,24.05936948590277)-24).
 
 %	The bracket thickness in MEI units
 setting(music_settings:bracketThickness, real(0.49999999999999994,2)-1.0).
