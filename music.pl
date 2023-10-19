@@ -236,7 +236,7 @@ staffDefChilds_(1, StaffDefChilds) -->
 
 staffDefChilds(L) -->
   foldlg(optional,
-         [scope(music:clef), scope(music:meterSig), scope(music:keySig)], L, []).
+         [scope(music:clef), scope(music:keySig), scope(music:meterSig)], L, []).
 
 delay:mode(music:clefCond(ground, _, _, _)).
 delay:mode(music:clefCond(_, ground, ground, _)).
@@ -244,9 +244,9 @@ clefCond(gClef, 'G', 2, '4').
 clefCond(fClef, 'F', 4, '3').
 
 clefCond(Shape, N, Clef, StaffLines, Anchor, NewAnchor, Pitch-Line,
-         AllSettings, Unit, Eps) :-
+         AllSettings, LeftMargin, RightMargin, Unit, Eps) :-
   etiqsCond(Clef, Etiq),
-  freeze(Etiq, memberchk(Etiq-[LeftMargin, RightMargin, Width, Height, XOffset, YOffset], AllSettings)),
+  freeze(Etiq, memberchk(Etiq-[Width, Height, XOffset, YOffset], AllSettings)),
   delay(clefCond(Etiq, Shape, N, Octave)),
   delay(downcase_atom(Shape, PName)),
   ccxOrigin(Clef, point(X, Y)),
@@ -269,8 +269,21 @@ clef(element(clef, ['xml:id'=IdDef, shape=Shape, line=LineAtom], []), _Id) -->
   add_id(IdDef),
   { delay(atom_number(LineAtom, Line)) },
   statep(clefCond(Shape, Line, Clef),
-         [o(stafflines), -(anchor), +(pitchAnchor), o(clefSettings), o(unit), o(eps)]),
+         [o(stafflines), -(anchor), +(pitchAnchor), o(clefSettings),
+          o(clefLeftMargin), o(clefRightMargin),
+          o(unit), o(eps)]),
   termp(Clef).
+
+meterSigMarginCond(box(point(MeterSigLeft, _), point(MeterSigRight, _)),
+                   Anchor, NewAnchor, LeftMargin, RightMargin, Unit) :-
+  eps(Eps, Anchor + Unit * LeftMargin, MeterSigLeft),
+  eps(Eps, MeterSigRight + RightMargin*Unit, NewAnchor).
+
+meterSig(element(meterSig, ['xml:id'=IdDef, count=Count, unit=Unit], []), _Id) -->
+  add_id(IdDef),
+  statep(meterSigMarginCond(Box),
+         [-(anchor), o(timeSigLeftMargin), o(timeSigRightMargin), o(unit)]),
+  contour(meterSig_(Count, Unit), Box).
 
 delay:mode(music:meterSigCond(ground, _, _)).
 delay:mode(music:meterSigCond(_, ground, _)).
@@ -284,12 +297,11 @@ meterSigDown(4, DigitAtom) :-
   Power::integer(1, 4),
   { Digit == 2 ** Power }.
 
-meterSigCond(N, Count, MeterSig, Anchor, NewAnchor, StaffLines, AllSettings, Unit, Eps) :-
+meterSigCond(N, Count, MeterSig, Center, StaffLines, AllSettings, Unit, Eps) :-
   etiqsCond(MeterSig, Etiq),
-  freeze(Etiq, member(Etiq-[LeftMargin, RightMargin, Width, Height, XOffset, YOffset], AllSettings)),
+  freeze(Etiq, member(Etiq-[Width, Height, XOffset, YOffset], AllSettings)),
   delay(meterSigCond(Etiq, Count, N)),
   ccxOrigin(MeterSig, point(X, Y)),
-  eps(Eps, Anchor + Unit * LeftMargin, X),
   nth1(N, StaffLines, Line),
   segYAtX(Line, SegY, X),
   eps(Eps, SegY, Y),
@@ -299,24 +311,41 @@ meterSigCond(N, Count, MeterSig, Anchor, NewAnchor, StaffLines, AllSettings, Uni
   ccxTop(MeterSig, Top),
   eps(Eps, Top + YOffset*Unit, Y),
   ccxRight(MeterSig, MeterSigRight),
-  eps(Eps, MeterSigRight + RightMargin*Unit, NewAnchor).
-
-meterSig(element(meterSig, ['xml:id'=IdDef, count=Count, unit=Unit], []), _Id) -->
-  add_id(IdDef),
-  statep(meterSigCond(2, Count, MeterSigUp),
-         [-(anchor, Anchor, NewAnchor), o(stafflines), o(timeSigSettings),
-          o(unit), o(eps)]),
-  termp(MeterSigUp),
-  statep(meterSigCond(4, Unit, MeterSigDown, Anchor, NewAnchor),
-         [o(stafflines), o(timeSigSettings), o(unit), o(eps)]),
-  termp(MeterSigDown).
+  eps(4*Eps, (Left + MeterSigRight) / 2, Center).
 
 keySig(element(keySig, ['xml:id'=IdDef, sig='0'], []), _Id) -->
   add_id(IdDef).
 
+meterSig_(Count, Unit) -->
+  statep(meterSigCond(2, Count, MeterSigUp, Center),
+         [o(stafflines), o(timeSigSettings), o(unit), o(eps)]),
+  termp(MeterSigUp),
+  statep(meterSigCond(4, Unit, MeterSigDown, Center),
+         [o(stafflines), o(timeSigSettings), o(unit), o(eps)]),
+  termp(MeterSigDown).
+
 layer(element(layer, ['xml:id'=Id, n='1'], Notes), Id) -->
   add_id(Id),
   sequence(scope(music:note), Notes).
+
+noteMarginCond(box(point(Left, _), point(Right, _)),
+               LeftAnchor, RightAnchor,
+               LeftMargin, RightMargin, Unit) :-
+  {
+    LeftAnchor + LeftMargin*Unit =< Left,
+    Right + RightMargin*Unit =< RightAnchor
+  }.
+
+note(element(note, ['xml:id'=Id, dur=Dur, oct=Oct, pname=PName], NoteChilds),
+     Id) -->
+  add_id(Id),
+  statep(noteMarginCond(NoteContour),
+         [-(anchor), o(noteLeftMargin), o(noteRightMargin), o(unit)]),
+  contour(note(Dur, Oct, PName, NoteChilds), NoteContour).
+
+note(Dur, Oct, PName, NoteChilds) -->
+  contour(notehead(Dur, Oct, PName), NoteHeadContour),
+  foldlg(optional, [scope(stem), scope(accid(NoteHeadContour))], NoteChilds, []).
 
 delay:mode(music:number_pname(ground, _)).
 delay:mode(music:number_pname(_, ground)).
@@ -340,33 +369,30 @@ delay:mode(music:noteHeadCond(_, ground)).
 noteHeadCond(noteheadWhole, '1').
 noteHeadCond(noteheadBlack, '4').
 
-noteHeadCond(Dur, Oct, PName, NoteHead, NoteHeadSettings, Anchor, NewAnchor,
-             BasePitch-BaseSeg, Unit, Eps) :-
+noteHeadCond(Dur, Oct, PName, NoteHead, BasePitch-BaseSeg,
+             NoteHeadSettings, Unit, Eps) :-
   etiqsCond(NoteHead, 1, notehead),
   etiqsCond(NoteHead, Etiq),
-  freeze(Etiq, memberchk(Etiq-[LeftMargin, RightMargin, Width, Height], NoteHeadSettings)),
+  freeze(Etiq, memberchk(Etiq-[Width, Height], NoteHeadSettings)),
   delay(noteHeadCond(Etiq, Dur)),
   ccxWidthHeightCond(NoteHead, Width, Height, Unit, Eps),
   ccxOrigin(NoteHead, Origin),
-  ccxLeftTopRightBottom(NoteHead, point(Left, Top), point(Right, Bottom)),
+  ccxLeftTopRightBottom(NoteHead, point(Left, Top), point(_, Bottom)),
   { Middle == (Top + Bottom) / 2 },
   eps(p, Eps, Origin, point(Left, Middle)),
-  { Anchor + Unit * LeftMargin =< Left },
-  { Right + RightMargin * Unit =< NewAnchor },
   pitch_octave_pname(Pitch, Oct, PName),
   { RelativePitch == BasePitch - Pitch },
   segYAtX(BaseSeg, BaseY, Left),
   eps(Eps, BaseY + Unit * RelativePitch, Middle).
 
-note(element(note, ['xml:id'=Id, dur=Dur, oct=Oct, pname=PName], NoteChilds), Id) -->
-  add_id(Id),
+notehead(Dur, Oct, PName) -->
   statep(noteHeadCond(Dur, Oct, PName),
-         [+(notehead, NoteHead), o(noteheadSettings), -(anchor), o(pitchAnchor),
-          o(unit), o(eps)]),
-  termp(NoteHead),
-  foldlg(optional, [scope(stem), scope(accid)], NoteChilds, []).
+         [+(notehead, NoteHead), o(pitchAnchor),
+          o(noteheadSettings), o(unit), o(eps)]),
+  termp(NoteHead).
 
-stemCond(Stem, down, StemLengthAtom, NoteHead, AllSettings, StemWidth, Unit, Eps) :-
+stemCond(Stem, down, StemLengthAtom, NoteHead,
+         AllSettings, StemWidth, Unit, Eps) :-
   segThickness(Stem, Thickness),
   eps(Eps, StemWidth * Unit, Thickness),
   etiqsCond(NoteHead, Etiq),
@@ -390,29 +416,35 @@ accidCond(accidentalSharp, s).
 accidCond(accidentalFlat, f).
 accidCond(accidentalNatural, n).
 
-accidCond(Accidental, Shape, NoteHead, Settings, Unit, Eps) :-
+accidCond(Accidental, Shape, box(point(BoxLeft, _), point(_, _)),
+          NoteHead, Settings, _LeftMargin, RightMargin, Unit, Eps) :-
   etiqsCond(Accidental, Etiq),
   delay(accidCond(Etiq, Shape)),
-  freeze(Etiq, memberchk(Etiq-[LeftMargin, RightMargin, Width, Height, XOffset, YOffset], Settings)),
+  freeze(Etiq, memberchk(Etiq-[Width, Height, XOffset, YOffset], Settings)),
   ccxWidthHeightCond(Accidental, Width, Height, Unit, Eps),
   ccxOrigin(Accidental, point(X, Y)),
   ccxLeft(Accidental, Left),
   eps(Eps, Left + XOffset*Unit, X),
   ccxTop(Accidental, Top),
   eps(Eps, Top + YOffset*Unit, Y),
-  ccxOrigin(NoteHead, point(_, NoteheadY)),
-  eps(Eps, Y, NoteheadY).
+  ccxOrigin(NoteHead, point(NoteHeadLeft, NoteheadY)),
+  eps(Eps, Y, NoteheadY),
+  ccxRight(Accidental, Right),
+  { Right + RightMargin*Unit =< NoteHeadLeft },
+  { Right =< BoxLeft }.
 
-accid(element(accid, ['xml:id'=Id, accid=Shape], []), Id) -->
+accid(NoteHeadContour, element(accid, ['xml:id'=Id, accid=Shape], []), Id) -->
   add_id(Id),
-  statep(accidCond(Accidental, Shape), [o(notehead), o(accidentalSettings),
-                                        o(unit), o(eps)]),
+  statep(accidCond(Accidental, Shape, NoteHeadContour),
+         [o(notehead), o(accidentalSettings), o(accidentalLeftMargin),
+          o(accidentalRightMargin), o(unit), o(eps)]),
   termp(Accidental).
 
 measureLineN(N) -->
   { dif(N, 1) }.
 measureLineN(1) -->
-  reify(systemLine, _),
+  reify(systemLine, Result),
+  state(+(systemLine, Result)),
   stateg(gather_grpSym, [o(scoreDef), o(staffDefs), o(systemStaffLines)]).
 
 systemLineCond(SystemLine, Anchor, Staffs, Thickness, Unit, Eps) :-
@@ -434,7 +466,8 @@ systemLineCond(SystemLine, Anchor, Staffs, Thickness, Unit, Eps) :-
 
 systemLine -->
   statep(systemLineCond(SystemLine),
-         [+(anchor-grpSym), o(systemStaffLines), o(barLineThickness), o(unit), o(eps)]),
+         [+(anchor-grpSym), o(systemStaffLines), o(barLineThickness),
+          o(unit), o(eps)]),
   termp(SystemLine).
 
 gather_grpSym(element(scoreDef, _, Childs), StaffDefs, SystemStaffLines) -->
@@ -447,19 +480,22 @@ gather_split([El1 | L1], [El2 | L2],
 gather_split(Rest1, Rest2, [], [], Rest1, Rest2).
 
 gather_grpSym_([], [], []) --> [].
-gather_grpSym_([StaffDef | Childs], [StaffDef | StaffDefs], [_ | SystemStaffLines]) -->
-  { StaffDef = element(staffDef, _, _) },
-  gather_grpSym_(Childs, StaffDefs, SystemStaffLines).
 gather_grpSym_([element(staffGrp, ['xml:id'=Id | _], [GrpSym | Childs]) | Rest],
-              StaffDefs,
-              SystemStaffLines) -->
+               StaffDefs,
+               SystemStaffLines) -->
   add_id(Id),
+  state(o(systemLine, true)),
   scope(grpSym(GrpSym,
                StaffDefs, SystemStaffLines,
                GroupStaffDefs, GroupStaffLines,
                RestStaffDefs, RestStaffLines)),
   gather_grpSym_(Childs, GroupStaffDefs, GroupStaffLines),
   gather_grpSym_(Rest, RestStaffDefs, RestStaffLines).
+gather_grpSym_([StaffDef | Childs],
+               [StaffDef | StaffDefs],
+               [_ | SystemStaffLines]) -->
+  { StaffDef = element(staffDef, _, _) },
+  gather_grpSym_(Childs, StaffDefs, SystemStaffLines).
 gather_grpSym_([element(staffGrp, ['xml:id'=Id | _], Childs) | Rest],
               StaffDefs,
               SystemStaffLines) -->

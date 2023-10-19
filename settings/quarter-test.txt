@@ -1,5 +1,5 @@
 ﻿/*  Saved settings
-    Date: Wed Oct 18 14:22:50 2023
+    Date: Thu Oct 19 08:58:58 2023
 */
 
 
@@ -36,11 +36,8 @@ setting(music_settings:barLineThickness, real(0.29435971577963377,0.305640284220
 %	The minimal measure width in MEI units
 setting(music_settings:measureMinWidth, real(0,23.07230695088704)-15).
 
-%	The left margin for G clef in MEI units
-setting(music_settings:gClefLeftMargin, real(0.9943597157796328,1.0056402842203673)-1).
-
-%	The right margin for G clef in MEI units
-setting(music_settings:gClefRightMargin, real(0.831830542670376,2)-1).
+%	The left margin for clefs in MEI units
+setting(music_settings:clefLeftMargin, real(0.9943597157796328,1.0056402842203673)-1).
 
 %	The G clef width in MEI units
 setting(music_settings:gClefWidth, real(5.170359715779633,5.181640284220367)-5.16).
@@ -56,9 +53,6 @@ setting(music_settings:gClefYOffset, real(8.65835971577963,8.66964028422037)-8.7
 
 %	The bracket thickness in MEI units
 setting(music_settings:bracketThickness, real(0.49999999999999994,2)-1.0).
-
-%	The left margin for time signature 4 in MEI units
-setting(music_settings:timeSig4LeftMargin, real(0.831830542670376,2)-1).
 
 %	The time signature 4 width in MEI units
 setting(music_settings:timeSig4Width, real(3.090359715779634,3.101640284220367)-5.5).

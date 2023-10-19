@@ -1,6 +1,6 @@
 :- module(state, [makeState/2, state//1, statep//2, stateg//2, state_phrase//2,
                   scope//1, scope//2, scope//3, scope//4, pop_scope//1, push_scope//2,
-                  bbox//2, nCond/2, nCond/3, nCond//2,
+                  bbox//2, contour//2, nCond/2, nCond/3, nCond//2,
                   add_id//1, ground_all_ids/1]).
 
 :- use_module(library(rbtrees)).
@@ -10,7 +10,7 @@
 :- use_module(utils).
 
 makeState(state(Tree), List) :-
-  list_to_rbtree([cursor-noEl, scope-[], bbox-[], ids-[] | List], Tree).
+  list_to_rbtree([cursor-noEl, scope-[], bbox-[], contour-[], ids-[] | List], Tree).
 
 state(Term) -->
   stateValues(Term, _).
@@ -39,7 +39,12 @@ state_(-(Key), Values) -->
   state_(-(Key, _, _), Values).
 state_(-(Key, OldValue, NewValue), [OldValue, NewValue]), [StateOut] -->
   [StateIn],
-  { rb_update(StateIn, Key, OldValue, NewValue, StateOut) }.
+  {
+    ( rb_update(StateIn, Key, OldValue2, NewValue2, StateOut)
+    -> OldValue = OldValue2, NewValue = NewValue2
+    ; existence_error(key, Key, StateIn)
+    )
+  }.
 
 state_([], []) --> [].
 state_([Term | Terms], [Values]) -->
@@ -153,10 +158,19 @@ bbox(Goal, BBox) -->
   {
     box(BBox),
     inside(BBox, Parent),
+    debug(bbox, "parent bbox ~p~n", [Parent]),
     debug(bbox, "bbox ~p~n", [BBox])
   },
   Goal,
   state(-(bbox, [BBox, Parent | BBoxes], [Parent | BBoxes])).
+
+:- meta_predicate contour(2, ?, ?, ?).
+
+contour(Goal, Contour) -->
+  state(-(contour, Contours, [box(point(inf, inf), point(-inf, -inf)) | Contours])),
+  Goal,
+  state(-(contour, [Contour | NewContours], NewContours)),
+  debug(contour, "~p~n", [Contour]).
 
 add_id_(Id, Ids, FinalIds) :-
   reify(ord_memberchk(Id, Ids), Res),
@@ -173,6 +187,14 @@ ground_all_ids(state(State)) :-
   rb_lookup(ids, Ids, State),
   include(var, Ids, VarIds),
   maplist(gensym(id), VarIds).
+
+debug(Topic, Fmt, Args) -->
+  state(o(scope, Scope)),
+  {
+    string_concat("~p ~p ", Fmt, NewFmt),
+    append([Topic, Scope], Args, NewArgs),
+    debug(Topic, NewFmt, NewArgs)
+  }.
 
 :- begin_tests(state).
 

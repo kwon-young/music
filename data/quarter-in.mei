@@ -17,8 +17,8 @@
                   <staffGrp>
                      <staffDef n="1" lines="5">
                         <clef shape="G" line="2" />
-                        <meterSig count="4" unit="4" />
                         <keySig sig="0" />
+                        <meterSig count="4" unit="4" />
                      </staffDef>
                   </staffGrp>
                </scoreDef>

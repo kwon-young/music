@@ -1,5 +1,5 @@
 ﻿/*  Saved settings
-    Date: Wed Oct 18 14:22:49 2023
+    Date: Thu Oct 19 08:58:57 2023
 */
 
 
@@ -36,8 +36,8 @@ setting(music_settings:barLineThickness, real(0.2950878818211463,0.3063963553264
 %	The minimal measure width in MEI units
 setting(music_settings:measureMinWidth, real(0,23.909083364876345)-15).
 
-%	The left margin for F clef in MEI units
-setting(music_settings:fClefLeftMargin, real(0.974542297858212,0.9858507713634889)-1).
+%	The left margin for clefs in MEI units
+setting(music_settings:clefLeftMargin, real(0.974542297858212,0.9858507713634889)-1).
 
 %	The F clef width in MEI units
 setting(music_settings:fClefWidth, real(5.56007990431952,5.571388377824795)-5.5).

@@ -34,9 +34,14 @@ in_bounding_box_([BBox | _], Term) :-
   delay(inside(Term, BBox)),
   debug(in_bounding_box, "Term post ~p~n", [Term]).
 
+contourCond(Term, OldContours, NewContours) :-
+  when(nonvar(Term), contour(Term, Contour)),
+  maplist(union(Contour), OldContours, NewContours).
+
 termp(Term) -->
   statep(delay:delay(epf_geo:in_scope(Term)), [o(scope)]),
   statep(in_bounding_box(Term), [o(bbox)]),
+  statep(contourCond(Term), [-(contour)]),
   cursor(term, Term).
 terms(Term) -->
   statep(delay:delay(epf_geo:in_scope(Term)), [o(scope)]),
