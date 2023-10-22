@@ -25,6 +25,10 @@ main :-
 main(Goal, Args) :-
   apply(Goal, Args).
 
+mainGen(Stem) :-
+  atomic_list_concat(['data/', Stem, '-ids.mei'], XmlFile),
+  atomic_list_concat(['data/', Stem, '-music.pl'], StructFile),
+  mainGen(XmlFile, StructFile).
 mainGen(XmlFile, StructFile) :-
   load_xml(XmlFile, Xml, [space(remove), number(integer)]),
   get_settings(value, _Settings, AllSettings),
@@ -35,6 +39,12 @@ mainGen(XmlFile, StructFile) :-
   print_term(GroundStruct, [output(S)]),
   write(S, "."),
   close(S).
+mainReco(Stem) :-
+  atomic_list_concat(['data/', Stem, '-music.mei'], XmlFile),
+  atomic_list_concat(['data/', Stem, '-verovio-noscope.pl'], StructFile),
+  atomic_list_concat(['settings/', Stem, '-test.txt'], TestSettingsFile),
+  atomic_list_concat(['settings/', Stem, '-reco.txt'], RecoSettingsFile),
+  mainReco(StructFile, TestSettingsFile, XmlFile, RecoSettingsFile).
 mainReco(StructFile, TestSettingsFile, XmlFile, RecoSettingsFile) :-
   open(StructFile, read, S),
   read(S, Struct),
@@ -48,11 +58,10 @@ mainReco(StructFile, TestSettingsFile, XmlFile, RecoSettingsFile) :-
   % Rest == [],
   update_settings(Settings),
   term_attvars(Xml, AttVars),
-  format("~n~p~n", [AttVars]),
   include(interval, AttVars, Intervals),
   splitsolve(Intervals, 3),
   maplist(midpoint, Intervals, Intervals),
-  print_term(Xml, []),
+  % print_term(Xml, []),
   open(XmlFile, write, XmlS),
   ( ground(Xml)
   -> xml_write(XmlS, Xml, [])
@@ -60,6 +69,11 @@ mainReco(StructFile, TestSettingsFile, XmlFile, RecoSettingsFile) :-
   ),
   close(XmlS),
   save_settings(RecoSettingsFile).
+mainTest(Stem) :-
+  atomic_list_concat(['data/', Stem, '-ids.mei'], XmlFile),
+  atomic_list_concat(['data/', Stem, '-verovio.pl'], StructFile),
+  atomic_list_concat(['settings/', Stem, '-test.txt'], TestSettingsFile),
+  mainTest(XmlFile, StructFile, TestSettingsFile).
 mainTest(XmlFile, StructFile, SettingsFile) :-
   load_xml(XmlFile, Xml, [space(remove), number(integer)]),
   open(StructFile, read, S),
@@ -68,8 +82,8 @@ mainTest(XmlFile, StructFile, SettingsFile) :-
   forall(setting(Mod:Name, _), restore_setting(Mod:Name)),
   get_settings(domain, Settings, AllSettings),
   makeState(State, AllSettings),
-  once(phrase(mei(Xml), [State, Struct], [_, Rest])),
-  print_term(Rest, []),
+  once(phrase(mei(Xml), [State, Struct], [_, _Rest])),
+  % print_term(Rest, []),
   % Rest == [],
   update_settings(Settings),
   save_settings(SettingsFile).
@@ -183,7 +197,8 @@ staff(element(staff, ['xml:id'=Id, n=NAtom], [Layer]),
   stafflines(5, StaffLines),
   state(o(measureLineN, MeasureLineN)),
   staffDefChilds(MeasureLineN, StaffDefChilds),
-  scope(layer(Layer)).
+  state_phrase(scope(layer(Layer)), LedgerLines:ledgerlines),
+  sequence(termp, LedgerLines).
 
 measureLineCond(PrevStaffLines, StaffLines, Eps) :-
   maplist(segEnd, PrevStaffLines, Ends),
@@ -243,7 +258,7 @@ delay:mode(music:clefCond(_, ground, ground, _)).
 clefCond(gClef, 'G', 2, '4').
 clefCond(fClef, 'F', 4, '3').
 
-clefCond(Shape, N, Clef, StaffLines, Anchor, NewAnchor, Pitch-Line,
+clefCond(Shape, N, Clef, StaffLines, Anchor, NewAnchor, Pitch-N,
          AllSettings, LeftMargin, RightMargin, Unit, Eps) :-
   etiqsCond(Clef, Etiq),
   freeze(Etiq, memberchk(Etiq-[Width, Height, XOffset, YOffset], AllSettings)),
@@ -273,6 +288,9 @@ clef(element(clef, ['xml:id'=IdDef, shape=Shape, line=LineAtom], []), _Id) -->
           o(clefLeftMargin), o(clefRightMargin),
           o(unit), o(eps)]),
   termp(Clef).
+
+keySig(element(keySig, ['xml:id'=IdDef, sig='0'], []), _Id) -->
+  add_id(IdDef).
 
 meterSigMarginCond(box(point(MeterSigLeft, _), point(MeterSigRight, _)),
                    Anchor, NewAnchor, LeftMargin, RightMargin, Unit) :-
@@ -313,9 +331,6 @@ meterSigCond(N, Count, MeterSig, Center, StaffLines, AllSettings, Unit, Eps) :-
   ccxRight(MeterSig, MeterSigRight),
   eps(4*Eps, (Left + MeterSigRight) / 2, Center).
 
-keySig(element(keySig, ['xml:id'=IdDef, sig='0'], []), _Id) -->
-  add_id(IdDef).
-
 meterSig_(Count, Unit) -->
   statep(meterSigCond(2, Count, MeterSigUp, Center),
          [o(stafflines), o(timeSigSettings), o(unit), o(eps)]),
@@ -324,11 +339,48 @@ meterSig_(Count, Unit) -->
          [o(stafflines), o(timeSigSettings), o(unit), o(eps)]),
   termp(MeterSigDown).
 
-layer(element(layer, ['xml:id'=Id, n='1'], Notes), Id) -->
+layer(element(layer, ['xml:id'=Id, n='1'], Childs), Id) -->
   add_id(Id),
-  sequence(scope(music:note), Notes).
+  sequence(find(music:layerChild), Childs).
 
-noteMarginCond(box(point(Left, _), point(Right, _)),
+layerChild(Child) -->
+  scope(note(Child)).
+layerChild(Child) -->
+  scope(rest(Child)).
+
+delay:mode(music:restCond(ground, _)).
+delay:mode(music:restCond(_, ground)).
+restCond(rest8th, '8').
+
+restCond(Rest, Dur, StaffLines,
+         LeftAnchor, RightAnchor, RestSettings, LeftMargin, RightMargin,
+         Unit, Eps) :-
+  etiqsCond(Rest, Etiq),
+  freeze(Etiq, memberchk(Etiq-[Width, Height, XOffset, YOffset], RestSettings)),
+  delay(restCond(Etiq, Dur)),
+  ccxWidthHeightCond(Rest, Width, Height, Unit, Eps),
+  ccxOrigin(Rest, point(X, Y)),
+  ccxRight(Rest, Right),
+  {
+    LeftAnchor + LeftMargin*Unit =< X,
+    Right + RightMargin*Unit =< RightAnchor
+  },
+  ccxTop(Rest, Top),
+  eps(Eps, Top + Unit * YOffset, Y),
+  ccxLeft(Rest, Left),
+  eps(Eps, Left + Unit * XOffset, X),
+  nth1(3, StaffLines, Line),
+  segYAtX(Line, LineY, X),
+  eps(Eps, LineY, Y).
+
+rest(element(rest, ['xml:id'=Id, dur=Dur], []), Id) -->
+  add_id(Id),
+  statep(restCond(Rest, Dur),
+         [o(stafflines), -(anchor), o(restSettings), o(restLeftMargin),
+          o(restRightMargin), o(unit), o(eps)]),
+  term(Rest).
+
+marginCond(box(point(Left, _), point(Right, _)),
                LeftAnchor, RightAnchor,
                LeftMargin, RightMargin, Unit) :-
   {
@@ -339,12 +391,12 @@ noteMarginCond(box(point(Left, _), point(Right, _)),
 note(element(note, ['xml:id'=Id, dur=Dur, oct=Oct, pname=PName], NoteChilds),
      Id) -->
   add_id(Id),
-  statep(noteMarginCond(NoteContour),
+  statep(marginCond(NoteContour),
          [-(anchor), o(noteLeftMargin), o(noteRightMargin), o(unit)]),
   contour(note(Dur, Oct, PName, NoteChilds), NoteContour).
 
 note(Dur, Oct, PName, NoteChilds) -->
-  contour(notehead(Dur, Oct, PName), NoteHeadContour),
+  contour(scope(music:notehead(Dur, Oct, PName)), NoteHeadContour),
   foldlg(optional, [scope(stem), scope(accid(NoteHeadContour))], NoteChilds, []).
 
 delay:mode(music:number_pname(ground, _)).
@@ -369,9 +421,8 @@ delay:mode(music:noteHeadCond(_, ground)).
 noteHeadCond(noteheadWhole, '1').
 noteHeadCond(noteheadBlack, '4').
 
-noteHeadCond(Dur, Oct, PName, NoteHead, BasePitch-BaseSeg,
+noteHeadCond(Dur, Oct, PName, NoteHead, Pitch, BasePitch-BaseN, StaffLines,
              NoteHeadSettings, Unit, Eps) :-
-  etiqsCond(NoteHead, 1, notehead),
   etiqsCond(NoteHead, Etiq),
   freeze(Etiq, memberchk(Etiq-[Width, Height], NoteHeadSettings)),
   delay(noteHeadCond(Etiq, Dur)),
@@ -382,14 +433,50 @@ noteHeadCond(Dur, Oct, PName, NoteHead, BasePitch-BaseSeg,
   eps(p, Eps, Origin, point(Left, Middle)),
   pitch_octave_pname(Pitch, Oct, PName),
   { RelativePitch == BasePitch - Pitch },
+  length(StaffLines, NumLines),
+  { Index == NumLines - BaseN + 1 },
+  nth1(Index, StaffLines, BaseSeg),
   segYAtX(BaseSeg, BaseY, Left),
   eps(Eps, BaseY + Unit * RelativePitch, Middle).
 
-notehead(Dur, Oct, PName) -->
+notehead(Dur, Oct, PName, Id) -->
+  add_id(Id),
   statep(noteHeadCond(Dur, Oct, PName),
-         [+(notehead, NoteHead), o(pitchAnchor),
+         [+(notehead, NoteHead), +(pitch), o(pitchAnchor), o(stafflines),
           o(noteheadSettings), o(unit), o(eps)]),
-  termp(NoteHead).
+  termp(NoteHead),
+  pop_scope(pop_scope(pop_scope(scope(ledgerlines)))).
+
+ledgerlinesCond(LedgerLines, NoteHead, StaffLines, Pitch, BasePitch-BaseN,
+                Extension, Thickness, Unit, Eps) :-
+  { Above == (Pitch > BasePitch) },
+  ledgerlinesCond(Above, LinePitch, Goal, StaffLines, BasePitch-BaseN),
+  Offset::integer(-1, 1),
+  N::integer(0, _),
+  { N == abs(max(0, ((Pitch - LinePitch - Offset) / 2))) },
+  enumerate(N),
+  stafflinesCond(N, LedgerLines, Unit, Width, _, Thickness, Eps),
+  ( call(Goal, LedgerLines, LedgerLine)
+  -> ccxWidth(NoteHead, NoteHeadWidth),
+    eps(Eps, Width,  NoteHeadWidth + 2*Extension*Unit),
+    centerCond(NoteHead, LedgerLine, Eps)
+  ; true).
+
+first([X | _], X).
+
+ledgerlinesCond(1, LinePitch, first, StaffLines, BasePitch-BaseN) :-
+  length(StaffLines, NumStaffLines),
+  { LinePitch == BasePitch + (NumStaffLines - BaseN) * 2 }.
+ledgerlinesCond(0, LinePitch, last, _StaffLines, BasePitch-BaseN) :-
+  { LinePitch == BasePitch - (BaseN - 1) * 2 }.
+
+ledgerlines(Id) -->
+  add_id(Id),
+  statep(ledgerlinesCond(LedgerLines),
+         [o(notehead), o(stafflines), o(pitch), o(pitchAnchor),
+          o(ledgerlineExtension), o(ledgerlineThickness), o(unit), o(eps)]),
+  sequence(selectp, LedgerLines),
+  state(LedgerLines:ledgerlines).
 
 stemCond(Stem, down, StemLengthAtom, NoteHead,
          AllSettings, StemWidth, Unit, Eps) :-

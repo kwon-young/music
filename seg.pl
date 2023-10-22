@@ -8,6 +8,7 @@
     segEtiqs/2,
     segThickness/2,
     segStartEndThickness/4,
+    segInterpolate/3,
     segLength/2,
     segHV/5,
     segHVCoeff/5,

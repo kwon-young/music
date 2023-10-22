@@ -76,6 +76,7 @@ chain_(Goal, B, A, B) :-
   call(Goal, A, B).
 chaing([A | List], Goal) :-
   foldl(chain_(Goal), List, A, _).
+chaing([], _).
 
 :- use_module(library(clpBNR)).
 :- use_module(library(reif)).

@@ -1,7 +1,7 @@
 :- module(
   geo, [
     eps/3, eps/4, above/4, leftof/2, horizontalSeg/3, slope/2, segYAtX/3, inside/2,
-    contour/2,
+    contour/2, center/2,
     union/3, unions/2,
     intersect/2,
     box/1, boxArgs/2, boxLeftTopRightBottom/3, boxLeftTop/2, boxLeftBottom/2, boxWidth/2,
@@ -114,6 +114,18 @@ contour(point(X1, Y1), point(X2, Y2), Box) :-
   debug(contour, "~s: ~p~n", ["Xmin", Xmin]),
   debug(contour, "~s: ~p~n", ["Xmax", Xmax]),
   boxLeftTopRightBottom(Box, point(Xmin, Ymin), point(Xmax, Ymax)).
+
+center(El, Center) :-
+  delay(compound_name_arity(El, Name, _)),
+  center_(Name, El, Center).
+center_(seg, Seg, Center) :-
+  segInterpolate(Seg, 0.5, Center).
+center_(ccx, Ccx, point(X, Y)) :-
+  ccxLeftTopRightBottom(Ccx, point(Left, Top), point(Right, Bottom)),
+  {
+    X == (Left + Right) / 2,
+    Y == (Top + Bottom) / 2
+  }.
 
 union(box(point(B1X1, B1Y1), point(B1X2, B1Y2)),
       box(point(B2X1, B2Y1), point(B2X2, B2Y2)),

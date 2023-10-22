@@ -1,4 +1,5 @@
-:- module(cond, [etiqsCond/2, etiqsCond/3, ccxOnSegCond/3, ccxWidthHeightCond/5]).
+:- module(cond, [etiqsCond/2, etiqsCond/3, ccxOnSegCond/3, ccxWidthHeightCond/5,
+                 centerCond/3]).
 
 :- use_module(library(clpBNR)).
 :- use_module(ccx).
@@ -26,3 +27,8 @@ ccxWidthHeightCond(Ccx, Width, Height, Unit, Eps) :-
   eps(Eps, CcxWidth, Width*Unit),
   ccxHeight(Ccx, CcxHeight),
   eps(Eps, CcxHeight, Height*Unit).
+
+centerCond(El1, El2, Eps) :-
+  center(El1, C1),
+  center(El2, C2),
+  eps(p, Eps, C1, C2).

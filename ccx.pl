@@ -3,7 +3,8 @@
     ccx/1,
     ccxEtiqs/2, ccxOrigin/2, ccxLeftTop/2, ccxRightBottom/2,
     ccxLeftTopRightBottom/3, ccxTopBottom/3, ccxLeftRight/3,
-    ccxRight/2, ccxLeft/2, ccxTop/2, ccxBottom/2, ccxWidth/2, ccxHeight/2
+    ccxRight/2, ccxLeft/2, ccxTop/2, ccxBottom/2, ccxWidth/2, ccxHeight/2,
+    ccxCenterX/2
   ]).
 
 :- use_module(library(clpBNR)).
@@ -62,3 +63,7 @@ ccxHeight(Ccx, Height) :-
   ccxBottom(Ccx, Bottom),
   ccxTop(Ccx, Top),
   { Height == Bottom - Top }.
+
+ccxCenterX(Ccx, X) :-
+  ccxLeftRight(Ccx, Left, Right),
+  { X == (Left + Right) / 2 }.

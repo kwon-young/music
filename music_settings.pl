@@ -61,6 +61,14 @@
 :- setting(accidentalSharpHeight, pair, real(1, 9)-6.6, 'The sharp accidental height in MEI units').
 :- setting(accidentalSharpXOffset, pair, real(-1, 1)-0, 'The sharp accidental origin horizontal offset from the top in MEI units').
 :- setting(accidentalSharpYOffset, pair, real(0, 4)-2, 'The sharp accidental origin vertical offset from the top in MEI units').
+:- setting(restLeftMargin, pair, real(0, 2)-1, 'The left margin for rest in MEI units').
+:- setting(restRightMargin, pair, real(0, 2)-1, 'The right margin for rest in MEI units').
+:- setting(rest8thWidth, pair, real(1, 9)-5.5, 'The 8th rest width in MEI units').
+:- setting(rest8thHeight, pair, real(1, 9)-6.6, 'The 8th rest height in MEI units').
+:- setting(rest8thXOffset, pair, real(-1, 1)-0, 'The 8th rest origin horizontal offset from the top in MEI units').
+:- setting(rest8thYOffset, pair, real(0, 4)-2, 'The 8th rest origin vertical offset from the top in MEI units').
+:- setting(ledgerlineThickness, pair, real(0, 1)-0.25, 'The ledger line thickness in MEI units').
+:- setting(ledgerlineExtension, pair, real(0, 1)-0.54, 'The amount by which a ledger line should extend either side of a notehead in MEI unit').
 
 get_settings(Type, Settings, GroupedSettings) :-
   findall(Setting, get_setting(Type, Setting), Settings),
@@ -76,12 +84,13 @@ get_setting(value, Name-Value) :-
   setting(_Mod:Name, _-Value).
 
 group_settings(Settings, [clefSettings-ClefSettings, timeSigSettings-TimeSigSettings,
-                          noteheadSettings-NoteHeadSettings,
+                          noteheadSettings-NoteHeadSettings, restSettings-RestSettings,
                           accidentalSettings-AccidentalSettings,
                           stemSettings-StemSettings | Settings]) :-
   group_settings_by_prefix(Settings, ccx, [gClef, fClef], ClefSettings),
   group_settings_by_prefix(Settings, ccx, [timeSig3, timeSig4, timeSig8], TimeSigSettings),
   group_settings_by_prefix(Settings, ccx, [noteheadWhole, noteheadBlack], NoteHeadSettings),
+  group_settings_by_prefix(Settings, ccx, [rest8th], RestSettings),
   group_settings_by_prefix(Settings, ccx, [accidentalSharp], AccidentalSettings),
   group_settings_by_prefix(Settings, stem, [noteheadBlack], StemSettings).
 

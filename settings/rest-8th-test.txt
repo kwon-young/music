@@ -1,0 +1,64 @@
+﻿/*  Saved settings
+    Date: Sun Oct 22 11:37:56 2023
+*/
+
+
+%	page width
+setting(music_settings:pageWidth, 2100.0-2100).
+
+%	page height
+setting(music_settings:pageHeight, 2970.0-2970).
+
+%	page top margin
+setting(music_settings:topMargin, real(0,103.35000000000001)-50).
+
+%	page left margin
+setting(music_settings:leftMargin, real(0,50.00000000000001)-50).
+
+%	page bottom margin
+setting(music_settings:bottomMargin, real(0,2793.3500000000004)-50).
+
+%	page right margin
+setting(music_settings:rightMargin, real(0,1857.45)-50).
+
+%	Global Eps in pixels
+setting(music_settings:eps, real(0.04999999999998295,0.05076255798338139)-0).
+
+%	The MEI unit (1⁄2 of the distance between the staff lines)
+setting(music_settings:unit, 8.977791380882266-9).
+
+%	line thickness in unit
+setting(music_settings:thickness, real(0.13914752404213845,0.15045599754743236)-0.15).
+
+%	barline thickness in unit
+setting(music_settings:barLineThickness, real(0.2950878818211381,0.30639635532643206)-0.3).
+
+%	The minimal measure width in MEI units
+setting(music_settings:measureMinWidth, real(0,21.447453431365105)-15).
+
+%	The bracket thickness in MEI units
+setting(music_settings:bracketThickness, real(0.49999999999999994,2)-1.0).
+
+%	The time signature 4 width in MEI units
+setting(music_settings:timeSig4Width, real(3.098004426928815,3.1093129004341096)-5.5).
+
+%	The time signature 4 height in MEI units
+setting(music_settings:timeSig4Height, real(4.012260467393121,4.023568940898416)-6.6).
+
+%	The time signature 4 origin horizontal offset from the top in MEI units
+setting(music_settings:timeSig4XOffset, real(-0.1660500333253346,-0.1547415598200388)-0).
+
+%	The time signature 4 origin vertical offset from the top in MEI units
+setting(music_settings:timeSig4YOffset, real(2.0073130102345536,2.01862148373985)-2).
+
+%	The 8th rest width in MEI units
+setting(music_settings:rest8thWidth, real(2.2078077559504123,2.219116229455707)-5.5).
+
+%	The 8th rest height in MEI units
+setting(music_settings:rest8thHeight, real(3.466914759045991,3.4782232325512856)-6.6).
+
+%	The 8th rest origin horizontal offset from the top in MEI units
+setting(music_settings:rest8thXOffset, real(-0.005654236752649468,0.005654236752649468)-0).
+
+%	The 8th rest origin vertical offset from the top in MEI units
+setting(music_settings:rest8thYOffset, real(1.4619673018874233,1.4732757753927193)-2).

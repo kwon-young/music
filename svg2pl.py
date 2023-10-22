@@ -293,7 +293,7 @@ def parse_path(node, transforms, defs, scopes):
     p = Path(**node.attrib)
     p = apply_transforms(p, transforms)
     p.reify()
-    h_lines = ['staff', 'ledgerLines below', 'ledgerLines above']
+    h_lines = ['staff', 'ledgerLines']
     v_lines = ['barLine', 'system', 'stem']
     if scopes and scopes[-1].c in h_lines + v_lines:
         points = [point for point in p.as_points()]

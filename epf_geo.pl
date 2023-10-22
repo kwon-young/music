@@ -48,8 +48,9 @@ terms(Term) -->
   cursor(term, Term).
 
 selectp(Term) -->
-  statep(delay:delay(geo:inside(Term)), [o(page)]),
+  statep(delay:delay(epf_geo:in_scope(Term)), [o(scope)]),
   statep(in_bounding_box(Term), [o(bbox)]),
+  statep(contourCond(Term), [-(contour)]),
   cursor(select, Term),
   {debug(epf_geo, "selectp Term ~p~n", [Term])}.
 
@@ -67,7 +68,7 @@ cursor_(cursor(Term), _, Term) -->
 cursor_(noEl, Goal, Term) -->
   call(Goal, Term).
 
-:- meta_predicate find(1, ?, ?, ?).
+:- meta_predicate find(3, ?, ?, ?).
 
 find(Goal, Arg) -->
   state(o(cursor, Cursor)),

@@ -51,6 +51,8 @@ state_([Term | Terms], [Values]) -->
   sequence3(state_, [Term | Terms], ListValues),
   { append(ListValues, Values) }.
 
+state_([]:_Key, []) -->
+  [].
 state_([Value]:Key, [Value]) -->
   state_(-(Key, [Value | R], R), _).
 
