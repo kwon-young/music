@@ -1,7 +1,7 @@
 :- module(
   ccx, [
     ccx/1,
-    ccxEtiqs/2, ccxOrigin/2, ccxLeftTop/2, ccxRightBottom/2,
+    ccxEtiqs/2, ccxOrigin/2, ccxLeftTop/2, ccxLeftBottom/2, ccxRightBottom/2,
     ccxLeftTopRightBottom/3, ccxTopBottom/3, ccxLeftRight/3,
     ccxRight/2, ccxLeft/2, ccxTop/2, ccxBottom/2, ccxWidth/2, ccxHeight/2,
     ccxCenterX/2
@@ -26,6 +26,10 @@ ccxOrigin(Ccx, Origin) :-
 
 ccxLeftTop(Ccx, LeftTop) :-
   ccxArgs(Ccx, [LeftTop | _]).
+
+ccxLeftBottom(Ccx, point(Left, Bottom)) :-
+  ccxLeft(Ccx, Left),
+  ccxBottom(Ccx, Bottom).
 
 ccxRightBottom(Ccx, RightBottom) :-
   ccxArgs(Ccx, [_, RightBottom | _]).

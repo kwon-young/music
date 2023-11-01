@@ -5,7 +5,7 @@
 verovio -->
   "/home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data ".
 swipl -->
-  "swipl -q -t halt ".
+  "/home/kwon-young/prog/swipl-devel/install/bin/swipl -q -t halt ".
 
 stem_page(_, 1).
 
@@ -21,9 +21,10 @@ stem("clef-F-4").
 stem("clef-staff").
 stem("meter-3-8").
 stem("dynamicpp").
-stem("quarter").
 stem("accid-sharp").
 stem("rest-8th").
+stem("note-quarter").
+stem("note-8th").
 
 dir -->
    "data".

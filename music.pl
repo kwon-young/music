@@ -82,8 +82,8 @@ mainTest(XmlFile, StructFile, SettingsFile) :-
   forall(setting(Mod:Name, _), restore_setting(Mod:Name)),
   get_settings(domain, Settings, AllSettings),
   makeState(State, AllSettings),
-  once(phrase(mei(Xml), [State, Struct], [_, _Rest])),
-  % print_term(Rest, []),
+  once(phrase(mei(Xml), [State, Struct], [_, Rest])),
+  print_term(Rest, []),
   % Rest == [],
   update_settings(Settings),
   save_settings(SettingsFile).
@@ -418,13 +418,17 @@ pitch_octave_pname(Pitch, Octave, PName) :-
 
 delay:mode(music:noteHeadCond(ground, _)).
 delay:mode(music:noteHeadCond(_, ground)).
-noteHeadCond(noteheadWhole, '1').
-noteHeadCond(noteheadBlack, '4').
+noteHeadCond(noteheadWhole, 1).
+noteHeadCond(noteheadWhite, 2).
+noteHeadCond(noteheadBlack, Dur) :-
+  X::integer(2, 8),
+  { Dur == 2**X }.
 
-noteHeadCond(Dur, Oct, PName, NoteHead, Pitch, BasePitch-BaseN, StaffLines,
+noteHeadCond(DurAtom, Oct, PName, NoteHead, Dur, Pitch, BasePitch-BaseN, StaffLines,
              NoteHeadSettings, Unit, Eps) :-
   etiqsCond(NoteHead, Etiq),
   freeze(Etiq, memberchk(Etiq-[Width, Height], NoteHeadSettings)),
+  delay(atom_number(DurAtom, Dur)),
   delay(noteHeadCond(Etiq, Dur)),
   ccxWidthHeightCond(NoteHead, Width, Height, Unit, Eps),
   ccxOrigin(NoteHead, Origin),
@@ -442,18 +446,16 @@ noteHeadCond(Dur, Oct, PName, NoteHead, Pitch, BasePitch-BaseN, StaffLines,
 notehead(Dur, Oct, PName, Id) -->
   add_id(Id),
   statep(noteHeadCond(Dur, Oct, PName),
-         [+(notehead, NoteHead), +(pitch), o(pitchAnchor), o(stafflines),
+         [+(notehead, NoteHead), +(duration), +(pitch), o(pitchAnchor), o(stafflines),
           o(noteheadSettings), o(unit), o(eps)]),
   termp(NoteHead),
-  pop_scope(pop_scope(pop_scope(scope(ledgerlines)))).
+  pop_scope(pop_scope(pop_scope(scope(ledgerLines)))).
 
 ledgerlinesCond(LedgerLines, NoteHead, StaffLines, Pitch, BasePitch-BaseN,
                 Extension, Thickness, Unit, Eps) :-
   { Above == (Pitch > BasePitch) },
-  ledgerlinesCond(Above, LinePitch, Goal, StaffLines, BasePitch-BaseN),
-  Offset::integer(-1, 1),
   N::integer(0, _),
-  { N == abs(max(0, ((Pitch - LinePitch - Offset) / 2))) },
+  ledgerlinesCond(Above, N, Goal, StaffLines, Pitch, BasePitch-BaseN),
   enumerate(N),
   stafflinesCond(N, LedgerLines, Unit, Width, _, Thickness, Eps),
   ( call(Goal, LedgerLines, LedgerLine)
@@ -464,13 +466,23 @@ ledgerlinesCond(LedgerLines, NoteHead, StaffLines, Pitch, BasePitch-BaseN,
 
 first([X | _], X).
 
-ledgerlinesCond(1, LinePitch, first, StaffLines, BasePitch-BaseN) :-
+ledgerlinesCond(1, N, first, StaffLines, Pitch, BasePitch-BaseN) :-
   length(StaffLines, NumStaffLines),
-  { LinePitch == BasePitch + (NumStaffLines - BaseN) * 2 }.
-ledgerlinesCond(0, LinePitch, last, _StaffLines, BasePitch-BaseN) :-
-  { LinePitch == BasePitch - (BaseN - 1) * 2 }.
+  Offset::integer(0, 1),
+  N1::integer(0, _),
+  {
+    Pitch == BasePitch + N1 * 2 + Offset,
+    N == max(0, N1 - (NumStaffLines - BaseN))
+  }.
+ledgerlinesCond(0, N, last, _StaffLines, Pitch, BasePitch-BaseN) :-
+  Offset::integer(0, 1),
+  N1::integer(0, _),
+  {
+    Pitch == BasePitch - N1 * 2 - Offset,
+    N == max(0, N1 - (BaseN - 1))
+  }.
 
-ledgerlines(Id) -->
+ledgerLines(Id) -->
   add_id(Id),
   statep(ledgerlinesCond(LedgerLines),
          [o(notehead), o(stafflines), o(pitch), o(pitchAnchor),
@@ -495,7 +507,29 @@ stem(element(stem, ['xml:id'=Id, len=Len, dir=Dir], []), Id) -->
   add_id(Id),
   statep(stemCond(Stem, Dir, Len),
          [o(notehead), o(stemSettings), o(stemWidth), o(unit), o(eps)]),
-  termp(Stem).
+  termp(Stem),
+  ( scope(flag(Stem, Dir))
+  *-> []
+  ; []
+  ).
+
+delay:mode(music:flagCond(ground, _)).
+delay:mode(music:flagCond(_, ground)).
+flagCond('flag8thDown', 8).
+
+flagCond(Flag, Stem, down, Dur, Settings, Unit, Eps) :-
+  segHV(v, left, bottom, Stem, StemLeftBottom),
+  ccxLeftBottom(Flag, FlagLeftBottom),
+  eps(p, Eps, StemLeftBottom, FlagLeftBottom),
+  etiqsCond(Flag, Etiq),
+  delay(flagCond(Etiq, Dur)),
+  freeze(Etiq, memberchk(Etiq-[Width, Height], Settings)),
+  ccxWidthHeightCond(Flag, Width, Height, Unit, Eps).
+
+flag(Stem, Dir, Id) -->
+  add_id(Id),
+  statep(flagCond(Flag, Stem, Dir), [o(duration), o(flagSettings), o(unit), o(eps)]),
+  termp(Flag).
 
 delay:mode(music:accidCond(ground, _)).
 delay:mode(music:accidCond(_, ground)).

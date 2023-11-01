@@ -69,6 +69,8 @@
 :- setting(rest8thYOffset, pair, real(0, 4)-2, 'The 8th rest origin vertical offset from the top in MEI units').
 :- setting(ledgerlineThickness, pair, real(0, 1)-0.25, 'The ledger line thickness in MEI units').
 :- setting(ledgerlineExtension, pair, real(0, 1)-0.54, 'The amount by which a ledger line should extend either side of a notehead in MEI unit').
+:- setting(flag8thDownWidth, pair, real(1, 9)-5.5, 'The 8th flag down width in MEI units').
+:- setting(flag8thDownHeight, pair, real(1, 9)-6.6, 'The 8th flag down height in MEI units').
 
 get_settings(Type, Settings, GroupedSettings) :-
   findall(Setting, get_setting(Type, Setting), Settings),
@@ -86,13 +88,14 @@ get_setting(value, Name-Value) :-
 group_settings(Settings, [clefSettings-ClefSettings, timeSigSettings-TimeSigSettings,
                           noteheadSettings-NoteHeadSettings, restSettings-RestSettings,
                           accidentalSettings-AccidentalSettings,
-                          stemSettings-StemSettings | Settings]) :-
+                          stemSettings-StemSettings, flagSettings-FlagSettings | Settings]) :-
   group_settings_by_prefix(Settings, ccx, [gClef, fClef], ClefSettings),
   group_settings_by_prefix(Settings, ccx, [timeSig3, timeSig4, timeSig8], TimeSigSettings),
   group_settings_by_prefix(Settings, ccx, [noteheadWhole, noteheadBlack], NoteHeadSettings),
   group_settings_by_prefix(Settings, ccx, [rest8th], RestSettings),
   group_settings_by_prefix(Settings, ccx, [accidentalSharp], AccidentalSettings),
-  group_settings_by_prefix(Settings, stem, [noteheadBlack], StemSettings).
+  group_settings_by_prefix(Settings, stem, [noteheadBlack], StemSettings),
+  group_settings_by_prefix(Settings, ccx, [flag8thDown], FlagSettings).
 
 group_settings_by_prefix(Settings, Type, Keys, GroupedSettings) :-
   maplist(group_setting(Type, Settings), Keys, GroupedSettings).
