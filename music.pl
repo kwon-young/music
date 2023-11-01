@@ -397,7 +397,7 @@ note(element(note, ['xml:id'=Id, dur=Dur, oct=Oct, pname=PName], NoteChilds),
 
 note(Dur, Oct, PName, NoteChilds) -->
   contour(scope(music:notehead(Dur, Oct, PName)), NoteHeadContour),
-  foldlg(optional, [scope(stem), scope(accid(NoteHeadContour))], NoteChilds, []).
+  foldlg(call, [scope(stem), scope(accid(NoteHeadContour))], NoteChilds, []).
 
 delay:mode(music:number_pname(ground, _)).
 delay:mode(music:number_pname(_, ground)).
@@ -502,8 +502,11 @@ stemCond(Stem, down, StemLengthAtom, NoteHead,
   segEndY(Stem, StemBottom),
   delay(atom_number(StemLengthAtom, StemLength)),
   { StemLength * Unit == StemBottom - NoteHeadY }.
+
+noStemCond(NoteHead) :-
+  etiqsCond(NoteHead, noteheadWhole).
   
-stem(element(stem, ['xml:id'=Id, len=Len, dir=Dir], []), Id) -->
+stem([element(stem, ['xml:id'=Id, len=Len, dir=Dir], []) | NoteChilds], NoteChilds, Id) -->
   add_id(Id),
   statep(stemCond(Stem, Dir, Len),
          [o(notehead), o(stemSettings), o(stemWidth), o(unit), o(eps)]),
@@ -512,6 +515,8 @@ stem(element(stem, ['xml:id'=Id, len=Len, dir=Dir], []), Id) -->
   *-> []
   ; []
   ).
+stem(NoteChilds, NoteChilds, _) -->
+  statep(noStemCond, [o(notehead)]).
 
 delay:mode(music:flagCond(ground, _)).
 delay:mode(music:flagCond(_, ground)).
@@ -554,12 +559,14 @@ accidCond(Accidental, Shape, box(point(BoxLeft, _), point(_, _)),
   { Right + RightMargin*Unit =< NoteHeadLeft },
   { Right =< BoxLeft }.
 
-accid(NoteHeadContour, element(accid, ['xml:id'=Id, accid=Shape], []), Id) -->
+accid(NoteHeadContour, [element(accid, ['xml:id'=Id, accid=Shape], []) | NoteChilds], NoteChilds, Id) -->
   add_id(Id),
   statep(accidCond(Accidental, Shape, NoteHeadContour),
          [o(notehead), o(accidentalSettings), o(accidentalLeftMargin),
           o(accidentalRightMargin), o(unit), o(eps)]),
   termp(Accidental).
+accid(_, NoteChilds, NoteChilds, _) -->
+  [].
 
 measureLineN(N) -->
   { dif(N, 1) }.
