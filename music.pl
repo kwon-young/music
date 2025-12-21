@@ -54,13 +54,22 @@ mainReco(StructFile, TestSettingsFile, XmlFile, RecoSettingsFile) :-
   makeState(StateIn, AllSettings),
   once(phrase(mei(Xml), [StateIn, Struct], [StateOut, Rest])),
   ground_all_ids(StateOut),
-  print_term(Rest, []),
+  print_term(Rest, []), nl,
   % Rest == [],
   update_settings(Settings),
-  term_attvars(Xml, AttVars),
-  include(interval, AttVars, Intervals),
-  splitsolve(Intervals, 3),
-  maplist(midpoint, Intervals, Intervals),
+  % memberchk(eps-Eps, Settings),
+  % upper_bound(Eps),
+  % memberchk(unit-Unit, Settings),
+  % midpoint(Unit, Unit),
+  % print_term(Xml, []),
+  % term_attvars(Xml, AttVars),
+  % include(interval, AttVars, Intervals),
+  % map_list_to_pairs(delta, Intervals, DeltaIntervals),
+  % keysort(DeltaIntervals, SortedDeltaIntervals),
+  % pairs_values(SortedDeltaIntervals, SortedIntervals),
+  % partition(small, Intervals, SmallIntervals, LargeIntervals),
+  % splitsolve(SortedIntervals),
+  % maplist(midpoint, SortedIntervals, SortedIntervals),
   % print_term(Xml, []),
   open(XmlFile, write, XmlS),
   ( ground(Xml)
@@ -83,14 +92,14 @@ mainTest(XmlFile, StructFile, SettingsFile) :-
   get_settings(domain, Settings, AllSettings),
   makeState(State, AllSettings),
   once(phrase(mei(Xml), [State, Struct], [_, Rest])),
-  print_term(Rest, []),
+  print_term(Rest, []), nl,
   % Rest == [],
   update_settings(Settings),
   save_settings(SettingsFile).
 
-mei([pi('xml-model href="https://music-encoding.org/schema/dev/mei-all.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"'),
-     pi('xml-model href="https://music-encoding.org/schema/dev/mei-all.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"'),
-     element(mei, [xmlns='http://www.music-encoding.org/ns/mei', meiversion='5.0.0-dev'], [MeiHead, Music])]) -->
+mei([pi('xml-model href="https://music-encoding.org/schema/5.0/mei-all.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"'),
+     pi('xml-model href="https://music-encoding.org/schema/5.0/mei-all.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"'),
+     element(mei, [xmlns='http://www.music-encoding.org/ns/mei', meiversion='5.0'], [MeiHead, Music])]) -->
   state([
     +(pageId, 0),
     +(measureN, 0),
@@ -171,8 +180,32 @@ lineCond(PrevSystemStaffLines, SystemStaffLines, MinSpacing, Unit) :-
   SystemStaffLines = [StaffLines | _],
   systemCond(PrevStaffLines, StaffLines, MinSpacing, Unit).
 
+measureChilds(Childs, Staffs, BeamSpans) :-
+  when((nonvar(Childs) ; nonvar(Staffs)), measureChilds_(Staffs, Childs, BeamSpans)).
+measureChilds_([], BeamSpansIn, BeamSpansOut) :-
+  beamSpans(BeamSpansIn, BeamSpansOut).
+measureChilds_([Staff | Staffs], [Staff | Childs], BeamSpans) :-
+  Staff = element(staff, _, _),
+  measureChilds(Childs, Staffs, BeamSpans).
+
+beamSpans(BeamSpansIn, BeamSpansOut) :-
+  when((nonvar(BeamSpansIn) ; nonvar(BeamSpansOut)),
+       beamSpans_(BeamSpansIn, BeamSpansOut)).
+beamSpans_([In | BeamSpansIn], [Out | BeamSpansOut]) :-
+  beamSpan_(In, Out),
+  beamSpans(BeamSpansIn, BeamSpansOut).
+beamSpans_([], []).
+beamSpan_(
+    element(beamSpan, ['xml:id'=Id, plist=PListIn, startid=Start, endid=End], []),
+    element(beamSpan, ['xml:id'=Id, plist=PListOut, startid=Start, endid=End], [])
+  ) :-
+  PListOut = [Start | _],
+  when((ground(PListIn) ; ground(PListOut)),
+       atomic_list_concat(PListOut, ' ', PListIn)),
+  when(ground(End), once(last(PListOut, End))).
+
 measure(Id) -->
-  state([element(measure, ['xml:id'=Id, n=NAtom], Staffs)]:measures),
+  state([element(measure, ['xml:id'=Id, n=NAtom], Childs)]:measures),
   add_id(Id),
   nCond(measureN, NAtom),
   state([+(staffWidth), o(staffDefs, StaffDefs)]),
@@ -181,6 +214,7 @@ measure(Id) -->
   ; statep(lineCond, [-(systemStaffLines, _, SystemStaffLines), o(spacingSystem),
                       o(unit)])
   ),
+  statep(measureChilds(Childs, Staffs), [+(beamSpans)]),
   longuest_notempty_sequences(staffN, state:scope(music:staff),
                               [Staffs, StaffDefs, SystemStaffLines]),
   state(o(measureLineN, MeasureLineN)),
@@ -227,6 +261,8 @@ stafflinesCond(NumLines, StaffLines, Unit, Width, MinWidth, Thickness, Eps) :-
   { Width >= MinWidth * Unit }.
 
 stafflines(NumLines, StaffLines) -->
+  {length(StaffLines, NumLines)},
+  sequence(termp, StaffLines),
   statep(stafflinesCond(NumLines, StaffLines),
          [o(unit), o(staffWidth), o(measureMinWidth), o(thickness), o(eps)]),
   state(o(staffN, StaffN)),
@@ -238,7 +274,7 @@ stafflines(NumLines, StaffLines) -->
   -> state(+(stafflines, StaffLines))
   ; statep(systemCond, [-(stafflines, _, StaffLines), o(spacingStaff), o(unit)])
   ),
-  sequence(termp, StaffLines).
+  [].
 
 staffDefChilds(N, StaffDefChilds) -->
   state([o(stafflines, [Seg | _]), +(anchor, Anchor)]),
@@ -344,9 +380,8 @@ layer(element(layer, ['xml:id'=Id, n='1'], Childs), Id) -->
   sequence(find(music:layerChild), Childs).
 
 layerChild(Child) -->
-  scope(note(Child)).
-layerChild(Child) -->
-  scope(rest(Child)).
+  scope(note(Child))
+  ; scope(rest(Child)).
 
 delay:mode(music:restCond(ground, _)).
 delay:mode(music:restCond(_, ground)).
@@ -391,6 +426,7 @@ marginCond(box(point(Left, _), point(Right, _)),
 note(element(note, ['xml:id'=Id, dur=Dur, oct=Oct, pname=PName], NoteChilds),
      Id) -->
   add_id(Id),
+  state(+(noteId, Id)),
   statep(marginCond(NoteContour),
          [-(anchor), o(noteLeftMargin), o(noteRightMargin), o(unit)]),
   contour(note(Dur, Oct, PName, NoteChilds), NoteContour).
@@ -420,9 +456,7 @@ delay:mode(music:noteHeadCond(ground, _)).
 delay:mode(music:noteHeadCond(_, ground)).
 noteHeadCond(noteheadWhole, 1).
 noteHeadCond(noteheadWhite, 2).
-noteHeadCond(noteheadBlack, Dur) :-
-  X::integer(2, 8),
-  { Dur == 2**X }.
+noteHeadCond(noteheadBlack, _).
 
 noteHeadCond(DurAtom, Oct, PName, NoteHead, Dur, Pitch, BasePitch-BaseN, StaffLines,
              NoteHeadSettings, Unit, Eps) :-
@@ -490,7 +524,13 @@ ledgerLines(Id) -->
   sequence(selectp, LedgerLines),
   state(LedgerLines:ledgerlines).
 
-stemCond(Stem, down, StemLengthAtom, NoteHead,
+delay:mode(music:vu(ground, _)).
+delay:mode(music:vu(_, ground)).
+vu(Atom, Number) :-
+  delay(atom_number(AtomNumber, Number)),
+  delay(atom_concat(AtomNumber, 'vu', Atom)).
+
+stemCond(down, StemLengthAtom, Stem, NoteHead,
          AllSettings, StemWidth, Unit, Eps) :-
   segThickness(Stem, Thickness),
   eps(Eps, StemWidth * Unit, Thickness),
@@ -500,29 +540,32 @@ stemCond(Stem, down, StemLengthAtom, NoteHead,
   segHV(v, left, top, Stem, StemRightTop),
   eps(p, Eps, point(NoteHeadX, NoteHeadY + Unit * Offset), StemRightTop),
   segEndY(Stem, StemBottom),
-  delay(atom_number(StemLengthAtom, StemLength)),
-  { StemLength * Unit == StemBottom - NoteHeadY }.
+  delay(vu(StemLengthAtom, StemLength)),
+  eps(Eps, StemLength * Unit, StemBottom - NoteHeadY).
 
-noStemCond(NoteHead) :-
+noStemCond(noStem, noDirection, NoteHead) :-
   etiqsCond(NoteHead, noteheadWhole).
   
 stem([element(stem, ['xml:id'=Id, len=Len, dir=Dir], []) | NoteChilds], NoteChilds, Id) -->
   add_id(Id),
-  statep(stemCond(Stem, Dir, Len),
-         [o(notehead), o(stemSettings), o(stemWidth), o(unit), o(eps)]),
+  statep(stemCond(Dir, Len),
+         [+(stem, Stem), o(notehead), o(stemSettings), o(stemWidth), o(unit), o(eps)]),
+  state(+(direction, Dir)),
   termp(Stem),
-  ( scope(flag(Stem, Dir))
+  ( beam
   *-> []
-  ; []
+  ; scope(flag(Dir))
+  *-> []
+  ; statep(noFlagCond, [o(duration)])
   ).
 stem(NoteChilds, NoteChilds, _) -->
-  statep(noStemCond, [o(notehead)]).
+  statep(noStemCond, [+(stem), +(direction), o(notehead)]).
 
 delay:mode(music:flagCond(ground, _)).
 delay:mode(music:flagCond(_, ground)).
 flagCond('flag8thDown', 8).
 
-flagCond(Flag, Stem, down, Dur, Settings, Unit, Eps) :-
+flagCond(down, Flag, Stem, Dur, Settings, Unit, Eps) :-
   segHV(v, left, bottom, Stem, StemLeftBottom),
   ccxLeftBottom(Flag, FlagLeftBottom),
   eps(p, Eps, StemLeftBottom, FlagLeftBottom),
@@ -530,11 +573,129 @@ flagCond(Flag, Stem, down, Dur, Settings, Unit, Eps) :-
   delay(flagCond(Etiq, Dur)),
   freeze(Etiq, memberchk(Etiq-[Width, Height], Settings)),
   ccxWidthHeightCond(Flag, Width, Height, Unit, Eps).
+noFlagCond(2).
+noFlagCond(4).
 
-flag(Stem, Dir, Id) -->
+flag(Dir, Id) -->
   add_id(Id),
-  statep(flagCond(Flag, Stem, Dir), [o(duration), o(flagSettings), o(unit), o(eps)]),
+  statep(flagCond(Dir, Flag), [o(stem), o(duration), o(flagSettings), o(unit), o(eps)]),
   termp(Flag).
+
+beamSpanCond(Id, BeamSpansIn, BeamSpansOut, NoteId, State) :-
+  BeamSpanIn = element(
+    beamSpan,
+    ['xml:id'=Id, plist=PList, startid=StartNoteId, endid=EndNoteId],
+    []),
+  BeamSpanOut = element(
+    beamSpan,
+    ['xml:id'=Id, plist=PListTail, startid=StartNoteId, endid=EndNoteId],
+    []),
+  PList = [NoteId | PListTail],
+  lists:selectchk(BeamSpanIn, BeamSpansIn, BeamSpanOut, BeamSpansOut),
+  when((ground(State) ; (ground(StartNoteId), ground(EndNoteId))),
+       beamNoteState(State, StartNoteId, EndNoteId, NoteId)).
+beamNoteState(start, StartNote, EndNote, StartNote) :-
+  dif(StartNote, EndNote).
+beamNoteState(end, StartNote, EndNote, EndNote) :-
+  dif(StartNote, EndNote).
+beamNoteState(mid, StartNote, EndNote, NoteId) :-
+  dif(NoteId, StartNote),
+  dif(NoteId, EndNote).
+
+beamRootCond(N, State, Beam, Dir, Stem, Duration, VerticalOffset, Unit, Eps) :-
+  N::integer(1, 6),
+  { Duration == 2**(2+N) },
+  beamRootStateCond(State, Beam, Dir, Stem, VerticalOffset, Unit, Eps).
+
+beamRootStateCond(start, Beam, Dir, Stem, VerticalOffset, Unit, Eps) :-
+  beamRootStartCond(Dir, Beam, Stem, VerticalOffset, Unit, Eps).
+beamRootStateCond(mid, Beam, Dir, Stem, VerticalOffset, Unit, Eps) :-
+  beamRootMidCond(Dir, Beam, Stem, VerticalOffset, Unit, Eps).
+beamRootStateCond(end, Beam, Dir, Stem, VerticalOffset, Unit, Eps) :-
+  beamRootEndCond(Dir, Beam, Stem, VerticalOffset, Unit, Eps).
+
+beamChildCond(I, N, ParentState, State, Parent, Beam, Dir, Stem, Unit, Eps) :-
+  { N > I },
+  beamChildStateCond(ParentState, State, Beam, Parent, Dir, Stem, Unit, Eps).
+
+beamChildStateCond(start, start, Beam, Parent, Dir, Stem, Unit, Eps) :-
+  beamChildStartCond(Dir, Beam, Stem, Parent, Unit, Eps).
+beamChildStateCond(end, end, Beam, Parent, Dir, Stem, Unit, Eps) :-
+  beamChildEndCond(Dir, Beam, Stem, Parent, Unit, Eps).
+
+beamRootStartCond(down, Beam, Stem, VerticalOffset, Unit, Eps) :-
+  segLeftBottom(h, Beam, point(BeamLeft, BeamBottom)),
+  segHV(v, left, bottom, Stem, point(StemLeft, StemBottom)),
+  eps(Eps, StemLeft, BeamLeft),
+  eps(Eps, StemBottom + VerticalOffset*Unit, BeamBottom),
+  segThickness(Beam, BeamThickness),
+  eps(Eps, BeamThickness, Unit).
+beamChildStartCond(down, Beam, Stem, Parent, Unit, Eps) :-
+  segLeftBottom(h, Beam, point(BeamLeft, BeamBottom)),
+  VCoeff::real(0, 1),
+  segHDirCoeff(left, HCoeff),
+  segHVCoeff(v, HCoeff, VCoeff, Stem, point(StemLeft, BeamBottom)),
+  eps(Eps, StemLeft, BeamLeft),
+  segLeftTop(h, Parent, point(_, ParentTop)),
+  eps(Eps, BeamBottom + (Unit / 2), ParentTop),
+  segThickness(Beam, BeamThickness),
+  eps(Eps, BeamThickness, Unit).
+
+beamRootMidCond(down, Beam, Stem, VerticalOffset, Unit, Eps) :-
+  HCoeff::real(0, 1),
+  segVDirCoeff(bottom, VCoeff),
+  segHVCoeff(h, HCoeff, VCoeff, Beam, point(BeamX, BeamY)),
+  segHV(v, mid, bottom, Stem, point(BeamX, StemBottom)),
+  eps(Eps, StemBottom + VerticalOffset*Unit, BeamY),
+  segRight(h, Beam, BeamRight),
+  { BeamX + Unit =< BeamRight },
+  segThickness(Beam, BeamThickness),
+  eps(Eps, BeamThickness, Unit).
+
+beamRootEndCond(down, Beam, Stem, VerticalOffset, Unit, Eps) :-
+  segRightBottom(h, Beam, point(BeamRight, BeamBottom)),
+  segHV(v, right, bottom, Stem, point(StemRight, StemBottom)),
+  eps(Eps, StemRight, BeamRight),
+  eps(Eps, StemBottom + VerticalOffset*Unit, BeamBottom).
+beamChildEndCond(down, Beam, Stem, Parent, Unit, Eps) :-
+  segRightBottom(h, Beam, point(BeamRight, BeamBottom)),
+  VCoeff::real(0, 1),
+  segHDirCoeff(right, HCoeff),
+  segHVCoeff(v, HCoeff, VCoeff, Stem, point(StemRight, BeamBottom)),
+  eps(Eps, StemRight, BeamRight),
+  segRightTop(h, Parent, point(_, ParentTop)),
+  eps(Eps, BeamBottom + (Unit / 2), ParentTop).
+
+beam -->
+  pop_scope(
+    pop_scope(
+      pop_scope(
+        pop_scope(
+          pop_contour(state:scope(music:beamSpan)))))).
+beamSpan(Id) -->
+  statep(beamSpanCond(Id), [-(beamSpans), o(noteId), +(beamState)]),
+  add_id(Id),
+  statep(beamRootCond(N),
+         [o(beamState, State), +(beam, Beam), o(direction), o(stem), o(duration),
+          o(beamVerticalOffset), o(unit), o(eps)]),
+  termBeam(State, Beam),
+  beamSpan(1, N).
+beamSpan(I, N) -->
+  statep(beamChildCond(I, N),
+         [-(beamState, _, State), -(beam, _, Beam), o(direction), o(stem),
+          o(unit), o(eps)]),
+  termBeam(State, Beam),
+  { I1 is I + 1 },
+  beamSpan(I1, N).
+beamSpan(N, N) -->
+  [].
+
+termBeam(start, Beam) -->
+  selectp(Beam).
+termBeam(mid, Beam) -->
+  selectp(Beam).
+termBeam(end, Beam) -->
+  termp(Beam).
 
 delay:mode(music:accidCond(ground, _)).
 delay:mode(music:accidCond(_, ground)).
@@ -587,7 +748,7 @@ systemLineCond(SystemLine, Anchor, Staffs, Thickness, Unit, Eps) :-
   eps(p, Eps, SystemLineLeftBottom, LastStaffLineLeft),
   segThickness(SystemLine, SystemLineThickness),
   eps(Eps, Unit*Thickness, SystemLineThickness),
-  etiqsCond(SystemLine, system),
+  % etiqsCond(SystemLine, system),
   SystemLineLeftTop = point(LeftTop, _),
   SystemLineLeftBottom = point(LeftBottom, _),
   { Anchor == min(LeftTop, LeftBottom) }.
