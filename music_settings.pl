@@ -9,7 +9,7 @@
 :- setting(leftMargin, pair, real(0, inf)-50, 'page left margin').
 :- setting(bottomMargin, pair, real(0, inf)-50, 'page bottom margin').
 :- setting(rightMargin, pair, real(0, inf)-50, 'page right margin').
-:- setting(eps, pair, real(0, 100)-0, 'Global Eps in pixels').
+:- setting(eps, pair, real(0, 1)-0, 'Global Eps in pixels').
 :- setting(unit, pair, real(0, 1000)-9, 'The MEI unit (1⁄2 of the distance between the staff lines)').
 :- setting(thickness, pair, real(0, 1)-0.15, 'line thickness in unit').
 :- setting(barLineThickness, pair, real(0, 1)-0.30, 'barline thickness in unit').
@@ -71,6 +71,7 @@
 :- setting(ledgerlineExtension, pair, real(0, 1)-0.54, 'The amount by which a ledger line should extend either side of a notehead in MEI unit').
 :- setting(flag8thDownWidth, pair, real(1, 9)-5.5, 'The 8th flag down width in MEI units').
 :- setting(flag8thDownHeight, pair, real(1, 9)-6.6, 'The 8th flag down height in MEI units').
+:- setting(beamVerticalOffset, pair, real(0, 1)-0, 'The vertical offset between stem and beam outer border in MEI units').
 
 get_settings(Type, Settings, GroupedSettings) :-
   findall(Setting, get_setting(Type, Setting), Settings),

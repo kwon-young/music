@@ -11,11 +11,17 @@
     segInterpolate/3,
     segLength/2,
     segHV/5,
+    segHDirCoeff/2,
+    segVDirCoeff/2,
     segHVCoeff/5,
     segTop/3,
     segBottom/3,
     segLeft/3,
     segRight/3,
+    segLeftTop/3,
+    segLeftBottom/3,
+    segRightTop/3,
+    segRightBottom/3,
     segHeight/2,
     segWidth/2,
     segCorners/5
@@ -140,6 +146,23 @@ segLeft(h, Seg, Left) :-
   segStartX(Seg, Left).
 segRight(h, Seg, Right) :-
   segEndX(Seg, Right).
+
+segLeftTop(h, Seg, point(Left, Top)) :-
+  segStart(Seg, point(Left, MidY)),
+  segThickness(Seg, Thickness),
+  { Top == MidY - Thickness/2 }.
+segLeftBottom(h, Seg, point(Left, Bottom)) :-
+  segStart(Seg, point(Left, MidY)),
+  segThickness(Seg, Thickness),
+  { Bottom == MidY + Thickness/2 }.
+segRightTop(h, Seg, point(Right, Top)) :-
+  segEnd(Seg, point(Right, MidY)),
+  segThickness(Seg, Thickness),
+  { Top == MidY - Thickness/2 }.
+segRightBottom(h, Seg, point(Right, Bottom)) :-
+  segEnd(Seg, point(Right, MidY)),
+  segThickness(Seg, Thickness),
+  { Bottom == MidY + Thickness/2 }.
 
 segHeight(Seg, Height) :-
   segStartY(Seg, Y1),

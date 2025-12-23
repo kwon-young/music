@@ -3,9 +3,9 @@
 :- use_module(library(ninja)).
 
 verovio -->
-  "/home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data ".
+  "/home/kwon-young/prog/verovio/build/verovio -r /home/kwon-young/prog/verovio/data --scale 200 ".
 swipl -->
-  "/home/kwon-young/prog/swipl-devel/install/bin/swipl -q -t halt ".
+  "LD_LIBRARY_PATH=/home/kwon-young/mambaforge/envs/dev/lib/ timeout 10 /home/kwon-young/prog/swipl-devel/install/bin/swipl -q -t halt ".
 
 stem_page(_, 1).
 
@@ -20,11 +20,18 @@ stem("clef-G-2").
 stem("clef-F-4").
 stem("clef-staff").
 stem("meter-3-8").
-stem("dynamicpp").
+% stem("dynamicpp").
 stem("accid-sharp").
 stem("rest-8th").
 stem("note-quarter").
 stem("note-8th").
+stem("beam-2-8th").
+stem("beam-2-16th").
+stem(Stem) :-
+  length(Durs, 3),
+  maplist([Dur]>>member(Dur, ['8', '16', '32']), Durs),
+  format(string(Stem), "beam-2-~sth-~sth-~sth", Durs).
+
 
 dir -->
    "data".
@@ -47,14 +54,24 @@ mei(Stem, Suffix) -->
 input(Stem) -->
   mei(Stem, "in").
 
-id(Stem) -->
+mei_id(Stem) -->
   mei(Stem, "ids").
 
 svgs(Stem) -->
   foreach(stem_page(Stem, Page),
-          filename(Stem, "verovio", Page, "svg"), " ").
+          svg_page(Stem, Page), " ").
+
+svgs_ids(Stem) -->
+  foreach(stem_page(Stem, Page),
+          svg_page_ids(Stem, Page), " ").
+
 svg(Stem) -->
   filename(Stem, "verovio", "svg").
+
+svg_page(Stem, Page) -->
+  filename(Stem, "verovio", Page, "svg").
+svg_page_ids(Stem, Page) -->
+  filename(Stem, "verovio_ids", Page, "svg").
 
 pl(Stem) -->
   pl(Stem, "verovio").
@@ -71,9 +88,10 @@ deps -->
 
 graph -->
   rule(generate, (swipl, "-s $in -g main"), [generator-"1"]),
-  rule(add_ids, (verovio, "--xml-id-checksum -t mei -o $out $in")),
+  rule(mei_add_ids, (verovio, "--xml-id-checksum -t mei -o $out $in")),
   rule(mei2svg, (verovio, "--use-brace-glyph -a --footer none -o $output $in")),
-  rule(svg2pl, "python $in $out"),
+  rule(svg_add_ids, "inkscape -o $out $in"),
+  rule(svg2pl, "python $in --output $out --type prolog"),
   rule(remove_scopes, (swipl, "-s music.pl -g main -- remove_scopes $in $out")),
   rule(test, (swipl, "-s music.pl -g main -- mainTest $in $out")),
   rule(reco, (swipl, "-s music.pl -g main -- mainReco $in $out")),
@@ -81,6 +99,7 @@ graph -->
 
   build(["build.ninja"], generate, ["ninja.pl"], [implicit_ins([deps("ninja.pl")])]),
   foreach(stem(Stem), graph(Stem)),
+  build(["svgs"], phony, [foreach(stem(Stem), svgs(Stem), " ")]),
   build(["all"], phony, [
     foreach(stem(Stem), pl(Stem, "music"), " "),
     foreach(stem(Stem), mei(Stem, "music"), " "),
@@ -90,21 +109,25 @@ graph -->
     foreach(stem(Stem), setting(Stem, "test"), " ")
   ]),
   build(["dataset/IMSLP318757.pl"], svg2pl,
-        ["svg2pl.py", "dataset/IMSLP318757_001.svg", "data/glyphnames.json"]),
+        ["svg2pl.py", "data/glyphnames.json", "dataset/IMSLP318757_001.svg"]),
         build(["dataset/IMSLP318757-music.mei", "settings/IMSLP318757-reco.txt"], reco,
         ["dataset/IMSLP318757.pl", "settings/default.txt"], [implicit_ins([deps])]).
+  % foreach(gen_stem(Stem),
+  %         build([svgs(Stem)], mei2svg, [mei(Stem, "gen")],
+  %               [variables([output-svg(Stem)])])).
 
 graph(Stem) -->
-  build([id(Stem)], add_ids, [input(Stem)]),
-  build([svgs(Stem)], mei2svg, [id(Stem)], [variables([output-svg(Stem)])]),
-  build([pl(Stem)], svg2pl, ["svg2pl.py", svgs(Stem), "data/glyphnames.json"]),
+  build([mei_id(Stem)], mei_add_ids, [input(Stem)]),
+  build([svgs(Stem)], mei2svg, [mei_id(Stem)], [variables([output-svg(Stem)])]),
+  foreach(stem_page(Stem, Page), build([svg_page_ids(Stem, Page)], svg_add_ids, [svg_page(Stem, Page)])),
+  build([pl(Stem)], svg2pl, ["svg2pl.py", "data/glyphnames.json", svgs_ids(Stem)]),
   build([pl_noscope(Stem)], remove_scopes, [pl(Stem)],
         [implicit_ins([deps("geo.pl")])]),
-  build([setting(Stem, "test")], test, [id(Stem), pl(Stem)],
+  build([setting(Stem, "test")], test, [mei_id(Stem), pl(Stem)],
         [implicit_ins([deps])]),
   build([mei(Stem, "music"), setting(Stem, "reco")], reco,
         [pl_noscope(Stem), setting(Stem, "test")], [implicit_ins([deps])]),
-  build([pl(Stem, "music")], gen, [id(Stem)], [implicit_ins([deps])]),
+  build([pl(Stem, "music")], gen, [mei_id(Stem)], [implicit_ins([deps])]),
   build([Stem], phony, [pl(Stem, "music"), mei(Stem, "music")]).
 
 main :-

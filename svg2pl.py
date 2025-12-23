@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 import json
 import io
+from datetime import date
 
 from svgelements import Length, Rect, Viewbox, Matrix, Path, Point, Ellipse, \
     Polygon, Group
@@ -12,13 +13,17 @@ import cairosvg
 from PIL import Image
 import numpy as np
 from pycocotools import mask
+from skimage import measure
 
 
 def make_args():
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('svg', type=PLPath, help='svg file to parse')
+    parser.add_argument('-t', '--type', type=str, default="prolog", choices=['prolog', 'coco'],
+                        help='output type')
+    parser.add_argument('-o', '--output', type=PLPath, help='output file')
+    parser.add_argument('--categories', type=PLPath, help='existing categories', default=None)
     parser.add_argument('glyphnames', type=PLPath, help='glyphnames.json file')
-    parser.add_argument('output', type=PLPath, help='output file')
+    parser.add_argument('svg', type=PLPath, nargs='+', help='svg files to parse')
 
     args = parser.parse_args()
     return args
@@ -31,8 +36,17 @@ def pointtopl(point: Optional[Point]):
         return "_"
 
 
-def listtopl(els, sep=' ', start='', end=''):
-    return f"[{start}" + f",{sep}".join([x.topl() for x in els]) + f"{end}]"
+class _List(list):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.sep = ' '
+        self.start = ''
+        self.end = ''
+
+    def topl(self):
+        return f"[{self.start}" + f",{self.sep}".join(
+                [x.topl() for x in self]) + f"{self.end}]"
 
 
 @dataclass
@@ -48,23 +62,32 @@ class IdClass:
                 id = f"'{self.id}'"
         else:
             id = '_'
-        return f"{id}-'{self.c}'"
+        if self.c is None:
+            c = '_'
+        else:
+            c = f"'{self.c}'"
+        return f"{id}-{c}"
 
 
-def dtorle(d, x, y, width, height, parent_width, parent_height):
-    g = Group()
-    g.append(Path(d=d, fill='white', x=-x, y=-y))
-    xml = g.string_xml()
-    img = cairosvg.svg2png(
-        xml, parent_width=width,
-        parent_height=height)
-    img = Image.open(io.BytesIO(img)).convert('L')
-    arr = np.array(img)
+def composite_elements_to_image(elements, page_width, page_height):
+    background = Image.new(mode='RGBA', size=(page_width, page_height),
+                           color='white')
+    for element in elements:
+        x, y, width, height = element.bbox()
+        img = element.toimage(fill='black')
+        if img is not None:
+            img = img.convert('RGBA')
+            background.alpha_composite(img, (int(x), int(y)))
+    return background
+
+
+def dtorle(el, parent_width, parent_height):
+    x, y = el.lefttop.x, el.lefttop.y
+    arr = np.array(el.toimage(fill='white').convert('L'))
     background = np.zeros([parent_height, parent_width], dtype=np.uint8)
     background[round(y):round(y)+arr.shape[0],
                round(x):round(x)+arr.shape[1]] = arr
-    rs = segmentationToCocoMask(background, 255)
-    return rs
+    return segmentationToCocoPolygon(background, 255)
 
 
 @dataclass
@@ -77,7 +100,7 @@ class Seg:
 
     def topl(self):
         return f"seg({pointtopl(self.start)}, {pointtopl(self.end)}, " \
-                f"{listtopl(self.etiq[::-1])}, {self.thickness})"
+                f"{_List(self.etiq[::-1]).topl()}, {self.thickness})"
 
     def bbox(self):
         delta = self.thickness / 2
@@ -89,16 +112,43 @@ class Seg:
         height = ymax - y
         return (x, y, width, height)
 
-    def tococo(self, parent_width, parent_height):
+    def toimage(self, fill='white'):
+        g = Group()
+        x, y, width, height = self.bbox()
+        # if width < 1 or height < 1:
+        #     return None
+        if self.etiq[-2].c in ['beam', 'beamSpan']:
+            opts = {'fill': fill}
+        else:
+            opts = {'stroke': fill, 'stroke_width': self.thickness}
+        g.append(Path(d=self.d, **opts,
+                      transform=Matrix.translate(-x, -y)).reify())
+        xml = g.string_xml()
+        img = cairosvg.svg2png(
+            xml, parent_width=width,
+            parent_height=height)
+        img = Image.open(io.BytesIO(img))
+        return img
+
+    def tococo(self, i, page_id, parent_width, parent_height):
         bbox = self.bbox()
-        rle = dtorle(self.d, *bbox, parent_width, parent_height)
-        _, _, width, height = bbox
+        left, top, width, height = bbox
+        # if width < 1 or height < 1:
+        #     return None
+        right = left + width
+        bottom = top + height
+        polygon = [left, top, left, bottom, right, bottom, right, top]
+        category = self.etiq[-2].c
+        category = 'beam' if category == 'beamSpan' else category
         area = width * height
         return {
-            'category': 'seg',
-            'segmentation': rle,
+            'id': i,
+            'image_id': page_id,
+            'category': category,
+            'supercategory': self.etiq[-1].c,
+            'segmentation': [polygon],
             'area': area,
-            'bbox': bbox,
+            'bbox': list(bbox),
             'iscrowd': 0,
             'keypoints': [self.start.x, self.start.y, 2,
                           self.end.x, self.end.y, 2],
@@ -117,7 +167,7 @@ class Ccx:
     def topl(self):
         return f"ccx({pointtopl(self.lefttop)}, " \
                f"{pointtopl(self.rightbottom)}, " \
-               f"{listtopl(self.etiq[::-1])}, " \
+               f"{_List(self.etiq[::-1]).topl()}, " \
                f"{pointtopl(self.origin)})"
 
     def bbox(self):
@@ -126,18 +176,38 @@ class Ccx:
         width, height = xmax - x, ymax - y
         return x, y, width, height
 
-    def tococo(self, parent_width, parent_height):
+    def toimage(self, fill='white'):
+        g = Group()
+        x, y, width, height = self.bbox()
+        # if width == 0 or height == 0:
+        #     return None
+        g.append(Path(d=self.d, fill=fill,
+                      transform=Matrix.translate(-x, -y)).reify())
+        xml = g.string_xml()
+        img = cairosvg.svg2png(
+            xml, parent_width=width,
+            parent_height=height)
+        img = Image.open(io.BytesIO(img))
+        return img
+
+    def tococo(self, i, page_id, parent_width, parent_height):
         bbox = self.bbox()
-        rle = dtorle(self.d, *bbox, parent_width, parent_height)
         _, _, width, height = bbox
+        # if width < 1 or height < 1:
+        #     return None
+        area, polygons = dtorle(self, parent_width, parent_height)
         area = width * height
         return {
+            'id': i,
+            'image_id': page_id,
             'category': self.etiq[-1].c,
-            'segmentation': rle,
+            'supercategory': self.etiq[-3].c,
+            'segmentation': polygons,
             'area': area,
-            'bbox': bbox,
+            'bbox': list(bbox),
             'iscrowd': 0,
-            'keypoints': [self.origin.x, self.origin.y, 2],
+            'keypoints': [float(self.origin.x), float(self.origin.y), 2,
+                          0, 0, 0],
             'num_keypoints': 1,
         }
 
@@ -245,7 +315,7 @@ def parse_g(node, transforms, defs, scopes):
     if transform := node.attrib.get('transform'):
         transforms.append(Matrix(transform))
     if gclass := node.attrib.get('class'):
-        if "ledgerLines" in gclass:
+        if "ledgerLines" in gclass or 'octave' in gclass or 'slur' in gclass:
             gclass = gclass.split(' ')[0]
         node_id = node.attrib.get('id', None)
         for scope in scopes:
@@ -270,7 +340,7 @@ def poly_swap(direction, points):
         return sorted(points, key=lambda p: (p.y, p.x))
 
 
-def segmentationToCocoMask(labelMap, labelId):
+def segmentationToCocoPolygon(labelMap, labelId):
     '''
     Encodes a segmentation mask using the Mask API.
     :param labelMap: [h x w] segmentation map that indicates the label of each pixel
@@ -278,14 +348,18 @@ def segmentationToCocoMask(labelMap, labelId):
     :return: Rs - the encoded label mask for label 'labelId'
     '''
     labelMask = labelMap == labelId
-    labelMask = np.expand_dims(labelMask, axis=2)
     labelMask = labelMask.astype('uint8')
-    labelMask = np.asfortranarray(labelMask)
-    Rs = mask.encode(labelMask)
-    assert len(Rs) == 1
-    Rs = Rs[0]
-
-    return Rs
+    fortran_labelMask = np.expand_dims(labelMask, axis=2)
+    fortran_labelMask = np.asfortranarray(fortran_labelMask)
+    Rs = mask.encode(fortran_labelMask)
+    area = sum(mask.area(Rs).tolist())
+    contours = measure.find_contours(labelMask, 0.5)
+    polygons = []
+    for contour in contours:
+        contour = np.flip(contour, axis=1)
+        polygon = contour.ravel().tolist()
+        polygons.append(polygon)
+    return area, polygons
 
 
 @backtrack
@@ -293,18 +367,28 @@ def parse_path(node, transforms, defs, scopes):
     p = Path(**node.attrib)
     p = apply_transforms(p, transforms)
     p.reify()
-    h_lines = ['staff', 'ledgerLines']
+    h_lines = ['staff', 'ledgerLines', 'octave']
     v_lines = ['barLine', 'system', 'stem']
-    if scopes and scopes[-1].c in h_lines + v_lines:
+    hv_lines = ['voltaBracket']
+    if scopes and scopes[-1].c in h_lines + v_lines + hv_lines:
         points = [point for point in p.as_points()]
         if scopes[-1].c in h_lines:
             start, end = seg_swap('h', points[0], points[-1])
         elif scopes[-1].c in v_lines:
             start, end = seg_swap('v', points[0], points[-1])
-        return Seg(p.d(), start, end, scopes.copy(), p.stroke_width)
+        elif scopes[-1].c in hv_lines:
+            if points[-1].x - points[0].x > points[-1].y - points[0].y:
+                start, end = seg_swap('h', points[0], points[-1])
+            else:
+                start, end = seg_swap('v', points[0], points[-1])
+        seg_scopes = scopes.copy()
+        seg_scopes.append(IdClass(p.id, 'seg'))
+        return Seg(p.d(), start, end, seg_scopes, p.stroke_width)
     elif scopes and scopes[-1].c == 'beam':
         p1, p2, width = poly_to_hseg(p.as_points())
-        return Seg(p.d(), p1, p2, scopes.copy(), width)
+        seg_scopes = scopes.copy()
+        seg_scopes.append(IdClass(p.id, 'seg'))
+        return Seg(p.d(), p1, p2, seg_scopes, width)
     else:
         left, top, right, bottom = p.bbox()
         origin = Point(float(node.attrib.get('x', left)),
@@ -340,6 +424,7 @@ def parse_use(node, transforms, defs, scopes):
 @backtrack
 @recurse
 def parse_symbol(node, transforms, defs, scopes):
+    scopes.append(IdClass(None, 'symbol'))
     if viewBox := node.attrib.get('viewBox'):
         transforms.append(Viewbox(viewBox))
 
@@ -351,7 +436,9 @@ def parse_rect(node, transforms, defs, scopes):
     if scopes[-1].c in ['stem', 'grpSym']:
         x, y, w, h = r.x, r.y, r.width, r.height
         x = x + (w / 2)
-        return Seg(r.d(), Point(x, y), Point(x, y + h), scopes.copy(), w)
+        seg_scopes = scopes.copy()
+        seg_scopes.append(IdClass(node.attrib.get('id', None), 'seg'))
+        return Seg(r.d(), Point(x, y), Point(x, y + h), seg_scopes, w)
 
 
 def parse_ellipse(node, transforms, defs, scopes):
@@ -368,9 +455,11 @@ def parse_polygon(node, transforms, defs, scopes):
     r = Polygon(**node.attrib)
     r = apply_transforms(r, transforms)
     r.reify()
-    if scopes[-1].c == 'beam':
+    if scopes[-1].c in ['beam', 'beamSpan']:
         p1, p2, width = poly_to_hseg(r.points)
-        return Seg(r.d(), p1, p2, scopes.copy(), width)
+        seg_scopes = scopes.copy()
+        seg_scopes.append(IdClass(node.attrib.get('id', None), 'seg'))
+        return Seg(r.d(), p1, p2, seg_scopes, width)
 
 
 def poly_to_hseg(points):
@@ -435,24 +524,111 @@ def load_glyphnames(path: Path) -> dict[str, str]:
     return glyphnames_inv
 
 
-def main(args):
-    page_number = int(args.svg.stem.split('_')[-1])
-    tree = ET.parse(args.svg)
+def parse_svg(svg: PLPath, glyphnames: PLPath):
+    page_number = int(svg.stem.split('_')[-1])
+    tree = ET.parse(svg)
     root = tree.getroot()
     res = parse_node(root, [], {}, [IdClass(page_number, 'page')])
-    glyphnames_inv = load_glyphnames(args.glyphnames)
+    glyphnames_inv = load_glyphnames(glyphnames)
     for el in res:
         for i in range(len(el.etiq)):
-            if el.etiq[i].c.startswith('#'):
-                codepoint = el.etiq[i].c.replace('#', 'U+')
-                el.etiq[i] = IdClass(el.etiq[i].id,
-                                     glyphnames_inv[codepoint]['name'])
+            if label := el.etiq[i].c:
+                if label.startswith('#'):
+                    codepoint = el.etiq[i].c.replace('#', 'U+')
+                    el.etiq[i] = IdClass(el.etiq[i].id,
+                                         glyphnames_inv[codepoint]['name'])
     res.sort(key=sort_elements)
-    # __import__('pprint').pprint(res)
-    with args.output.open('w') as f:
-        f.write(listtopl(res, '\n\t', '\n\t', '\n') + '.')
-    # for el in res[1:]:
-    #     __import__('pprint').pprint(el.tococo(5568, 7326))
+    res = _List(res)
+    res.sep = '\n\t'
+    res.start = '\n\t'
+    res.end = '\n'
+    return res
+
+
+def make_categories(annotations, categories):
+    if categories:
+        with categories.open() as f:
+            coco_categories = json.load(f)['categories']
+        category_map = {cat['name']: cat['id'] for cat in coco_categories}
+    else:
+        categories = set()
+        names = set()
+        for ann in annotations:
+            category = ann['category']
+            supercategory = ann['supercategory']
+            if ann['num_keypoints'] == 1:
+                keypoints = ['origin']
+            elif ann['num_keypoints'] == 2:
+                keypoints = ['start', 'end']
+            else:
+                raise RuntimeError("Unknown number of keypoints")
+            if category not in names:
+                categories.add((category, supercategory, tuple(keypoints)))
+                names.add(category)
+        categories = sorted(categories)
+        coco_categories = []
+        category_map = {}
+        for i, (category, supercategory, keypoints) in enumerate(categories, start=1):
+            coco_categories.append({
+                'id': i,
+                'name': category,
+                'supercategory': supercategory,
+                'keypoints': list(keypoints),
+            })
+            category_map[category] = i
+    for i, ann in enumerate(annotations, start=1):
+        ann['category_id'] = category_map[ann['category']]
+        ann['id'] = i
+
+    return annotations, coco_categories
+
+
+def main(args):
+    page_elements = _List([parse_svg(svg, args.glyphnames) for svg in args.svg])
+    page_elements.sep = '\n\t'
+    page_elements.start = '\n\t'
+    page_elements.end = '\n'
+    if args.type == 'prolog':
+        with args.output.open('w') as f:
+            page_elements = _List([el for page in page_elements for el in page])
+            f.write(page_elements.topl() + '.')
+    elif args.type == 'coco':
+        annotations = []
+        images = []
+        for page_id, res in enumerate(page_elements, start=1):
+            page = res[0]
+            width = int(page.rightbottom.x)
+            height = int(page.rightbottom.y)
+            svg = args.svg[page_id-1]
+            png = svg.with_suffix('.png')
+            image = composite_elements_to_image(res[1:], width, height)
+            image.save(png)
+            for i, el in enumerate(res[1:], start=1):
+                annotation = el.tococo(i, page_id, width, height)
+                if annotation is not None:
+                    annotations.append(annotation)
+            images.append({
+                'id': page_id,
+                'width': width,
+                'height': height,
+                'file_name': str(png.name),
+            })
+        annotations, categories = make_categories(annotations, args.categories)
+        data = {
+            'info': {
+                'year': date.today().year,
+                'version': '1.0',
+                'description': 'Music Symbol Coco Dataset',
+                'contributor': 'Kwon-Young Choi',
+                'url': 'https://github.com/kwon-young/music',
+                'date_created': '2024-02-10',
+            },
+            'images': images,
+            'annotations': annotations,
+            'categories': categories,
+        }
+        with args.output.open('w') as f:
+            json.dump(data, f)
     return
 
 

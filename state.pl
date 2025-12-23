@@ -1,6 +1,6 @@
 :- module(state, [makeState/2, state//1, statep//2, stateg//2, state_phrase//2,
-                  scope//1, scope//2, scope//3, scope//4, pop_scope//1, push_scope//2,
-                  bbox//2, contour//2, nCond/2, nCond/3, nCond//2,
+                  scope//1, scope//2, scope//3, scope//4, push//3, pop_scope//1, push_scope//2,
+                  bbox//2, contour//2, pop_contour//1, nCond/2, nCond/3, nCond//2,
                   add_id//1, ground_all_ids/1]).
 
 :- use_module(library(rbtrees)).
@@ -138,12 +138,22 @@ scope(Goal, Arg1, Arg2, Arg3) -->
   { add_args(Goal, [Arg1, Arg2, Arg3], NewGoal) },
   scope(NewGoal).
 
+:- meta_predicate push(2, ?, ?, ?, ?).
+
+push(Goal, Name, Value) -->
+  state(-(Name, L, [Value | L])),
+  Goal,
+  state(-(Name, [Value | L], L)).
+
+pop_acc(Goal, Name) -->
+  state(-(Name, [H | T], T)),
+  Goal,
+  state(-(Name, T, [H | T])).
+
 :- meta_predicate pop_scope(2, ?, ?).
 
 pop_scope(Goal) -->
-  state(-(scope, [Scope | Scopes], Scopes)),
-  Goal,
-  state(-(scope, Scopes, [Scope | Scopes])).
+  pop_acc(Goal, scope).
 
 :- meta_predicate push_scope(2, ?, ?, ?).
 
@@ -166,6 +176,11 @@ bbox(Goal, BBox) -->
   Goal,
   state(-(bbox, [BBox, Parent | BBoxes], [Parent | BBoxes])).
 
+:- meta_predicate pop_contour(2, ?, ?).
+
+pop_contour(Goal) -->
+  pop_acc(Goal, contour).
+
 :- meta_predicate contour(2, ?, ?, ?).
 
 contour(Goal, Contour) -->
@@ -175,8 +190,9 @@ contour(Goal, Contour) -->
   debug(contour, "~p~n", [Contour]).
 
 add_id_(Id, Ids, FinalIds) :-
-  reify(ord_memberchk(Id, Ids), Res),
-  add_id_(Res, Id, Ids, FinalIds).
+  list_to_ord_set(Ids, Set),
+  reify(ord_memberchk(Id, Set), Res),
+  add_id_(Res, Id, Set, FinalIds).
 add_id_(false, Id, Ids, NewIds) :-
   maplist(dif(Id), Ids),
   ord_add_element(Ids, Id, NewIds).

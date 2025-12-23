@@ -20,6 +20,8 @@ eps(Eps, A) :-
 eps(Eps, A, B) :-
   debug(eps, "A ~p~n", [A]),
   debug(eps, "B ~p~n", [B]),
+  { D == abs(A - B) },
+  debug(eps, "abs(A-B) ~p~n", [D]),
   debug(eps, "Eps ~p~n", [Eps]),
   { abs(A - B) =< Eps },
   debug(eps, "abs(~p - ~p) =< ~p~n", [A, B, Eps]).

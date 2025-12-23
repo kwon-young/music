@@ -13,6 +13,7 @@
 :- use_module(library(clpBNR)).
 :- use_module(state).
 :- use_module(utils).
+:- use_module(inkscape).
 
 term_(Mode, X, [CurX | L], L) :-
    (  (Mode == chk ; (var(CurX), var(L)))
@@ -20,7 +21,9 @@ term_(Mode, X, [CurX | L], L) :-
    ;  true
    ),
    CurX = X.
+   % debug_highlight(term, X, 'green').
 term_(Mode, X, [CurX | L], [CurX | R]) :-
+   % debug_highlight(term, CurX, 'red'),
    term_(Mode, X, L, R).
 
 select_(Mode, X, L, [X | R]) :-

@@ -1,94 +1,91 @@
 ﻿/*  Saved settings
-    Date: Wed Nov  1 14:27:45 2023
+    Date: Tue Dec 23 16:09:51 2025
 */
 
 
 %	page width
-setting(music_settings:pageWidth, 2100.0-2100).
+setting(music_settings:pageWidth, 4200.0-2100).
 
 %	page height
-setting(music_settings:pageHeight, 2970.0-2970).
+setting(music_settings:pageHeight, 5940.0-2970).
 
 %	page top margin
-setting(music_settings:topMargin, real(0,80.024)-50).
+setting(music_settings:topMargin, real(0,160.048)-50).
 
 %	page left margin
-setting(music_settings:leftMargin, real(0,50.00000000000001)-50).
+setting(music_settings:leftMargin, real(0,100.00000000000001)-50).
 
 %	page bottom margin
-setting(music_settings:bottomMargin, real(0,2751.592)-50).
+setting(music_settings:bottomMargin, real(0,5503.184)-50).
 
 %	page right margin
-setting(music_settings:rightMargin, real(0,1731.15)-50).
+setting(music_settings:rightMargin, real(0,3480.3)-50).
 
 %	Global Eps in pixels
-setting(music_settings:eps, real(0.07999999999989882,0.08076232910146133)-0).
+setting(music_settings:eps, real(0.15999999999985448,0.16082031249985462)-0).
 
 %	The MEI unit (1⁄2 of the distance between the staff lines)
-setting(music_settings:unit, 8.982333240509018-9).
+setting(music_settings:unit, 17.964810739942287-9).
 
 %	line thickness in unit
-setting(music_settings:thickness, real(0.13573730101661713,0.15371978439570957)-0.15).
+setting(music_settings:thickness, real(0.13577541799964327,0.15367934304821543)-0.15).
 
 %	barline thickness in unit
-setting(music_settings:barLineThickness, real(0.29159880854633147,0.309581291925424)-0.3).
+setting(music_settings:barLineThickness, real(0.29163567394849027,0.3095395989970624)-0.3).
 
 %	The minimal measure width in MEI units
-setting(music_settings:measureMinWidth, real(0,35.50088309917023)-15).
+setting(music_settings:measureMinWidth, real(0,34.49860002891916)-15).
 
 %	The left margin for clefs in MEI units
-setting(music_settings:clefLeftMargin, real(0.9929755924300446,1.0109580758091403)-1).
+setting(music_settings:clefLeftMargin, real(0.993006825718301,1.0109107507668744)-1).
 
 %	The G clef width in MEI units
-setting(music_settings:gClefWidth, real(5.177189091713464,5.195171575092558)-5.16).
+setting(music_settings:gClefWidth, real(5.1771867254193475,5.195090650467922)-5.16).
 
 %	The G clef height in MEI units
-setting(music_settings:gClefHeight, real(13.922355619909263,13.940338103288362)-13.9).
+setting(music_settings:gClefHeight, real(13.922283029200651,13.940186954249228)-13.9).
 
 %	The G clef origin horizontal offset from the top in MEI units
-setting(music_settings:gClefXOffset, real(0,0.017006976362503975)-0).
+setting(music_settings:gClefXOffset, real(0,0.016967632830227636)-0).
 
 %	The G clef origin vertical offset from the top in MEI units
-setting(music_settings:gClefYOffset, real(8.6720494091226,8.690031892501697)-8.7).
-
-%	The bracket thickness in MEI units
-setting(music_settings:bracketThickness, real(0.49999999999999994,2)-1.0).
+setting(music_settings:gClefYOffset, real(8.672018978809492,8.689922903858069)-8.7).
 
 %	The time signature 4 width in MEI units
-setting(music_settings:timeSig4Width, real(3.093098076744712,3.1110805601238054)-5.5).
+setting(music_settings:timeSig4Width, real(3.0931124458747643,3.111016370923337)-5.5).
 
 %	The time signature 4 height in MEI units
-setting(music_settings:timeSig4Height, real(4.00689182946178,4.024874312840874)-6.6).
+setting(music_settings:timeSig4Height, real(4.006898860752005,4.0248027858005795)-6.6).
 
 %	The time signature 4 origin horizontal offset from the top in MEI units
-setting(music_settings:timeSig4XOffset, real(-0.16930593514868228,-0.1513234517695868)-0).
+setting(music_settings:timeSig4XOffset, real(-0.1692653686431028,-0.15136144359452794)-0).
 
 %	The time signature 4 origin vertical offset from the top in MEI units
-setting(music_settings:timeSig4YOffset, real(2.002958161222594,2.0209406446016898)-2).
+setting(music_settings:timeSig4YOffset, real(2.002981284266829,2.020885209315404)-2).
 
 %	The whole notehead width in MEI units
-setting(music_settings:noteheadWholeWidth, real(3.2373813008579355,3.255363784237029)-2.5).
+setting(music_settings:noteheadWholeWidth, real(3.2373945113817006,3.2552984364302735)-2.5).
 
 %	The whole notehead height in MEI units
-setting(music_settings:noteheadWholeHeight, real(2.1231941813169475,2.141176664696041)-2.12).
+setting(music_settings:noteheadWholeHeight, real(2.123216338855942,2.141120263904515)-2.12).
 
 %	The right margin for accidental in MEI units
-setting(music_settings:accidentalRightMargin, real(0,0.7810888120203423)-1).
+setting(music_settings:accidentalRightMargin, real(0,0.7810825398122208)-1).
 
 %	The sharp accidental width in MEI units
-setting(music_settings:accidentalSharpWidth, real(1.5701084888829309,1.5880909722620238)-5.5).
+setting(music_settings:accidentalSharpWidth, real(1.5701350877460318,1.5880390127946042)-5.5).
 
 %	The sharp accidental height in MEI units
-setting(music_settings:accidentalSharpHeight, real(5.553928621342428,5.571911104721523)-6.6).
+setting(music_settings:accidentalSharpHeight, real(5.553923229798559,5.571827154847133)-6.6).
 
 %	The sharp accidental origin horizontal offset from the top in MEI units
-setting(music_settings:accidentalSharpXOffset, real(-0.008991241689547723,0.008991241689547723)-0).
+setting(music_settings:accidentalSharpXOffset, real(-0.00895196252428742,0.00895196252428742)-0).
 
 %	The sharp accidental origin vertical offset from the top in MEI units
-setting(music_settings:accidentalSharpYOffset, real(2.8365945672100947,2.8545770505891905)-2).
+setting(music_settings:accidentalSharpYOffset, real(2.8366109960846617,2.8545149211332372)-2).
 
 %	The ledger line thickness in MEI units
-setting(music_settings:ledgerlineThickness, real(0.23593398442857635,0.25391646780766886)-0.25).
+setting(music_settings:ledgerlineThickness, real(0.23597129682390208,0.2538752218724742)-0.25).
 
 %	The amount by which a ledger line should extend either side of a notehead in MEI unit
-setting(music_settings:ledgerlineExtension, real(0.5164846979820567,0.5344671813611569)-0.54).
+setting(music_settings:ledgerlineExtension, real(0.5165197575318227,0.5344236825803993)-0.54).

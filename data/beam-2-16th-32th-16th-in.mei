@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?xml-model href="https://music-encoding.org/schema/5.0/mei-all.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?><?xml-model href="https://music-encoding.org/schema/5.0/mei-all.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"?><mei
+    xmlns="http://www.music-encoding.org/ns/mei"
+    meiversion="5.0">
+  <meiHead>
+    <fileDesc>
+      <titleStmt>
+	<title/>
+      </titleStmt>
+    </fileDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv>
+	<score>
+	  <scoreDef>
+	    <staffGrp>
+	      <staffDef n="1" lines="5">
+		<clef shape="G" line="2"/>
+		<keySig sig="0"/>
+		<meterSig count="3" unit="8"/>
+	      </staffDef>
+	    </staffGrp>
+	  </scoreDef>
+	  <section>
+	    <measure n="1">
+	      <staff n="1">
+		<layer n="1">
+		  <note xml:id="note1" dur="16" oct="5" pname="e">
+		    <stem len="6.8vu" dir="down"/>
+		  </note>
+		  <note xml:id="note2" dur="32" oct="5" pname="e">
+		    <stem len="8.8vu" dir="down"/>
+		  </note>
+		  <note xml:id="note3" dur="16" oct="5" pname="e">
+		    <stem len="6.8vu" dir="down"/>
+		  </note>
+		</layer>
+	      </staff>
+	      <beamSpan startid="note1" endid="note3" plist="note1 note2 note3"/>
+	    </measure>
+	  </section>
+	</score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

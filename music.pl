@@ -619,9 +619,13 @@ beamChildCond(I, N, ParentState, State, Parent, Beam, Dir, Stem, Unit, Eps) :-
   beamChildStateCond(ParentState, State, Beam, Parent, Dir, Stem, Unit, Eps).
 
 beamChildStateCond(start, start, Beam, Parent, Dir, Stem, Unit, Eps) :-
-  beamChildStartCond(Dir, Beam, Stem, Parent, Unit, Eps).
+  beamChildStartStartCond(Dir, Beam, Stem, Parent, Unit, Eps).
+beamChildStateCond(mid, mid, Beam, Parent, Dir, Stem, Unit, Eps) :-
+  beamChildMidMidCond(Dir, Beam, Stem, Parent, Unit, Eps).
+beamChildStateCond(mid, end, Beam, Parent, Dir, Stem, Unit, Eps) :-
+  beamChildMidEndCond(Dir, Beam, Stem, Parent, Unit, Eps).
 beamChildStateCond(end, end, Beam, Parent, Dir, Stem, Unit, Eps) :-
-  beamChildEndCond(Dir, Beam, Stem, Parent, Unit, Eps).
+  beamChildEndEndCond(Dir, Beam, Stem, Parent, Unit, Eps).
 
 beamRootStartCond(down, Beam, Stem, VerticalOffset, Unit, Eps) :-
   segLeftBottom(h, Beam, point(BeamLeft, BeamBottom)),
@@ -630,7 +634,7 @@ beamRootStartCond(down, Beam, Stem, VerticalOffset, Unit, Eps) :-
   eps(Eps, StemBottom + VerticalOffset*Unit, BeamBottom),
   segThickness(Beam, BeamThickness),
   eps(Eps, BeamThickness, Unit).
-beamChildStartCond(down, Beam, Stem, Parent, Unit, Eps) :-
+beamChildStartStartCond(down, Beam, Stem, Parent, Unit, Eps) :-
   segLeftBottom(h, Beam, point(BeamLeft, BeamBottom)),
   VCoeff::real(0, 1),
   segHDirCoeff(left, HCoeff),
@@ -651,13 +655,59 @@ beamRootMidCond(down, Beam, Stem, VerticalOffset, Unit, Eps) :-
   { BeamX + Unit =< BeamRight },
   segThickness(Beam, BeamThickness),
   eps(Eps, BeamThickness, Unit).
+beamChildMidMidCond(down, LeftBeam-RightBeam, Stem, Parent, Unit, Eps) :-
+  segRightBottom(h, LeftBeam, LeftBeamRightBottom),
+  segLeftBottom(h, RightBeam, RightBeamLeftBottom),
+  VCoeff::real(0, 1),
+  segHDirCoeff(mid, HCoeff),
+  segHVCoeff(v, HCoeff, VCoeff, Stem, StemPoint),
+  eps(p, Eps, LeftBeamRightBottom, StemPoint),
+  eps(p, Eps, RightBeamLeftBottom, StemPoint),
+
+  ( Parent = LeftParent-RightParent
+  -> segRightTop(h, LeftParent, point(LeftParentRight, LeftParentTop)),
+    eps(p, Eps, point(LeftParentRight, LeftParentTop - (Unit / 2)), LeftBeamRightBottom),
+    segLeftTop(h, RightParent, point(RightParentLeft, RightParentTop)),
+    eps(p, Eps, point(RightParentLeft, RightParentTop - (Unit / 2)), RightBeamLeftBottom)
+  ; segVDirCoeff(top, ParentVCoeff),
+    ParentHCoeff::real(0, 1),
+    segHVCoeff(h, ParentHCoeff, ParentVCoeff, Parent, point(ParentX, ParentTop)),
+    { ParentOffset == ParentTop - (Unit / 2) },
+    ParentPoint = point(ParentX, ParentOffset),
+    eps(p, Eps, ParentPoint, LeftBeamRightBottom),
+    eps(p, Eps, ParentPoint, RightBeamLeftBottom)
+  ),
+  segThickness(LeftBeam, LeftBeamThickness),
+  eps(Eps, LeftBeamThickness, Unit),
+  segThickness(RightBeam, RightBeamThickness),
+  eps(Eps, RightBeamThickness, Unit).
+
+beamChildMidEndCond(down, LeftBeam, Stem, Parent, Unit, Eps) :-
+  segRightBottom(h, LeftBeam, LeftBeamRightBottom),
+  VCoeff::real(0, 1),
+  segHDirCoeff(mid, HCoeff),
+  segHVCoeff(v, HCoeff, VCoeff, Stem, StemPoint),
+  eps(p, Eps, LeftBeamRightBottom, StemPoint),
+
+  ( Parent = LeftParent-_
+  -> segRightTop(h, LeftParent, point(LeftParentRight, LeftParentTop)),
+    eps(p, Eps, point(LeftParentRight, LeftParentTop - (Unit / 2)), LeftBeamRightBottom)
+  ; segVDirCoeff(top, ParentVCoeff),
+    ParentHCoeff::real(0, 1),
+    segHVCoeff(h, ParentHCoeff, ParentVCoeff, Parent, point(ParentX, ParentTop)),
+    { ParentOffset == ParentTop - (Unit / 2) },
+    ParentPoint = point(ParentX, ParentOffset),
+    eps(p, Eps, ParentPoint, LeftBeamRightBottom)
+  ),
+  segThickness(LeftBeam, LeftBeamThickness),
+  eps(Eps, LeftBeamThickness, Unit).
 
 beamRootEndCond(down, Beam, Stem, VerticalOffset, Unit, Eps) :-
   segRightBottom(h, Beam, point(BeamRight, BeamBottom)),
   segHV(v, right, bottom, Stem, point(StemRight, StemBottom)),
   eps(Eps, StemRight, BeamRight),
   eps(Eps, StemBottom + VerticalOffset*Unit, BeamBottom).
-beamChildEndCond(down, Beam, Stem, Parent, Unit, Eps) :-
+beamChildEndEndCond(down, Beam, Stem, Parent, Unit, Eps) :-
   segRightBottom(h, Beam, point(BeamRight, BeamBottom)),
   VCoeff::real(0, 1),
   segHDirCoeff(right, HCoeff),
@@ -693,7 +743,11 @@ beamSpan(N, N) -->
 termBeam(start, Beam) -->
   selectp(Beam).
 termBeam(mid, Beam) -->
+  { Beam \= _-_ },
   selectp(Beam).
+termBeam(mid, LeftBeam-RightBeam) -->
+  termp(LeftBeam),
+  selectp(RightBeam).
 termBeam(end, Beam) -->
   termp(Beam).
 
