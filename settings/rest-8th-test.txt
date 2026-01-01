@@ -1,5 +1,5 @@
 ﻿/*  Saved settings
-    Date: Tue Dec 23 16:09:50 2025
+    Date: Thu Jan  1 11:08:04 2026
 */
 
 
@@ -28,7 +28,7 @@ setting(music_settings:eps, real(0.10000000000002274,0.10087890625002272)-0).
 setting(music_settings:unit, 17.95585003013501-9).
 
 %	line thickness in unit
-setting(music_settings:thickness, real(0.1391814416781017,0.15041776923493916)-0.15).
+setting(music_settings:thickness, real(0.13918144167810173,0.15041776923493916)-0.15).
 
 %	barline thickness in unit
 setting(music_settings:barLineThickness, real(0.29511947832358526,0.3063558058804227)-0.3).

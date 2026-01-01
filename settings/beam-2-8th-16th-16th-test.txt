@@ -1,5 +1,5 @@
 ﻿/*  Saved settings
-    Date: Thu Jan  1 11:08:08 2026
+    Date: Thu Jan  1 11:08:06 2026
 */
 
 
@@ -19,7 +19,7 @@ setting(music_settings:leftMargin, real(0,100.00000000000001)-50).
 setting(music_settings:bottomMargin, real(0,5529.68)-50).
 
 %	page right margin
-setting(music_settings:rightMargin, real(0,3598.9)-50).
+setting(music_settings:rightMargin, real(0,3622.9)-50).
 
 %	Global Eps in pixels
 setting(music_settings:eps, real(0.10000000000002274,0.10087890625002272)-0).
@@ -34,7 +34,7 @@ setting(music_settings:thickness, real(0.13889732213653633,0.15011071229456657)-
 setting(music_settings:barLineThickness, real(0.29451703298405324,0.3057304231420836)-0.3).
 
 %	The minimal measure width in MEI units
-setting(music_settings:measureMinWidth, real(0,27.850419243152587)-15).
+setting(music_settings:measureMinWidth, real(0,26.516536007316727)-15).
 
 %	The left margin for clefs in MEI units
 setting(music_settings:clefLeftMargin, real(0.994805731797879,1.0060191219559103)-1).

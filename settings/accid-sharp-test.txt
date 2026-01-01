@@ -1,5 +1,5 @@
 ﻿/*  Saved settings
-    Date: Tue Dec 23 16:09:51 2025
+    Date: Thu Jan  1 11:08:04 2026
 */
 
 
@@ -28,13 +28,13 @@ setting(music_settings:eps, real(0.15999999999985448,0.16082031249985462)-0).
 setting(music_settings:unit, 17.964810739942287-9).
 
 %	line thickness in unit
-setting(music_settings:thickness, real(0.13577541799964327,0.15367934304821543)-0.15).
+setting(music_settings:thickness, real(0.1357754179996433,0.1536793430482154)-0.15).
 
 %	barline thickness in unit
 setting(music_settings:barLineThickness, real(0.29163567394849027,0.3095395989970624)-0.3).
 
 %	The minimal measure width in MEI units
-setting(music_settings:measureMinWidth, real(0,34.49860002891916)-15).
+setting(music_settings:measureMinWidth, real(0,34.49860002891915)-15).
 
 %	The left margin for clefs in MEI units
 setting(music_settings:clefLeftMargin, real(0.993006825718301,1.0109107507668744)-1).

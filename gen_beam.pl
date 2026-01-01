@@ -38,15 +38,17 @@ mei(Term, [Dur1, Dur2, Dur3]) :-
 		      ])
 	    ])
   ],
-  note(note1, Note1, Dur1),
-  note(note2, Note2, Dur2),
-  note(note3, Note3, Dur3).
-
-note(Id, Note, Dur) :-
-  member(Dur, ['8', '16', '32']),
-  ( Dur = '32'
+  note(note1, Note1, Dur1, Len),
+  note(note2, Note2, Dur2, Len),
+  note(note3, Note3, Dur3, Len),
+  maplist(atom_number, [Dur1, Dur2, Dur3], Durs),
+  max_list(Durs, MaxDur),
+  ( MaxDur = 32
   ->  Len = '8.8vu'
   ; Len = '6.8vu'
-  ),
+  ).
+
+note(Id, Note, Dur, Len) :-
+  member(Dur, ['8', '16', '32']),
   Note = element(note, [ 'xml:id' = Id, dur = Dur, oct = '5', pname = e ], [
     element(stem, [ len = Len, dir='down' ], [])]).

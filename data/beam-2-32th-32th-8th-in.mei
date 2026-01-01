@@ -34,7 +34,7 @@
 		    <stem len="8.8vu" dir="down"/>
 		  </note>
 		  <note xml:id="note3" dur="8" oct="5" pname="e">
-		    <stem len="6.8vu" dir="down"/>
+		    <stem len="8.8vu" dir="down"/>
 		  </note>
 		</layer>
 	      </staff>

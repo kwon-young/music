@@ -1,5 +1,5 @@
 ﻿/*  Saved settings
-    Date: Tue Dec 23 16:09:51 2025
+    Date: Thu Jan  1 11:08:04 2026
 */
 
 
@@ -25,58 +25,58 @@ setting(music_settings:rightMargin, real(0,3750.7000000000003)-50).
 setting(music_settings:eps, real(0.0999999999999659,0.10087890624996593)-0).
 
 %	The MEI unit (1⁄2 of the distance between the staff lines)
-setting(music_settings:unit, 17.99279147932813-9).
+setting(music_settings:unit, 17.992791479328133-9).
 
 %	line thickness in unit
-setting(music_settings:thickness, real(0.13889568478694742,0.15010894275927109)-0.15).
+setting(music_settings:thickness, real(0.13889568478694742,0.15010894275927103)-0.15).
 
 %	barline thickness in unit
-setting(music_settings:barLineThickness, real(0.29451356115798816,0.30572681913031186)-0.3).
+setting(music_settings:barLineThickness, real(0.2945135611579881,0.3057268191303118)-0.3).
 
 %	The minimal measure width in MEI units
-setting(music_settings:measureMinWidth, real(0,19.413378924974534)-15).
+setting(music_settings:measureMinWidth, real(0,19.41337892497453)-15).
 
 %	The left margin for clefs in MEI units
-setting(music_settings:clefLeftMargin, real(0.994794004827671,1.0060072627999956)-1).
+setting(music_settings:clefLeftMargin, real(0.9947940048276708,1.0060072627999954)-1).
 
 %	The G clef width in MEI units
-setting(music_settings:gClefWidth, real(5.172467051634238,5.183680309606564)-5.16).
+setting(music_settings:gClefWidth, real(5.1724670516342375,5.183680309606563)-5.16).
 
 %	The G clef height in MEI units
-setting(music_settings:gClefHeight, real(13.903963783561373,13.9151770415337)-13.9).
+setting(music_settings:gClefHeight, real(13.903963783561371,13.915177041533699)-13.9).
 
 %	The G clef origin horizontal offset from the top in MEI units
-setting(music_settings:gClefXOffset, real(0.0023965760843487095,0.01360983405667323)-0).
+setting(music_settings:gClefXOffset, real(0.002396576084348709,0.013609834056673228)-0).
 
 %	The G clef origin vertical offset from the top in MEI units
-setting(music_settings:gClefYOffset, real(8.661864462376888,8.673077720349216)-8.7).
+setting(music_settings:gClefYOffset, real(8.661864462376887,8.673077720349214)-8.7).
 
 %	The time signature 4 width in MEI units
-setting(music_settings:timeSig4Width, real(3.0916337333014647,3.102846991273789)-5.5).
+setting(music_settings:timeSig4Width, real(3.0916337333014643,3.1028469912737884)-5.5).
 
 %	The time signature 4 height in MEI units
-setting(music_settings:timeSig4Height, real(4.003999111339682,4.015212369312007)-6.6).
+setting(music_settings:timeSig4Height, real(4.003999111339681,4.015212369312006)-6.6).
 
 %	The time signature 4 origin horizontal offset from the top in MEI units
-setting(music_settings:timeSig4XOffset, real(-0.16567073039637772,-0.15445747242405158)-0).
+setting(music_settings:timeSig4XOffset, real(-0.1656707303963777,-0.15445747242405156)-0).
 
 %	The time signature 4 origin vertical offset from the top in MEI units
-setting(music_settings:timeSig4YOffset, real(2.003197843712014,2.014411101684341)-2).
+setting(music_settings:timeSig4YOffset, real(2.0031978437120137,2.0144111016843405)-2).
 
 %	The black notehead width in MEI units
-setting(music_settings:noteheadBlackWidth, real(2.5073997631541878,2.518613021126512)-2.5).
+setting(music_settings:noteheadBlackWidth, real(2.507399763154187,2.5186130211265114)-2.5).
 
 %	The black notehead height in MEI units
-setting(music_settings:noteheadBlackHeight, real(2.1232459197696736,2.1344591777419977)-2.12).
+setting(music_settings:noteheadBlackHeight, real(2.123245919769673,2.1344591777419972)-2.12).
 
 %	The stem width in MEI units
-setting(music_settings:stemWidth, real(0.19447349777660486,0.20568675574892847)-0.2).
+setting(music_settings:stemWidth, real(0.1944734977766048,0.20568675574892845)-0.2).
 
 %	The black notehead stem offset in MEI units
-setting(music_settings:noteheadBlackStemOffset, real(0.3056291237559165,0.31684238172824897)-0.3).
+setting(music_settings:noteheadBlackStemOffset, real(0.3056291237559133,0.3168423817282521)-0.3).
 
 %	The 8th flag down width in MEI units
-setting(music_settings:flag8thDownWidth, real(2.2032779704747836,2.2144912284471077)-5.5).
+setting(music_settings:flag8thDownWidth, real(2.203277970474783,2.214491228447107)-5.5).
 
 %	The 8th flag down height in MEI units
-setting(music_settings:flag8thDownHeight, real(5.548617689948238,5.559830947920564)-6.6).
+setting(music_settings:flag8thDownHeight, real(5.548617689948237,5.559830947920563)-6.6).
