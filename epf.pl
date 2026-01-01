@@ -1,6 +1,6 @@
 :- module(epf, [term//1, select//1, update//2,
-                termchk//1, selectchk//1, selectchk//2, updatechk//2,
-                add//1, apply//2, when//2,
+                termchk//1, selectchk//1, selectchk//2, updatechk//2, add//1,
+                apply//2, when//2,
                 optional//3,
                 sequence2//2, sequence2//3, sequence2//5,
                 foldlg//4, foldlg//5, longuest_foldlg//5,
@@ -15,45 +15,71 @@
 :- use_module(utils).
 :- use_module(inkscape).
 
-term_(Mode, X, [CurX | L], L) :-
-   (  (Mode == chk ; (var(CurX), var(L)))
-   -> !
-   ;  true
+endMultiSegs(X, [Segs | _]) :-
+  endMultiSeg(Segs, X).
+endMultiSeg([H | T], X) :-
+  ( H == X, var(T)
+   -> T = []
+  ; nonvar(T),
+    endMultiSeg(T, X)
+  ).
+term_(Mode, X, [CurX | L], L) -->
+   (  {Mode == chk ; (var(CurX), var(L))}
+   -> !,
+     (  valid_state, statep(endMultiSegs(X), [o(multiseg)])
+     -> []
+     ;  []
+     )
+   ;  []
    ),
-   CurX = X.
+   {CurX = X}.
    % debug_highlight(term, X, 'green').
-term_(Mode, X, [CurX | L], [CurX | R]) :-
+term_(Mode, X, [CurX | L], [CurX | R]) -->
    % debug_highlight(term, CurX, 'red'),
    term_(Mode, X, L, R).
 
-select_(Mode, X, L, [X | R]) :-
+select_(Mode, X, L, [X | R]) -->
    term_(Mode, X, L, R).
 
-term(El), [State, StructOut] -->
-  [State, StructIn],
-  { term_(nochk, El, StructIn, StructOut) }.
-termchk(El), [State, StructOut] -->
-  [State, StructIn],
-  { term_(chk, El, StructIn, StructOut) }.
-select(El), [State, StructOut] -->
-  [State, StructIn],
-  { select_(nochk, El, StructIn, StructOut) }.
-selectchk(El), [State, StructOut] -->
-  [State, StructIn],
-  { select_(chk, El, StructIn, StructOut) }.
+add_(X, L, [X | L]) --> [].
+
+pop_struct(Struct), [State] -->
+  [State, Struct].
+push_struct(Struct), [State, Struct] -->
+  [State].
+
+term(El) -->
+  pop_struct(StructIn),
+  term_(nochk, El, StructIn, StructOut),
+  push_struct(StructOut).
+termchk(El) -->
+  pop_struct(StructIn),
+  term_(chk, El, StructIn, StructOut),
+  push_struct(StructOut).
+select(El) -->
+  pop_struct(StructIn),
+  select_(nochk, El, StructIn, StructOut),
+  push_struct(StructOut).
+selectchk(El) -->
+  pop_struct(StructIn),
+  select_(chk, El, StructIn, StructOut),
+  push_struct(StructOut).
 selectchk(El1, El2) -->
   selectchk(El1),
   selectchk(El2).
 
-update_(Goal, In, Out), [Out] -->
-  call(Goal, In).
+update_(Goal, In, Out) -->
+  call(Goal, In),
+  add(Out).
 update(In, Out) -->
   update_(term, In, Out).
 updatechk(In, Out) -->
   update_(termchk, In, Out).
 
-add(El), [El] -->
-  { true }.
+add(X) -->
+  pop_struct(StructIn),
+  add_(X, StructIn, StructOut),
+  push_struct(StructOut).
 
 :- meta_predicate sequence2(4, ?, ?, ?).
 

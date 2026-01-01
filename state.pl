@@ -1,4 +1,4 @@
-:- module(state, [makeState/2, state//1, statep//2, stateg//2, state_phrase//2,
+:- module(state, [makeState/2, valid_state//0, state//1, statep//2, stateg//2, state_phrase//2,
                   scope//1, scope//2, scope//3, scope//4, push//3, pop_scope//1, push_scope//2,
                   bbox//2, contour//2, pop_contour//1, nCond/2, nCond/3, nCond//2,
                   add_id//1, ground_all_ids/1]).
@@ -10,7 +10,11 @@
 :- use_module(utils).
 
 makeState(state(Tree), List) :-
-  list_to_rbtree([cursor-noEl, scope-[], bbox-[], contour-[], ids-[] | List], Tree).
+  list_to_rbtree([cursor-noEl, scope-[], bbox-[], contour-[], ids-[], multiseg-[] | List], Tree).
+
+valid_state, [state(State)] -->
+  [state(State)],
+  { is_rbtree(State) }.
 
 state(Term) -->
   stateValues(Term, _).
@@ -28,6 +32,9 @@ state_(o(Key, Value), [Value]), [State] -->
     ;  existence_error(key, Key, State)
     )
   }.
+state_(?(Key, Value), [Value]), [State] -->
+  [State],
+  { rb_lookup(Key, Value, State) }.
 
 state_(+(Key), Values) -->
   state_(+(Key, _), Values).

@@ -1,6 +1,7 @@
 :- module(epf_geo, [termp//1, terms//1, selectp//1, find//2,
                     % vertical_layout_seq//3,
-                    vertical_layout_seq//4, vertical_layout_args//3]).
+                    vertical_layout_seq//4, vertical_layout_args//3,
+                    multi_seg//3]).
 
 :- use_module(library(delay)).
 :- use_module(library(clpBNR)).
@@ -129,3 +130,66 @@ with(Name, Goal, New) -->
   state(-(Name, Old, [New | Old])),
   Goal,
   state(-(Name, [New | Old], Old)).
+
+multiSegCond(Type, Seg, [Start | Segs], Eps) :-
+  multiSegStartCond(Type, Seg, Start, Eps),
+  when(nonvar(Segs), multiSegNextCond(Segs, Type, Seg, Eps, Start)).
+
+multiSegStartCond(leftright, Seg, SubSeg, Eps) :-
+  segStart(Seg, SegStart),
+  segStart(SubSeg, SubSegStart),
+  eps(p, Eps, SegStart, SubSegStart),
+  multiSegSubEndCond(leftright, Seg, SubSeg, Eps).
+multiSegSubEndCond(leftright, Seg, SubSeg, Eps) :-
+  segVDirCoeff(mid, VCoeff),
+  HCoeff::real(0, 1),
+  segHVCoeff(h, HCoeff, VCoeff, Seg, SegPoint),
+  segEnd(SubSeg, SubSegEnd),
+  eps(p, Eps, SegPoint, SubSegEnd),
+  segThickness(Seg, SegThickness),
+  segThickness(SubSeg, SubSegThickness),
+  eps(Eps, SegThickness, SubSegThickness).
+multiSegNextCond([Right | Segs], leftright, Seg, Eps, Left) :-
+  segEnd(Left, LeftEnd),
+  segStart(Right, RightEnd),
+  eps(p, Eps, LeftEnd, RightEnd),
+  multiSegSubEndCond(leftright, Seg, Right, Eps),
+  when(nonvar(Segs), multiSegNextCond(Segs, leftright, Seg, Eps, Right)).
+multiSegNextCond([], leftright, Seg, Eps, SubSeg) :-
+  segEnd(Seg, SegEnd),
+  segEnd(SubSeg, SubSegEnd),
+  eps(p, Eps, SegEnd, SubSegEnd).
+
+multi_seg(Type, Mode, Seg) -->
+  statep(multiSegCond(Type, Seg, Segs), [o(eps)]),
+  with(multiseg,
+    longuest_notempty_sequence(multisegN, termp, Segs, []),
+    Segs
+  ),
+  { debug(multi_seg, "~p: ~p~n", [Seg, Segs]) },
+  ( { Mode == selectp }
+  -> add(Seg)
+  ; { Mode == termp }
+  ).
+
+:- begin_tests(multi_seg).
+
+:- use_module(state).
+:- use_module(music_settings).
+
+
+test(gen, [nondet, true(Struct =@= [Seg])]) :-
+  get_settings(value, _Settings, AllSettings),
+  makeState(State, AllSettings),
+  segStartEndThickness(Seg, point(0, 0), point(10.0, 10.0), 1),
+  phrase(multi_seg(leftright, termp, Seg), [State, Struct], [_, []]).
+
+test(reco, all(Seg =@= [seg(point(5,5),point(10,10),_,1),
+                        seg(point(0,0),point(10.0,10.0),_,1)])) :-
+  get_settings(value, _Settings, AllSettings),
+  makeState(State, AllSettings),
+  segStartEndThickness(Seg1, point(0, 0), point(5, 5), 1),
+  segStartEndThickness(Seg2, point(5, 5), point(10, 10), 1),
+  phrase(multi_seg(leftright, termp, Seg), [State, [Seg2, Seg1]], [_, _]).
+
+:- end_tests(multi_seg).
