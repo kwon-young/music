@@ -1,5 +1,5 @@
 ﻿/*  Saved settings
-    Date: Thu Jan  1 11:08:03 2026
+    Date: Fri Jan  2 06:45:59 2026
 */
 
 
@@ -22,19 +22,19 @@ setting(music_settings:bottomMargin, real(0,5226.700000000001)-50).
 setting(music_settings:rightMargin, real(0,3819.1000000000004)-50).
 
 %	Global Eps in pixels
-setting(music_settings:eps, real(0.09999999999999432,0.10087890624999432)-0).
+setting(music_settings:eps, real(0.09999999999999432,0.10060424804686932)-0).
 
 %	The MEI unit (1⁄2 of the distance between the staff lines)
-setting(music_settings:unit, 17.955850030135025-9).
+setting(music_settings:unit, 17.95597027707639-9).
 
 %	line thickness in unit
-setting(music_settings:thickness, real(0.1391814416781032,0.15041776923493744)-0.15).
+setting(music_settings:thickness, real(0.13919580581752244,0.15040146571720575)-0.15).
 
 %	barline thickness in unit
-setting(music_settings:barLineThickness, real(0.2951194783235866,0.30635580588042094)-0.3).
+setting(music_settings:barLineThickness, real(0.2951327981823761,0.30633845808205945)-0.3).
 
 %	The minimal measure width in MEI units
-setting(music_settings:measureMinWidth, real(0,15.643975553082615)-15).
+setting(music_settings:measureMinWidth, real(0,15.643855492825173)-15).
 
 %	The staff minimal spacing in MEI units
-setting(music_settings:spacingStaff, real(0,12.02950568408015)-12).
+setting(music_settings:spacingStaff, real(0,12.02942512528871)-12).

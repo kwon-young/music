@@ -1,5 +1,5 @@
 ﻿/*  Saved settings
-    Date: Thu Jan  1 11:08:03 2026
+    Date: Fri Jan  2 06:46:00 2026
 */
 
 
@@ -22,31 +22,31 @@ setting(music_settings:bottomMargin, real(0,5586.700000000001)-50).
 setting(music_settings:rightMargin, real(0,3688.7000000000003)-50).
 
 %	Global Eps in pixels
-setting(music_settings:eps, real(0.0999999999999659,0.10087890624996593)-0).
+setting(music_settings:eps, real(0.0999999999999659,0.1006042480468409)-0).
 
 %	The MEI unit (1⁄2 of the distance between the staff lines)
-setting(music_settings:unit, 17.95585003013504-9).
+setting(music_settings:unit, 17.9559702770764-9).
 
 %	line thickness in unit
-setting(music_settings:thickness, real(0.13918144167810467,0.15041776923493574)-0.15).
+setting(music_settings:thickness, real(0.13919580581752397,0.15040146571720409)-0.15).
 
 %	barline thickness in unit
-setting(music_settings:barLineThickness, real(0.2951194783235879,0.3063558058804191)-0.3).
+setting(music_settings:barLineThickness, real(0.29513279818237753,0.3063384580820577)-0.3).
 
 %	The minimal measure width in MEI units
-setting(music_settings:measureMinWidth, real(0,22.90623268828654)-15).
+setting(music_settings:measureMinWidth, real(0,22.90606399438834)-15).
 
 %	The left margin for clefs in MEI units
-setting(music_settings:clefLeftMargin, real(0.9745637808503358,0.9858001084071678)-1).
+setting(music_settings:clefLeftMargin, real(0.9745725506292386,0.9857782105289198)-1).
 
 %	The F clef width in MEI units
-setting(music_settings:fClefWidth, real(5.560033132722661,5.571269460279494)-5.5).
+setting(music_settings:fClefWidth, real(5.560011194683732,5.5712168545834135)-5.5).
 
 %	The F clef height in MEI units
-setting(music_settings:fClefHeight, real(6.666747655658034,6.677983983214867)-6.6).
+setting(music_settings:fClefHeight, real(6.666718306210293,6.677923966109975)-6.6).
 
 %	The F clef origin horizontal offset from the top in MEI units
-setting(music_settings:fClefXOffset, real(-0.037696845602630126,-0.026460518045798135)-0).
+setting(music_settings:fClefXOffset, real(-0.0376812969506108,-0.026475637050929802)-0).
 
 %	The F clef origin vertical offset from the top in MEI units
-setting(music_settings:fClefYOffset, real(2.0073191206909935,2.0185554482478274)-2).
+setting(music_settings:fClefYOffset, real(2.0073209743484686,2.0185266342481514)-2).

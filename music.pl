@@ -55,7 +55,7 @@ mainReco(StructFile, TestSettingsFile, XmlFile, RecoSettingsFile) :-
   once(phrase(mei(Xml), [StateIn, Struct], [StateOut, Rest])),
   ground_all_ids(StateOut),
   print_term(Rest, []), nl,
-  % Rest == [],
+  Rest == [],
   update_settings(Settings),
   % memberchk(eps-Eps, Settings),
   % upper_bound(Eps),
@@ -383,8 +383,9 @@ layer(element(layer, ['xml:id'=Id, n='1'], Childs), Id) -->
   sequence(find(music:layerChild), Childs).
 
 layerChild(Child) -->
-  scope(note(Child))
-  ; scope(rest(Child)).
+  ( scope(note(Child))
+  ; scope(rest(Child))
+  ).
 
 delay:mode(music:restCond(ground, _)).
 delay:mode(music:restCond(_, ground)).
@@ -624,29 +625,33 @@ beamRootStateCond(mid-Beam, end-Beam, Dir, Stem, VerticalOffset, Unit, Eps) :-
   beamRootEndCond(Dir, Beam, Stem, VerticalOffset, Unit, Eps).
 
 beamChildCond(I, N, ParentState-Parent, PreviousState-PreviousBeam, State-Beam,
-              Dir, Stem, Unit, Eps) :-
+              Dir, Stem, NoteHeadSettings, Unit, Eps) :-
   { N > I },
   beamChildStateCond(ParentState-Parent, PreviousState-PreviousBeam, State-Beam,
-                     Dir, Stem, Unit, Eps).
+                     Dir, Stem, NoteHeadSettings, Unit, Eps).
 
-beamChildStateCond(start-Parent, end-no, start-Beam, Dir, Stem, Unit, Eps) :-
+beamChildStateCond(start-Parent, end-no, start-Beam, Dir, Stem, _NoteHeadSettings, Unit, Eps) :-
   beamChildStartStartCond(Dir, Beam, Stem, Parent, Unit, Eps).
 
-beamChildStateCond(mid-Parent, end-no, start-Beam, Dir, Stem, Unit, Eps) :-
+beamChildStateCond(mid-Parent, _, start-Beam, Dir, Stem, NoteHeadSettings, Unit, Eps) :-
+  beamChildFracLeftCond(Dir, Beam, Stem, Parent, NoteHeadSettings, Unit, Eps).
+beamChildStateCond(mid-Parent, _, start-Beam, Dir, Stem, _NoteHeadSettings, Unit, Eps) :-
   beamChildMidStartCond(Dir, Beam, Stem, Parent, Unit, Eps).
-beamChildStateCond(mid-Parent, start-Beam, mid-Beam, Dir, Stem, Unit, Eps) :-
+beamChildStateCond(mid-Parent, start-Beam, mid-Beam, Dir, Stem, _NoteHeadSettings, Unit, Eps) :-
   beamChildMidMidCond(Dir, Beam, Stem, Parent, Unit, Eps).
-beamChildStateCond(mid-Parent, mid-Beam, mid-Beam, Dir, Stem, Unit, Eps) :-
+beamChildStateCond(mid-Parent, mid-Beam, mid-Beam, Dir, Stem, _NoteHeadSettings, Unit, Eps) :-
   beamChildMidMidCond(Dir, Beam, Stem, Parent, Unit, Eps).
-beamChildStateCond(mid-Parent, start-Beam, end-Beam, Dir, Stem, Unit, Eps) :-
+beamChildStateCond(mid-Parent, start-Beam, end-Beam, Dir, Stem, _NoteHeadSettings, Unit, Eps) :-
   beamChildMidEndCond(Dir, Beam, Stem, Parent, Unit, Eps).
-beamChildStateCond(mid-Parent, mid-Beam, end-Beam, Dir, Stem, Unit, Eps) :-
+beamChildStateCond(mid-Parent, mid-Beam, end-Beam, Dir, Stem, _NoteHeadSettings, Unit, Eps) :-
   beamChildMidEndCond(Dir, Beam, Stem, Parent, Unit, Eps).
 
-beamChildStateCond(end-Parent, start-Beam, end-Beam, Dir, Stem, Unit, Eps) :-
+beamChildStateCond(end-Parent, start-Beam, end-Beam, Dir, Stem, _NoteHeadSettings, Unit, Eps) :-
   beamChildEndEndCond(Dir, Beam, Stem, Parent, Unit, Eps).
-beamChildStateCond(end-Parent, mid-Beam, end-Beam, Dir, Stem, Unit, Eps) :-
+beamChildStateCond(end-Parent, mid-Beam, end-Beam, Dir, Stem, _NoteHeadSettings, Unit, Eps) :-
   beamChildEndEndCond(Dir, Beam, Stem, Parent, Unit, Eps).
+beamChildStateCond(end-Parent, _, start-Beam, Dir, Stem, NoteHeadSettings, Unit, Eps) :-
+  beamChildFracLeftCond(Dir, Beam, Stem, Parent, NoteHeadSettings, Unit, Eps).
 
 beamRootStartCond(down, Beam, Stem, VerticalOffset, Unit, Eps) :-
   segLeftBottom(h, Beam, point(BeamLeft, BeamBottom)),
@@ -726,6 +731,23 @@ beamChildEndEndCond(down, Beam, Stem, Parent, Unit, Eps) :-
   eps(Eps, StemRight, BeamRight),
   segRightTop(h, Parent, point(_, ParentTop)),
   eps(Eps, BeamBottom + (Unit / 2), ParentTop).
+beamChildFracLeftCond(down, Beam, Stem, Parent, NoteHeadSettings, Unit, Eps) :-
+  memberchk(noteheadBlack-[Width, _], NoteHeadSettings),
+  segLength(Beam, Length),
+  eps(Eps, Width*Unit, Length),
+  segRightBottom(h, Beam, point(BeamRight, BeamRightBottom)),
+  VCoeff::real(0, 1),
+  segHDirCoeff(right, HCoeff),
+  segHVCoeff(v, HCoeff, VCoeff, Stem, point(StemRight, BeamRightBottom)),
+  eps(Eps, StemRight, BeamRight),
+  segRightTop(h, Parent, point(_, ParentRightTop)),
+  eps(Eps, BeamRightBottom + (Unit / 2), ParentRightTop),
+  segLeftBottom(h, Beam, point(BeamLeft, BeamLeftBottom)),
+  segVDirCoeff(top, ParentVCoeff),
+  segHVCoeff(h, _, ParentVCoeff, Parent, point(BeamLeft, ParentLeftTop)),
+  eps(Eps, BeamLeftBottom + (Unit / 2), ParentLeftTop),
+  segThickness(Beam, BeamThickness),
+  eps(Eps, BeamThickness, Unit).
 
 beam -->
   pop_scope(
@@ -743,10 +765,10 @@ beamSpan(Id) -->
   beamSpan(1, N, State-Beam).
 beamSpan(I, N, ParentState-Parent) -->
   statep(beamChildCond(I, N, ParentState-Parent),
-         [-(beam-I, _, State-Beam), o(direction), o(stem), o(unit), o(eps)]),
+         [-(beam-I, _, State-Beam), o(direction), o(stem), o(noteheadSettings), o(unit), o(eps)]),
   termBeam(State, I, Beam),
   { I1 is I + 1 },
-  beamSpan(I1, N, State-Beam).
+  beamSpan(I1, N, ParentState-Beam).
 beamSpan(N, N, _) -->
   [].
 

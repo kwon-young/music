@@ -1,5 +1,5 @@
 ﻿/*  Saved settings
-    Date: Thu Jan  1 11:08:10 2026
+    Date: Fri Jan  2 06:46:08 2026
 */
 
 
@@ -22,76 +22,76 @@ setting(music_settings:bottomMargin, real(0,5529.68)-50).
 setting(music_settings:rightMargin, real(0,3598.9)-50).
 
 %	Global Eps in pixels
-setting(music_settings:eps, real(0.10000000000002274,0.10087890625002272)-0).
+setting(music_settings:eps, real(0.10000000000002274,0.10060424804689774)-0).
 
 %	The MEI unit (1⁄2 of the distance between the staff lines)
-setting(music_settings:unit, 17.994266418794695-9).
+setting(music_settings:unit, 17.994282034299488-9).
 
 %	line thickness in unit
-setting(music_settings:thickness, real(0.13888429989786574,0.1500966387509414)-0.15).
+setting(music_settings:thickness, real(0.1388994430113367,0.1500812448587384)-0.15).
 
 %	barline thickness in unit
-setting(music_settings:barLineThickness, real(0.2944894207087619,0.3057017595618376)-0.3).
+setting(music_settings:barLineThickness, real(0.29450442878753097,0.3056862306349327)-0.3).
 
 %	The minimal measure width in MEI units
-setting(music_settings:measureMinWidth, real(0,27.847808143090457)-15).
+setting(music_settings:measureMinWidth, real(0,27.847768713021324)-15).
 
 %	The left margin for clefs in MEI units
-setting(music_settings:clefLeftMargin, real(0.994712464357794,1.0059248032108707)-1).
+setting(music_settings:clefLeftMargin, real(0.9947268647804047,1.0059086666278074)-1).
 
 %	The G clef width in MEI units
-setting(music_settings:gClefWidth, real(5.172043079041166,5.183255417894244)-5.16).
+setting(music_settings:gClefWidth, real(5.172053854360752,5.183235656208155)-5.16).
 
 %	The G clef height in MEI units
-setting(music_settings:gClefHeight, real(13.902824114710818,13.914036453563897)-13.9).
+setting(music_settings:gClefHeight, real(13.902827313426187,13.914009115273593)-13.9).
 
 %	The G clef origin horizontal offset from the top in MEI units
-setting(music_settings:gClefXOffset, real(0.002396379643736683,0.013608718496813242)-0).
+setting(music_settings:gClefXOffset, real(0.0024116412019318766,0.013593443049334427)-0).
 
 %	The G clef origin vertical offset from the top in MEI units
-setting(music_settings:gClefYOffset, real(8.661154473680915,8.672366812533996)-8.7).
+setting(music_settings:gClefYOffset, real(8.661162221136673,8.672344022984078)-8.7).
 
 %	The time signature 3 width in MEI units
-setting(music_settings:timeSig3Width, real(2.971342084715634,2.9825544235687103)-5.5).
+setting(music_settings:timeSig3Width, real(2.9713547698117178,2.9825365716591197)-5.5).
 
 %	The time signature 3 height in MEI units
-setting(music_settings:timeSig3Height, real(4.0116734638513405,4.022885802704418)-6.6).
+setting(music_settings:timeSig3Height, real(4.011685246143989,4.022867047991392)-6.6).
 
 %	The time signature 3 origin horizontal offset from the top in MEI units
-setting(music_settings:timeSig3XOffset, real(-0.165657150832032,-0.15444481197895385)-0).
+setting(music_settings:timeSig3XOffset, real(-0.1656417434363588,-0.15445994158895462)-0).
 
 %	The time signature 3 origin vertical offset from the top in MEI units
-setting(music_settings:timeSig3YOffset, real(1.9950310981421255,2.006243436995204)-2).
+setting(music_settings:timeSig3YOffset, real(1.99504463048451,2.0062264323319146)-2).
 
 %	The time signature 8 width in MEI units
-setting(music_settings:timeSig8Width, real(2.987347182856184,2.9985595217092604)-5.5).
+setting(music_settings:timeSig8Width, real(2.987359854062984,2.9985416559103863)-5.5).
 
 %	The time signature 8 height in MEI units
-setting(music_settings:timeSig8Height, real(3.9896664539080877,4.000878792761165)-6.6).
+setting(music_settings:timeSig8Height, real(3.989678255298501,4.000860057145904)-6.6).
 
 %	The time signature 8 origin horizontal offset from the top in MEI units
-setting(music_settings:timeSig8XOffset, real(-0.08563166012928712,-0.07441932127620897)-0).
+setting(music_settings:timeSig8XOffset, real(-0.08561632218003201,-0.07443452033262786)-0).
 
 %	The time signature 8 origin vertical offset from the top in MEI units
-setting(music_settings:timeSig8YOffset, real(1.9890291863394225,2.000241525192501)-2).
+setting(music_settings:timeSig8YOffset, real(1.9890427238902881,2.0002245257376927)-2).
 
 %	The left margin for note in MEI units
-setting(music_settings:noteLeftMargin, real(0,0.9994294616654182)-1).
+setting(music_settings:noteLeftMargin, real(0,0.9994285943568189)-1).
 
 %	The right margin for note in MEI units
-setting(music_settings:noteRightMargin, real(0,0.9994294616654182)-1).
+setting(music_settings:noteRightMargin, real(0,0.9994285943568189)-1).
 
 %	The black notehead width in MEI units
-setting(music_settings:noteheadBlackWidth, real(2.5071942386397086,2.518406577492778)-2.5).
+setting(music_settings:noteheadBlackWidth, real(2.507207326525017,2.5183891283724127)-2.5).
 
 %	The black notehead height in MEI units
-setting(music_settings:noteheadBlackHeight, real(2.123071883266521,2.1342842221195975)-2.12).
+setting(music_settings:noteheadBlackHeight, real(2.1230853044946367,2.134267106342039)-2.12).
 
 %	The stem width in MEI units
-setting(music_settings:stemWidth, real(0.19445755733032863,0.20566989618340434)-0.2).
+setting(music_settings:stemWidth, real(0.19447265221712037,0.20565445406452207)-0.2).
 
 %	The black notehead stem offset in MEI units
-setting(music_settings:noteheadBlackStemOffset, real(0.3056040721952497,0.31681641104833425)-0.3).
+setting(music_settings:noteheadBlackStemOffset, real(0.305619070628683,0.3168008724760935)-0.3).
 
 %	The vertical offset between stem and beam outer border in MEI units
-setting(music_settings:beamVerticalOffset, real(0.18604830319051058,0.2139198334310532)-0).
+setting(music_settings:beamVerticalOffset, real(0.18608630083155783,0.21388192259802935)-0).

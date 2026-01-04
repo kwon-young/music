@@ -43,7 +43,9 @@ mei(Term, [Dur1, Dur2, Dur3]) :-
   note(note3, Note3, Dur3, Len),
   maplist(atom_number, [Dur1, Dur2, Dur3], Durs),
   max_list(Durs, MaxDur),
-  ( MaxDur = 32
+  ( Durs = [16, 32, 16]
+  -> Len = '6.8vu'
+  ; MaxDur = 32
   ->  Len = '8.8vu'
   ; Len = '6.8vu'
   ).
