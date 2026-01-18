@@ -9,7 +9,7 @@
 :- setting(leftMargin, pair, real(0, inf)-50, 'page left margin').
 :- setting(bottomMargin, pair, real(0, inf)-50, 'page bottom margin').
 :- setting(rightMargin, pair, real(0, inf)-50, 'page right margin').
-:- setting(eps, pair, real(0, 1)-0, 'Global Eps in pixels').
+:- setting(eps, pair, real(0, 10)-0, 'Global Eps in pixels').
 :- setting(unit, pair, real(0, 1000)-9, 'The MEI unit (1⁄2 of the distance between the staff lines)').
 :- setting(thickness, pair, real(0, 1)-0.15, 'line thickness in unit').
 :- setting(barLineThickness, pair, real(0, 1)-0.30, 'barline thickness in unit').
