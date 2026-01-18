@@ -47,6 +47,8 @@
 :- setting(timeSig8Height, pair, real(1, 9)-6.6, 'The time signature 8 height in MEI units').
 :- setting(timeSig8XOffset, pair, real(-1, 1)-0, 'The time signature 8 origin horizontal offset from the top in MEI units').
 :- setting(timeSig8YOffset, pair, real(0, 4)-2, 'The time signature 8 origin vertical offset from the top in MEI units').
+:- setting(dynamicPPWidth, pair, real(1, 9)-5.5, 'The dynamic pp width in MEI units').
+:- setting(dynamicPPHeight, pair, real(1, 9)-6.6, 'The dynamic pp height in MEI units').
 :- setting(noteLeftMargin, pair, real(0, 2)-1, 'The left margin for note in MEI units').
 :- setting(noteRightMargin, pair, real(0, 2)-1, 'The right margin for note in MEI units').
 :- setting(noteheadWholeWidth, pair, real(1, 9)-2.5, 'The whole notehead width in MEI units').
@@ -89,14 +91,16 @@ get_setting(value, Name-Value) :-
 group_settings(Settings, [clefSettings-ClefSettings, timeSigSettings-TimeSigSettings,
                           noteheadSettings-NoteHeadSettings, restSettings-RestSettings,
                           accidentalSettings-AccidentalSettings,
-                          stemSettings-StemSettings, flagSettings-FlagSettings | Settings]) :-
+                          stemSettings-StemSettings, flagSettings-FlagSettings,
+                          dynamSettings-DynamSettings | Settings]) :-
   group_settings_by_prefix(Settings, ccx, [gClef, fClef], ClefSettings),
   group_settings_by_prefix(Settings, ccx, [timeSig3, timeSig4, timeSig8], TimeSigSettings),
   group_settings_by_prefix(Settings, ccx, [noteheadWhole, noteheadBlack], NoteHeadSettings),
   group_settings_by_prefix(Settings, ccx, [rest8th], RestSettings),
   group_settings_by_prefix(Settings, ccx, [accidentalSharp], AccidentalSettings),
   group_settings_by_prefix(Settings, stem, [noteheadBlack], StemSettings),
-  group_settings_by_prefix(Settings, ccx, [flag8thDown], FlagSettings).
+  group_settings_by_prefix(Settings, ccx, [flag8thDown], FlagSettings),
+  group_settings_by_prefix(Settings, ccx, [dynamicPP], DynamSettings).
 
 group_settings_by_prefix(Settings, Type, Keys, GroupedSettings) :-
   maplist(group_setting(Type, Settings), Keys, GroupedSettings).
