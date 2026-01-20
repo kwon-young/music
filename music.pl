@@ -249,6 +249,87 @@ measureChilds_(Child, BeamSpan, Childs, Staffs, Dynams, [BeamSpan | BeamSpans]) 
   beamSpan_(Child, BeamSpan),
   measureChilds(Childs, Staffs, Dynams, BeamSpans).
 
+:- begin_tests(measureChilds).
+
+test(empty) :-
+  measureChilds([], [], [], []).
+
+test(forward_simple, [nondet]) :-
+  S = element(staff, [], []),
+  D_in = element(dynam, [staff='1'], []),
+  B_in = element(beamSpan, [plist=p, startid=p, endid=p], []),
+  Childs = [S, D_in, B_in],
+  measureChilds(Childs, Staffs, Dynams, BeamSpans),
+  D_out = element(dynam, [staff=[1]], []),
+  B_out = element(beamSpan, [plist=[p], startid=p, endid=p], []),
+  Staffs = [S],
+  Dynams = [D_out],
+  BeamSpans = [B_out].
+
+test(backward_simple, [nondet]) :-
+  S = element(staff, [], []),
+  D_in = element(dynam, [staff=[1]], []),
+  B_in = element(beamSpan, [plist=[p], startid=p, endid=p], []),
+  Staffs = [S],
+  Dynams = [D_in],
+  BeamSpans = [B_in],
+  measureChilds(Childs, Staffs, Dynams, BeamSpans),
+  D_out = element(dynam, [staff='1'], []),
+  B_out = element(beamSpan, [plist='p', startid=p, endid=p], []),
+  Childs = [S, B_out, D_out].
+
+test(forward_complex, [nondet]) :-
+  S1 = element(staff, [id=s1], []),
+  S2 = element(staff, [id=s2], []),
+  D1_in = element(dynam, [staff='1'], []),
+  D2_in = element(dynam, [staff='2 3'], []),
+  B1_in = element(beamSpan, [plist='p q', startid=p, endid=q], []),
+  Childs = [S1, D1_in, S2, B1_in, D2_in],
+  measureChilds(Childs, Staffs, Dynams, BeamSpans),
+  Staffs = [S1, S2],
+  D1_out = element(dynam, [staff=[1]], []),
+  D2_out = element(dynam, [staff=[2, 3]], []),
+  Dynams = [D1_out, D2_out],
+  B1_out = element(beamSpan, [plist=[p, q], startid=p, endid=q], []),
+  BeamSpans = [B1_out].
+
+test(backward_complex, [nondet]) :-
+  S1 = element(staff, [id=s1], []),
+  S2 = element(staff, [id=s2], []),
+  Staffs = [S1, S2],
+  D1_in = element(dynam, [staff=[1]], []),
+  D2_in = element(dynam, [staff=[2, 3]], []),
+  Dynams = [D1_in, D2_in],
+  B1_in = element(beamSpan, [plist=[p, q], startid=p, endid=q], []),
+  BeamSpans = [B1_in],
+  measureChilds(Childs, Staffs, Dynams, BeamSpans),
+  D1_out = element(dynam, [staff='1'], []),
+  D2_out = element(dynam, [staff='2 3'], []),
+  B1_out = element(beamSpan, [plist='p q', startid=p, endid=q], []),
+  Childs = [S1, S2, B1_out, D1_out, D2_out].
+
+test(forward_no_dynams, [nondet]) :-
+  S = element(staff, [], []),
+  B_in = element(beamSpan, [plist=p, startid=p, endid=p], []),
+  Childs = [S, B_in],
+  measureChilds(Childs, Staffs, Dynams, BeamSpans),
+  Staffs = [S],
+  Dynams = [],
+  B_out = element(beamSpan, [plist=[p], startid=p, endid=p], []),
+  BeamSpans = [B_out].
+
+test(backward_no_dynams, [nondet]) :-
+  S = element(staff, [], []),
+  B_in = element(beamSpan, [plist=[p], startid=p, endid=p], []),
+  Staffs = [S],
+  Dynams = [],
+  BeamSpans = [B_in],
+  measureChilds(Childs, Staffs, Dynams, BeamSpans),
+  B_out = element(beamSpan, [plist='p', startid=p, endid=p], []),
+  Childs = [S, B_out].
+
+:- end_tests(measureChilds).
+
 beamSpan_(
     element(beamSpan, ['xml:id'=Id, plist=PListIn, startid=Start, endid=End], []),
     element(beamSpan, ['xml:id'=Id, plist=PListOut, startid=Start, endid=End], [])
