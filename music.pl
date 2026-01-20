@@ -255,13 +255,13 @@ test(empty) :-
   measureChilds([], [], [], []).
 
 test(forward_simple, [nondet]) :-
-  S = element(staff, [], []),
-  D_in = element(dynam, [staff='1'], []),
-  B_in = element(beamSpan, [plist=p, startid=p, endid=p], []),
+  S = element(staff, _, _),
+  D_in = element(dynam, _, _),
+  B_in = element(beamSpan, _, _),
   Childs = [S, D_in, B_in],
   measureChilds(Childs, Staffs, Dynams, BeamSpans),
-  D_out = element(dynam, [staff=[1]], []),
-  B_out = element(beamSpan, [plist=[p], startid=p, endid=p], []),
+  D_out = element(dynam, _, _),
+  B_out = element(beamSpan, _, _),
   Staffs = [S],
   Dynams = [D_out],
   BeamSpans = [B_out].
