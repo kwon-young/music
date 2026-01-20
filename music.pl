@@ -52,10 +52,11 @@ mainReco(StructFile, TestSettingsFile, XmlFile, RecoSettingsFile) :-
   load_settings(TestSettingsFile),
   get_settings(domain, Settings, AllSettings),
   makeState(StateIn, AllSettings),
-  once(phrase(mei(Xml), [StateIn, Struct], [StateOut, Rest])),
+  Rest = [],
+  phrase(mei(Xml), [StateIn, Struct], [StateOut, Rest]),
   ground_all_ids(StateOut),
   print_term(Rest, []), nl,
-  Rest == [],
+  % Rest == [],
   update_settings(Settings),
   % memberchk(eps-Eps, Settings),
   % upper_bound(Eps),
@@ -84,18 +85,50 @@ mainTest(Stem) :-
   atomic_list_concat(['settings/', Stem, '-test.txt'], TestSettingsFile),
   mainTest(XmlFile, StructFile, TestSettingsFile).
 mainTest(XmlFile, StructFile, SettingsFile) :-
-  load_xml(XmlFile, Xml, [space(remove), number(integer)]),
+  load_mei(XmlFile, Xml),
   open(StructFile, read, S),
   read(S, Struct),
   close(S),
   forall(setting(Mod:Name, _), restore_setting(Mod:Name)),
   get_settings(domain, Settings, AllSettings),
   makeState(State, AllSettings),
-  once(phrase(mei(Xml), [State, Struct], [_, Rest])),
+  once(phrase(mei(Xml), [State, Struct], [StateOut, Rest])),
+  ground_all_ids(StateOut),
+  % memberchk(unit-Unit, Settings),
+  % Unit = 18,
+  % memberchk(eps-Eps, Settings),
+  % global_minimize(Eps, Eps),
+  % upper_bound(Eps),
+  % term_attvars(Xml, AttVars),
+  % include(interval, AttVars, Intervals),
+  % map_list_to_pairs(delta, Intervals, DeltaIntervals),
+  % keysort(DeltaIntervals, SortedDeltaIntervals),
+  % pairs_values(SortedDeltaIntervals, SortedIntervals),
+  % % partition(small, Intervals, SmallIntervals, LargeIntervals),
+  % splitsolve(SortedIntervals),
+  % maplist(midpoint, SortedIntervals, SortedIntervals),
+  % print_term(Eps-Unit, []), nl,
+  % midpoint(Unit, Unit),
+  % print_term(Xml, []), nl,
   print_term(Rest, []), nl,
   % Rest == [],
+  % open(XmlFile, write, XmlS),
+  % ( ground(Xml)
+  % -> xml_write(XmlS, Xml, [])
+  % ; print_term(Xml, [output(XmlS)])
+  % ),
+  % close(XmlS),
   update_settings(Settings),
   save_settings(SettingsFile).
+
+load_mei(Filename, Mei) :-
+  ( file_name_extension(_, mei, Filename)
+  -> load_xml(Filename, Mei, [space(remove), number(integer)])
+  ; file_name_extension(_, pl, Filename),
+    open(Filename, read, S),
+    read(S, Mei),
+    close(S)
+  ).
 
 mei([pi('xml-model href="https://music-encoding.org/schema/5.0/mei-all.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"'),
      pi('xml-model href="https://music-encoding.org/schema/5.0/mei-all.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"'),
@@ -109,7 +142,8 @@ mei([pi('xml-model href="https://music-encoding.org/schema/5.0/mei-all.rng" type
     +(beam-1, end-no),
     +(beam-2, end-no),
     +(beam-3, end-no),
-    +(beam-4, end-no)
+    +(beam-4, end-no),
+    +(timestamp, 0)
   ]),
   {
     MeiHead = element(meiHead, [], [element(fileDesc, [], [element(titleStmt, [], [element(title, [], [])])])])
@@ -185,21 +219,36 @@ lineCond(PrevSystemStaffLines, SystemStaffLines, MinSpacing, Unit) :-
   SystemStaffLines = [StaffLines | _],
   systemCond(PrevStaffLines, StaffLines, MinSpacing, Unit).
 
-measureChilds(Childs, Staffs, BeamSpans) :-
-  when((nonvar(Childs) ; nonvar(Staffs)), measureChilds_(Staffs, Childs, BeamSpans)).
-measureChilds_([], BeamSpansIn, BeamSpansOut) :-
-  beamSpans(BeamSpansIn, BeamSpansOut).
-measureChilds_([Staff | Staffs], [Staff | Childs], BeamSpans) :-
-  Staff = element(staff, _, _),
-  measureChilds(Childs, Staffs, BeamSpans).
+pop_nonvar([], _).
+pop_nonvar([H | T], El) :-
+  ( nonvar(H), H = [El | _]
+  -> true
+  ; pop_nonvar(T, El)
+  ).
+measureChilds(Childs, Staffs, Dynams, BeamSpans) :-
+  when((nonvar(Childs) ; nonvar(Staffs) ; nonvar(BeamSpans) ; nonvar(Dynams)),
+       measureChilds_(Childs, Staffs, Dynams, BeamSpans)).
+measureChilds_([Child | Childs], Staffs, Dynams, BeamSpans) :-
+  % TODO: this predicate can be entered with Staffs, Dynams or BeamSpans
+  % bound to [] (end of list) and this will break the predicate
+  pop_nonvar([Staffs, BeamSpans, Dynams], OtherChild),
+  when((nonvar(Child) ; nonvar(OtherChild)),
+       measureChilds_(Child, OtherChild, Childs, Staffs, Dynams, BeamSpans)).
+measureChilds_([], [], [], []).
+measureChilds_(Child, Child, Childs, [Child | Staffs], Dynams, BeamSpans) :-
+  Child = element(staff, _, _),
+  measureChilds(Childs, Staffs, Dynams, BeamSpans).
+measureChilds_(Child, Dynam, Childs, Staffs, [Dynam | Dynams], BeamSpans) :-
+  Child = element(dynam, _, _),
+  Dynam = element(dynam, _, _),
+  dynam_(Child, Dynam),
+  measureChilds(Childs, Staffs, Dynams, BeamSpans).
+measureChilds_(Child, BeamSpan, Childs, Staffs, Dynams, [BeamSpan | BeamSpans]) :-
+  Child = element(beamSpan, _, _),
+  BeamSpan = element(beamSpan, _, _),
+  beamSpan_(Child, BeamSpan),
+  measureChilds(Childs, Staffs, Dynams, BeamSpans).
 
-beamSpans(BeamSpansIn, BeamSpansOut) :-
-  when((nonvar(BeamSpansIn) ; nonvar(BeamSpansOut)),
-       beamSpans_(BeamSpansIn, BeamSpansOut)).
-beamSpans_([In | BeamSpansIn], [Out | BeamSpansOut]) :-
-  beamSpan_(In, Out),
-  beamSpans(BeamSpansIn, BeamSpansOut).
-beamSpans_([], []).
 beamSpan_(
     element(beamSpan, ['xml:id'=Id, plist=PListIn, startid=Start, endid=End], []),
     element(beamSpan, ['xml:id'=Id, plist=PListOut, startid=Start, endid=End], [])
@@ -208,6 +257,16 @@ beamSpan_(
   when((ground(PListIn) ; ground(PListOut)),
        atomic_list_concat(PListOut, ' ', PListIn)),
   when(ground(End), once(last(PListOut, End))).
+dynam_(
+    element(dynam, ['xml:id'=Id, place=Place, staff=StaffIn, startid=StartId], [Etiq]),
+    element(dynam, ['xml:id'=Id, place=Place, staff=StaffOut, startid=StartId], [Etiq])
+  ) :-
+  when((ground(StaffIn) ; ground(Atoms)), atomic_list_concat(Atoms, ' ', StaffIn)),
+  when((ground(StaffOut) ; ground(Atoms)),
+       (  same_length(StaffOut, Atoms),
+          maplist(atom_number, Atoms, StaffOut)
+       )
+  ).
 
 measure(Id) -->
   state([element(measure, ['xml:id'=Id, n=NAtom], Childs)]:measures),
@@ -219,19 +278,64 @@ measure(Id) -->
   ; statep(lineCond, [-(systemStaffLines, _, SystemStaffLines), o(spacingSystem),
                       o(unit)])
   ),
-  statep(measureChilds(Childs, Staffs), [+(beamSpans)]),
+  statep(measureChilds(Childs, Staffs), [+(dynams, Dynams), +(beamSpans)]),
+  state(+(timestampAnchors, TimestampAnchors)),
   longuest_notempty_sequences(staffN, state:scope(music:staff),
                               [Staffs, StaffDefs, SystemStaffLines]),
+  state(o(timestampAnchors, [])),
+  state(+(timestampAnchors, TimestampAnchors)),
+  longuest_sequence(state:scope(music:dynam), Dynams),
   state(o(measureLineN, MeasureLineN)),
   pop_scope(measureLineN(MeasureLineN)),
   state(o(scoreDef, ScoreDef)),
   scope(barLine(ScoreDef)).
+
+delay:mode(music:dynamCond(ground, _)).
+delay:mode(music:dynamCond(_, ground)).
+dynamCond(dynamicPP, pp).
+
+dynamCond(Dynam, Place, StaffNs, HPlace, Atom, Staffs, DynamSettings, TimestampAnchors,
+          Unit, Eps) :-
+  etiqsCond(Dynam, Etiq),
+  freeze(Etiq, memberchk(Etiq-[Width, Height], DynamSettings)),
+  delay(dynamCond(Etiq, Atom)),
+  ccxWidthHeightCond(Dynam, Width, Height, Unit, Eps),
+  dynamPlaceCond(Place, Etiq, Dynam, StaffNs, Staffs, Unit, Eps),
+  dynamHPlace(HPlace, Dynam, TimestampAnchors, Eps).
+dynamPlaceCond(between, dynamicPP, Dynam, [TopN, BottomN], Staffs, Unit, Eps) :-
+  length(Staffs, MaxN),
+  [TopN, BottomN]::integer(1, MaxN),
+  { BottomN == TopN + 1 },
+  % nth1 is non-det
+  nth1(TopN, Staffs, TopStaff),
+  nth1(BottomN, Staffs, [BottomStaffLine | _]),
+  last(TopStaff, TopStaffLine),
+  ccxOrigin(Dynam, point(OriginX, OriginY)),
+  segYAtX(TopStaffLine, TopY, OriginX),
+  segYAtX(BottomStaffLine, BottomY, OriginX),
+  % dynamic 
+  eps(Eps, (BottomY + TopY)/2, OriginY - Unit).
+dynamHPlace(startid=Id, Dynam, TimestampAnchors, Eps) :-
+  member(_Timestamp-Id-Notehead, TimestampAnchors),
+  ccxLeft(Dynam, DynamLeft),
+  ccxRight(Dynam, DynamRight),
+  ccxLeft(Notehead, NoteheadLeft),
+  ccxRight(Notehead, NoteheadRight),
+  eps(Eps, (DynamLeft + DynamRight) / 2, (NoteheadLeft + NoteheadRight) / 2),
+  true.
+
+dynam(element(dynam, ['xml:id'=Id, place=Place, staff=StaffNs, HPlace], [Atom]), Id) -->
+  add_id(Id),
+  statep(dynamCond(Dynam, Place, StaffNs, HPlace, Atom),
+         [o(systemStaffLines), o(dynamSettings), o(timestampAnchors), o(unit), o(eps)]),
+  termp(Dynam).
 
 staff(element(staff, ['xml:id'=Id, n=NAtom], [Layer]),
       element(staffDef, ['xml:id'=DefId, n=NAtom, lines='5'], StaffDefChilds),
       StaffLines, Id) -->
   add_id(Id),
   add_id(DefId),
+  state(+(timestamp, 1)),
   statep(atom_number(NAtom), [o(staffN)]),
   stafflines(5, StaffLines),
   state(o(measureLineN, MeasureLineN)),
@@ -342,40 +446,42 @@ meterSig(element(meterSig, ['xml:id'=IdDef, count=Count, unit=Unit], []), _Id) -
          [-(anchor), o(timeSigLeftMargin), o(timeSigRightMargin), o(unit)]),
   contour(meterSig_(Count, Unit), Box).
 
-delay:mode(music:meterSigCond(ground, _, _)).
-delay:mode(music:meterSigCond(_, ground, _)).
-meterSigCond(Etiq, DigitAtom, N) :-
+delay:mode(music:meterSigCond(ground, _, _, _)).
+delay:mode(music:meterSigCond(_, ground, _, _)).
+meterSigCond(Etiq, DigitAtom, N, MeterSig) :-
   atom_concat(timeSig, DigitAtom, Etiq),
-  meterSigDown(N, DigitAtom).
+  meterSigDown(N, DigitAtom, MeterSig).
 
-meterSigDown(2, _).
-meterSigDown(4, DigitAtom) :-
-  atom_number(DigitAtom, Digit),
+meterSigDown(2, DigitAtom, Count-_) :-
+  atom_number(DigitAtom, Count).
+meterSigDown(4, DigitAtom, _-Unit) :-
+  atom_number(DigitAtom, Unit),
   Power::integer(1, 4),
-  { Digit == 2 ** Power }.
+  { Unit == 2 ** Power }.
 
-meterSigCond(N, Count, MeterSig, Center, StaffLines, AllSettings, Unit, Eps) :-
-  etiqsCond(MeterSig, Etiq),
+meterSigCond(N, Count, Ccx, Center, StaffLines, AllSettings, MeterSig, Unit, Eps) :-
+  etiqsCond(Ccx, Etiq),
   freeze(Etiq, member(Etiq-[Width, Height, XOffset, YOffset], AllSettings)),
-  delay(meterSigCond(Etiq, Count, N)),
-  ccxOrigin(MeterSig, point(X, Y)),
+  delay(meterSigCond(Etiq, Count, N, MeterSig)),
+  ccxOrigin(Ccx, point(X, Y)),
   nth1(N, StaffLines, Line),
   segYAtX(Line, SegY, X),
   eps(Eps, SegY, Y),
-  ccxWidthHeightCond(MeterSig, Width, Height, Unit, Eps),
-  ccxLeft(MeterSig, Left),
+  ccxWidthHeightCond(Ccx, Width, Height, Unit, Eps),
+  ccxLeft(Ccx, Left),
   eps(Eps, Left + XOffset*Unit, X),
-  ccxTop(MeterSig, Top),
+  ccxTop(Ccx, Top),
   eps(Eps, Top + YOffset*Unit, Y),
-  ccxRight(MeterSig, MeterSigRight),
-  eps(4*Eps, (Left + MeterSigRight) / 2, Center).
+  ccxRight(Ccx, CcxRight),
+  eps(4*Eps, (Left + CcxRight) / 2, Center).
 
 meterSig_(Count, Unit) -->
+  state([o(staffN), +(staffN-meterSig)]),
   statep(meterSigCond(2, Count, MeterSigUp, Center),
-         [o(stafflines), o(timeSigSettings), o(unit), o(eps)]),
+         [o(stafflines), o(timeSigSettings), o(staffN-meterSig), o(unit), o(eps)]),
   termp(MeterSigUp),
   statep(meterSigCond(4, Unit, MeterSigDown, Center),
-         [o(stafflines), o(timeSigSettings), o(unit), o(eps)]),
+         [o(stafflines), o(timeSigSettings), o(staffN-meterSig), o(unit), o(eps)]),
   termp(MeterSigDown).
 
 layer(element(layer, ['xml:id'=Id, n='1'], Childs), Id) -->
@@ -393,10 +499,11 @@ restCond(rest8th, '8').
 
 restCond(Rest, Dur, StaffLines,
          LeftAnchor, RightAnchor, RestSettings, LeftMargin, RightMargin,
-         Unit, Eps) :-
+         MeterSig, TstampIn, TstampOut, TstampIn-Rest, Unit, Eps) :-
   etiqsCond(Rest, Etiq),
   freeze(Etiq, memberchk(Etiq-[Width, Height, XOffset, YOffset], RestSettings)),
   delay(restCond(Etiq, Dur)),
+  timestampCond(Dur, TstampIn, TstampOut, MeterSig),
   ccxWidthHeightCond(Rest, Width, Height, Unit, Eps),
   ccxOrigin(Rest, point(X, Y)),
   ccxRight(Rest, Right),
@@ -412,12 +519,17 @@ restCond(Rest, Dur, StaffLines,
   segYAtX(Line, LineY, X),
   eps(Eps, LineY, Y).
 
+timestampCond(Dur, TstampIn, TstampOut, _Count-Unit) :-
+  { TstampOut == TstampIn + (1 / (Dur / Unit)) }.
+
 rest(element(rest, ['xml:id'=Id, dur=Dur], []), Id) -->
   add_id(Id),
+  state(o(staffN)),
   statep(restCond(Rest, Dur),
          [o(stafflines), -(anchor), o(restSettings), o(restLeftMargin),
-          o(restRightMargin), o(unit), o(eps)]),
-  term(Rest).
+          o(restRightMargin), o(staffN-meterSig), -(timestamp),
+          [_]:timestampAnchors, o(unit), o(eps)]),
+  termp(Rest).
 
 marginCond(box(point(Left, _), point(Right, _)),
                LeftAnchor, RightAnchor,
@@ -463,11 +575,13 @@ noteHeadCond(noteheadWhite, 2).
 noteHeadCond(noteheadBlack, _).
 
 noteHeadCond(DurAtom, Oct, PName, NoteHead, Dur, Pitch, BasePitch-BaseN, StaffLines,
-             NoteHeadSettings, Unit, Eps) :-
+             NoteHeadSettings, MeterSig, TstampIn, TstampOut, TstampIn-NoteId-NoteHead,
+             NoteId, Unit, Eps) :-
   etiqsCond(NoteHead, Etiq),
   freeze(Etiq, memberchk(Etiq-[Width, Height], NoteHeadSettings)),
   delay(atom_number(DurAtom, Dur)),
   delay(noteHeadCond(Etiq, Dur)),
+  timestampCond(Dur, TstampIn, TstampOut, MeterSig),
   ccxWidthHeightCond(NoteHead, Width, Height, Unit, Eps),
   ccxOrigin(NoteHead, Origin),
   ccxLeftTopRightBottom(NoteHead, point(Left, Top), point(_, Bottom)),
@@ -485,7 +599,8 @@ notehead(Dur, Oct, PName, Id) -->
   add_id(Id),
   statep(noteHeadCond(Dur, Oct, PName),
          [+(notehead, NoteHead), +(duration), +(pitch), o(pitchAnchor), o(stafflines),
-          o(noteheadSettings), o(unit), o(eps)]),
+          o(noteheadSettings), o(staffN-meterSig), -(timestamp), [_]:timestampAnchors,
+          o(noteId), o(unit), o(eps)]),
   termp(NoteHead),
   pop_scope(pop_scope(pop_scope(scope(ledgerLines)))).
 
@@ -520,6 +635,8 @@ ledgerlinesCond(0, N, last, _StaffLines, Pitch, BasePitch-BaseN) :-
     N == max(0, N1 - (BaseN - 1))
   }.
 
+%TODO: can't detect the same ledgerlines multiple times as they are appended
+%      as a list instead of as set
 ledgerLines(Id) -->
   add_id(Id),
   statep(ledgerlinesCond(LedgerLines),
@@ -841,7 +958,7 @@ systemLine -->
   termp(SystemLine).
 
 gather_grpSym(element(scoreDef, _, Childs), StaffDefs, SystemStaffLines) -->
-  gather_grpSym_(Childs, StaffDefs, SystemStaffLines).
+  gather_grpSym_(Childs, StaffDefs, SystemStaffLines, scoreDef-Childs).
 
 gather_split([El1 | L1], [El2 | L2],
              [El1 | Grouped1], [El2 | Grouped2],
@@ -849,32 +966,38 @@ gather_split([El1 | L1], [El2 | L2],
   gather_split(L1, L2, Grouped1, Grouped2, Rest1, Rest2).
 gather_split(Rest1, Rest2, [], [], Rest1, Rest2).
 
-gather_grpSym_([], [], []) --> [].
+gather_grpSym_([], [], [], _) --> [].
 gather_grpSym_([element(staffGrp, ['xml:id'=Id | _], [GrpSym | Childs]) | Rest],
                StaffDefs,
-               SystemStaffLines) -->
+               SystemStaffLines, Parent-ParentChilds) -->
   add_id(Id),
   state(o(systemLine, true)),
   scope(grpSym(GrpSym,
                StaffDefs, SystemStaffLines,
                GroupStaffDefs, GroupStaffLines,
                RestStaffDefs, RestStaffLines)),
-  gather_grpSym_(Childs, GroupStaffDefs, GroupStaffLines),
-  gather_grpSym_(Rest, RestStaffDefs, RestStaffLines).
+  gather_grpSym_(Childs, GroupStaffDefs, GroupStaffLines, staffGrp-[GrpSym | Childs]),
+  gather_grpSym_(Rest, RestStaffDefs, RestStaffLines, Parent-ParentChilds).
 gather_grpSym_([StaffDef | Childs],
                [StaffDef | StaffDefs],
-               [_ | SystemStaffLines]) -->
+               [_ | SystemStaffLines], Parent-ParentChilds) -->
   { StaffDef = element(staffDef, _, _) },
-  gather_grpSym_(Childs, StaffDefs, SystemStaffLines).
-gather_grpSym_([element(staffGrp, ['xml:id'=Id | _], Childs) | Rest],
+  gather_grpSym_(Childs, StaffDefs, SystemStaffLines, Parent-ParentChilds).
+gather_grpSym_([StaffGrp | Rest],
               StaffDefs,
-              SystemStaffLines) -->
+              SystemStaffLines, Parent-ParentChilds) -->
+  { StaffGrp = element(staffGrp, ['xml:id'=Id | _], Childs) },
   add_id(Id),
   { gather_split(StaffDefs, SystemStaffLines,
                  GroupStaffDefs, GroupStaffLines,
                  RestChilds, RestStaffLines) },
-  gather_grpSym_(Childs, GroupStaffDefs, GroupStaffLines),
-  gather_grpSym_(Rest, RestChilds, RestStaffLines).
+  { SystemStaffLines \== [] },
+  gather_grpSym_(Childs, GroupStaffDefs, GroupStaffLines, staffGrp-Childs),
+  gather_grpSym_(Rest, RestChilds, RestStaffLines, Parent-ParentChilds),
+  ( {Parent == staffGrp, ParentChilds == [StaffGrp]}
+  -> !, {fail}
+  ; []
+  ).
 
 braceCond(Brace,
           [StaffDef | StaffDefs],
