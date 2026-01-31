@@ -2,6 +2,7 @@
 
 :- use_module(library(delay)).
 :- use_module(library(apply)).
+:- use_module(library(lists)).
 
 :- multifile delay:mode/1.
 
@@ -11,28 +12,46 @@ vu(Atom, Number) :-
   delay(atom_number(AtomNumber, Number)),
   delay(atom_concat(AtomNumber, 'vu', Atom)).
 
-transform(meiversion=Atom, meiversion=N) :-
+mei_transform(meiversion=Atom, meiversion=N) :-
   delay(atom_number(Atom, N)).
-transform(n=Atom, n=N) :-
+mei_transform(lines=Atom, lines=N) :-
   delay(atom_number(Atom, N)).
-transform(lines=Atom, lines=N) :-
+mei_transform(line=Atom, line=N) :-
   delay(atom_number(Atom, N)).
-transform(line=Atom, line=N) :-
+mei_transform(count=Atom, count=N) :-
   delay(atom_number(Atom, N)).
-transform(count=Atom, count=N) :-
+mei_transform(ho=Atom, ho=N) :-
   delay(atom_number(Atom, N)).
-transform(unit=Atom, unit=N) :-
-  delay(atom_number(Atom, N)).
-transform(ho=Atom, ho=N) :-
-  delay(atom_number(Atom, N)).
-transform(staff=StaffAtom, staff=StaffList) :-
+mei_transform(staff=StaffAtom, staff=StaffList) :-
   delay((
       atomic_list_concat(Atoms, ' ', StaffAtom),
       maplist(atom_number, Atoms, StaffList)
   )).
-transform(dur=Atom, dur=N) :-
+mei_transform(dur=Atom, dur=N) :-
   delay(atom_number(Atom, N)).
-transform(oct=Atom, oct=N) :-
+mei_transform(oct=Atom, oct=N) :-
   delay(atom_number(Atom, N)).
-transform(len=Atom, len=N) :-
+mei_transform(len=Atom, len=N) :-
   delay(vu(Atom, N)).
+
+mei_transform(element(measure, AttrIn, ChildsIn), element(measure, AttrOut, ChildsOut)) :-
+  mapsubterms(mei_transform, ChildsIn, ChildsOut),
+  selectchk(n=Atom, AttrIn, n=N, AttrOut),
+  delay(atom_number(Atom, N)).
+
+mei_transform(element(staff, AttrIn, ChildsIn), element(staff, AttrOut, ChildsOut)) :-
+  mapsubterms(mei_transform, ChildsIn, ChildsOut),
+  selectchk(n=Atom, AttrIn, n=N, AttrOut),
+  delay(atom_number(Atom, N)).
+
+mei_transform(element(staffDef, AttrIn, ChildsIn), element(staffDef, AttrOut, ChildsOut)) :-
+  mapsubterms(mei_transform, ChildsIn, ChildsOut),
+  selectchk(n=Atom, AttrIn, n=N, AttrOut),
+  delay(atom_number(Atom, N)).
+
+mei_transform(element(meterSig, AttrIn, ChildsIn), element(meterSig, AttrOut, ChildsOut)) :-
+  mapsubterms(mei_transform, ChildsIn, ChildsOut),
+  selectchk(unit=Atom, AttrIn, unit=N, AttrOut),
+  delay(atom_number(Atom, N)).
+
+mei_transform(Term, Term).
