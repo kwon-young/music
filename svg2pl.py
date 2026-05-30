@@ -14,6 +14,7 @@ from PIL import Image
 import numpy as np
 from pycocotools import mask
 from skimage import measure
+from tqdm import tqdm
 
 
 def make_args():
@@ -115,8 +116,8 @@ class Seg:
     def toimage(self, fill='white'):
         g = Group()
         x, y, width, height = self.bbox()
-        # if width < 1 or height < 1:
-        #     return None
+        if width < 1 or height < 1:
+            return None
         if self.etiq[-2].c in ['beam', 'beamSpan']:
             opts = {'fill': fill}
         else:
@@ -133,8 +134,8 @@ class Seg:
     def tococo(self, i, page_id, parent_width, parent_height):
         bbox = self.bbox()
         left, top, width, height = bbox
-        # if width < 1 or height < 1:
-        #     return None
+        if width < 1 or height < 1:
+            return None
         right = left + width
         bottom = top + height
         polygon = [left, top, left, bottom, right, bottom, right, top]
@@ -179,8 +180,8 @@ class Ccx:
     def toimage(self, fill='white'):
         g = Group()
         x, y, width, height = self.bbox()
-        # if width == 0 or height == 0:
-        #     return None
+        if width == 0 or height == 0:
+            return None
         g.append(Path(d=self.d, fill=fill,
                       transform=Matrix.translate(-x, -y)).reify())
         xml = g.string_xml()
@@ -193,8 +194,8 @@ class Ccx:
     def tococo(self, i, page_id, parent_width, parent_height):
         bbox = self.bbox()
         _, _, width, height = bbox
-        # if width < 1 or height < 1:
-        #     return None
+        if width < 1 or height < 1:
+            return None
         area, polygons = dtorle(self, parent_width, parent_height)
         area = width * height
         return {
@@ -384,7 +385,7 @@ def parse_path(node, transforms, defs, scopes):
         seg_scopes = scopes.copy()
         seg_scopes.append(IdClass(p.id, 'seg'))
         return Seg(p.d(), start, end, seg_scopes, p.stroke_width)
-    elif scopes and scopes[-1].c == 'beam':
+    elif scopes and scopes[-1].c == 'beamSpan':
         p1, p2, width = poly_to_hseg(p.as_points())
         seg_scopes = scopes.copy()
         seg_scopes.append(IdClass(p.id, 'seg'))
@@ -403,8 +404,8 @@ def parse_path(node, transforms, defs, scopes):
 @backtrack
 def parse_use(node, transforms, defs, scopes):
     attrib = node.attrib
-    x = Length(attrib['x'])
-    y = Length(attrib['y'])
+    x = Length(attrib.get('x', 0))
+    y = Length(attrib.get('y', 0))
     if 'transform' in attrib:
         transforms.append(Matrix(attrib['transform']))
     origin = apply_transforms(Point(x, y), transforms)
@@ -456,6 +457,8 @@ def parse_polygon(node, transforms, defs, scopes):
     r = apply_transforms(r, transforms)
     r.reify()
     if scopes[-1].c in ['beam', 'beamSpan']:
+        if len(set(r.points)) < 4:
+            return None
         p1, p2, width = poly_to_hseg(r.points)
         seg_scopes = scopes.copy()
         seg_scopes.append(IdClass(node.attrib.get('id', None), 'seg'))
@@ -525,7 +528,11 @@ def load_glyphnames(path: Path) -> dict[str, str]:
 
 
 def parse_svg(svg: PLPath, glyphnames: PLPath):
-    page_number = int(svg.stem.split('_')[-1])
+    print(svg)
+    try:
+        page_number = int(svg.stem.split('_')[-1])
+    except ValueError:
+        page_number = 1
     tree = ET.parse(svg)
     root = tree.getroot()
     res = parse_node(root, [], {}, [IdClass(page_number, 'page')])
@@ -584,7 +591,7 @@ def make_categories(annotations, categories):
 
 
 def main(args):
-    page_elements = _List([parse_svg(svg, args.glyphnames) for svg in args.svg])
+    page_elements = _List([parse_svg(svg, args.glyphnames) for svg in tqdm(args.svg)])
     page_elements.sep = '\n\t'
     page_elements.start = '\n\t'
     page_elements.end = '\n'
@@ -595,15 +602,15 @@ def main(args):
     elif args.type == 'coco':
         annotations = []
         images = []
-        for page_id, res in enumerate(page_elements, start=1):
+        for page_id, res in enumerate(tqdm(page_elements), start=1):
             page = res[0]
             width = int(page.rightbottom.x)
             height = int(page.rightbottom.y)
             svg = args.svg[page_id-1]
             png = svg.with_suffix('.png')
             image = composite_elements_to_image(res[1:], width, height)
-            image.save(png)
-            for i, el in enumerate(res[1:], start=1):
+            image.convert('L').save(png)
+            for i, el in enumerate(tqdm(res[1:]), start=1):
                 annotation = el.tococo(i, page_id, width, height)
                 if annotation is not None:
                     annotations.append(annotation)
