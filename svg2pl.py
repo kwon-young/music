@@ -12,7 +12,6 @@ from svgelements import Length, Rect, Viewbox, Matrix, Path, Point, Ellipse, \
 import cairosvg
 from PIL import Image
 import numpy as np
-from pycocotools import mask
 from skimage import measure
 from tqdm import tqdm
 
@@ -85,10 +84,24 @@ def composite_elements_to_image(elements, page_width, page_height):
 def dtorle(el, parent_width, parent_height):
     x, y = el.lefttop.x, el.lefttop.y
     arr = np.array(el.toimage(fill='white').convert('L'))
-    background = np.zeros([parent_height, parent_width], dtype=np.uint8)
-    background[round(y):round(y)+arr.shape[0],
-               round(x):round(x)+arr.shape[1]] = arr
-    return segmentationToCocoPolygon(background, 255)
+    
+    # Find contours directly on the small crop
+    labelMask = arr == 255
+    contours = measure.find_contours(labelMask, 0.5)
+    
+    # Calculate the exact area of the mask (number of pixels)
+    actual_area = int(np.sum(labelMask))
+    
+    polygons = []
+    for contour in contours:
+        # flip (row, col) to (x, y)
+        contour = np.flip(contour, axis=1)
+        # Add the exact float bounding box offset for maximum precision
+        contour[:, 0] += x
+        contour[:, 1] += y
+        polygons.append(contour.ravel().tolist())
+        
+    return actual_area, polygons
 
 
 @dataclass
@@ -197,7 +210,6 @@ class Ccx:
         if width < 1 or height < 1:
             return None
         area, polygons = dtorle(self, parent_width, parent_height)
-        area = width * height
         return {
             'id': i,
             'image_id': page_id,
@@ -339,28 +351,6 @@ def poly_swap(direction, points):
         return sorted(points, key=lambda p: (p.x, p.y))
     if direction == 'v':
         return sorted(points, key=lambda p: (p.y, p.x))
-
-
-def segmentationToCocoPolygon(labelMap, labelId):
-    '''
-    Encodes a segmentation mask using the Mask API.
-    :param labelMap: [h x w] segmentation map that indicates the label of each pixel
-    :param labelId: the label from labelMap that will be encoded
-    :return: Rs - the encoded label mask for label 'labelId'
-    '''
-    labelMask = labelMap == labelId
-    labelMask = labelMask.astype('uint8')
-    fortran_labelMask = np.expand_dims(labelMask, axis=2)
-    fortran_labelMask = np.asfortranarray(fortran_labelMask)
-    Rs = mask.encode(fortran_labelMask)
-    area = sum(mask.area(Rs).tolist())
-    contours = measure.find_contours(labelMask, 0.5)
-    polygons = []
-    for contour in contours:
-        contour = np.flip(contour, axis=1)
-        polygon = contour.ravel().tolist()
-        polygons.append(polygon)
-    return area, polygons
 
 
 @backtrack
