@@ -219,8 +219,7 @@ class Ccx:
             'area': area,
             'bbox': list(bbox),
             'iscrowd': 0,
-            'keypoints': [float(self.origin.x), float(self.origin.y), 2,
-                          0, 0, 0],
+            'keypoints': [float(self.origin.x), float(self.origin.y), 2],
             'num_keypoints': 1,
         }
 
@@ -328,7 +327,8 @@ def parse_g(node, transforms, defs, scopes):
     if transform := node.attrib.get('transform'):
         transforms.append(Matrix(transform))
     if gclass := node.attrib.get('class'):
-        if "ledgerLines" in gclass or 'octave' in gclass or 'slur' in gclass:
+        if "ledgerLines" in gclass or 'octave' in gclass or 'slur' in gclass \
+                or 'tie' in gclass:
             gclass = gclass.split(' ')[0]
         node_id = node.attrib.get('id', None)
         for scope in scopes:
