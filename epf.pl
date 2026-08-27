@@ -33,9 +33,9 @@ term_(Mode, X, [CurX | L], L) -->
    ;  []
    ),
    {CurX = X}.
-   % debug_highlight(term, X, 'green').
+   % {debug_highlight(term, X, 'green')}.
 term_(Mode, X, [CurX | L], [CurX | R]) -->
-   % debug_highlight(term, CurX, 'red'),
+   % {debug_highlight(term, CurX, 'red')},
    term_(Mode, X, L, R).
 
 select_(Mode, X, L, [X | R]) -->
