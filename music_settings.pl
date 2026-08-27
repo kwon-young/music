@@ -9,7 +9,7 @@
 :- setting(leftMargin, pair, real(0, inf)-50, 'page left margin').
 :- setting(bottomMargin, pair, real(0, inf)-50, 'page bottom margin').
 :- setting(rightMargin, pair, real(0, inf)-50, 'page right margin').
-:- setting(eps, pair, real(0, 10)-0, 'Global Eps in pixels').
+:- setting(eps, pair, real(0, 5)-0, 'Global Eps in pixels').
 :- setting(unit, pair, real(0, 1000)-9, 'The MEI unit (1⁄2 of the distance between the staff lines)').
 :- setting(thickness, pair, real(0, 1)-0.15, 'line thickness in unit').
 :- setting(barLineThickness, pair, real(0, 1)-0.30, 'barline thickness in unit').
@@ -29,7 +29,7 @@
 :- setting(braceMargin, pair, real(0, 4)-1, 'The brace group symbol margin in MEI units').
 :- setting(bracketMargin, pair, real(0, 4)-1, 'The bracket group symbol margin in MEI units').
 :- setting(braceWidth, pair, real(0, 4)-2.0, 'The brace width in MEI units').
-:- setting(braceVerticalMargin, pair, real(0, 4)-0.0, 'The brace top/bottom margin from the top/bottom staffline of the group in MEI units').
+:- setting(braceVerticalMargin, pair, real(-1, 4)-0.0, 'The brace top/bottom margin from the top/bottom staffline of the group in MEI units').
 :- setting(bracketThickness, pair, real(0.5, 2)-1.0, 'The bracket thickness in MEI units').
 :- setting(bracketVerticalOffset, pair, real(0, 4)-0.63, 'The bracket top/bottom offset from the top/bottom staffline of the group in MEI units').
 :- setting(bracketOverlap, pair, real(0, 4)-0.6, 'The overlap between bracket top/bottom symobol and the bracket seg in MEI units').
@@ -48,7 +48,9 @@
 :- setting(timeSig8XOffset, pair, real(-1, 1)-0, 'The time signature 8 origin horizontal offset from the top in MEI units').
 :- setting(timeSig8YOffset, pair, real(0, 4)-2, 'The time signature 8 origin vertical offset from the top in MEI units').
 :- setting(dynamicPPWidth, pair, real(1, 9)-5.5, 'The dynamic pp width in MEI units').
-:- setting(dynamicPPHeight, pair, real(1, 9)-6.6, 'The dynamic pp height in MEI units').
+:- setting(dynamicPPHeight, pair, real(1, 9)-3.4, 'The dynamic pp height in MEI units').
+:- setting(dynamicPPXOffset, pair, real(-1, 1)-0, 'The dynamic pp origin horizontal offset from the top in MEI units').
+:- setting(dynamicPPYOffset, pair, real(1, 3)-2, 'The dynamic pp origin vertical offset from the top in MEI units').
 :- setting(noteLeftMargin, pair, real(0, 2)-1, 'The left margin for note in MEI units').
 :- setting(noteRightMargin, pair, real(0, 2)-1, 'The right margin for note in MEI units').
 :- setting(noteheadWholeWidth, pair, real(1, 9)-2.5, 'The whole notehead width in MEI units').
@@ -119,15 +121,18 @@ group_setting(stem, Settings, Prefix, Prefix-GroupedSettings) :-
 
 update_settings(Settings) :-
   memberchk(eps-Eps, Settings),
-  global_minimize(Eps, Eps, 3),
-  memberchk(unit-Unit, Settings),
-  splitsolve([Unit], 3),
-  midpoint(Unit, Unit),
+  time(global_minimize(Eps, Eps, 3)),
+  % memberchk(unit-Unit, Settings),
+  % midpoint(Unit, Unit),
+  % term_variables(Settings, Vars),
+  % include(interval, Vars, Intervals),
+  % time(solve(Intervals, 3)),
+  % time(absolve(Intervals)),
   maplist(update_setting, Settings).
 update_setting(Name-Value) :-
-  setting(Mod:Name, _Domain-Default),
+  setting(Mod:Name, _),
   ( interval(Value)
-  ->  domain(Value, NewDomain)
-  ; NewDomain = Value
+  ->  domain(Value, NewDomain), midpoint(Value, Default)
+  ; NewDomain = Value, Default=Value
   ),
   set_setting(Mod:Name, NewDomain-Default).
