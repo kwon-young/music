@@ -20,9 +20,10 @@ stem("clef-G-2").
 stem("clef-F-4").
 stem("clef-staff").
 stem("meter-3-8").
-% stem("dynamicpp").
+stem("dynamicpp").
 stem("accid-sharp").
 stem("rest-8th").
+stem("note-whole").
 stem("note-quarter").
 stem("note-8th").
 stem("beam-2-8th").
@@ -108,9 +109,12 @@ graph -->
   build(["test"], phony, [
     foreach(stem(Stem), setting(Stem, "test"), " ")
   ]),
+  build(["dataset/IMSLP318757-partial-verovio_001.svg"], mei2svg,
+        ["dataset/IMSLP318757-partial.mei"], [variables([output-"dataset/IMSLP318757-partial-verovio.svg"])]),
+  build(["dataset/IMSLP318757-partial-ids.mei"], mei_add_ids, ["dataset/IMSLP318757-partial.mei"]),
   build(["dataset/IMSLP318757.pl"], svg2pl,
         ["svg2pl.py", "data/glyphnames.json", "dataset/IMSLP318757_001.svg"]),
-        build(["dataset/IMSLP318757-music.mei", "settings/IMSLP318757-reco.txt"], reco,
+  build(["dataset/IMSLP318757-music.mei", "settings/IMSLP318757-reco.txt"], reco,
         ["dataset/IMSLP318757.pl", "settings/default.txt"], [implicit_ins([deps])]).
   % foreach(gen_stem(Stem),
   %         build([svgs(Stem)], mei2svg, [mei(Stem, "gen")],
