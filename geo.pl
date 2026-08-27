@@ -18,13 +18,23 @@
 eps(Eps, A) :-
   { A =< Eps }.
 eps(Eps, A, B) :-
-  debug(eps, "A ~p~n", [A]),
-  debug(eps, "B ~p~n", [B]),
-  { D == abs(A - B) },
-  debug(eps, "abs(A-B) ~p~n", [D]),
-  debug(eps, "Eps ~p~n", [Eps]),
+  ( debugging(eps)
+  -> { A1 == A },
+    debug(eps, "A ~p=~p~n", [A, A1]),
+    debug(eps, "B ~p~n", [B]),
+    { D == abs(A - B) },
+    debug(eps, "abs(A-B) ~p~n", [D]),
+    debug(eps, "Eps ~p~n", [Eps])
+  ; true
+  ),
   { abs(A - B) =< Eps },
-  debug(eps, "abs(~p - ~p) =< ~p~n", [A, B, Eps]).
+  ( debugging(eps)
+  -> debug(eps, "A ~p=~p~n", [A, A1]),
+    debug(eps, "after B ~p~n", [B]),
+    debug(eps, "after abs(A-B) ~p~n", [D]),
+    debug(eps, "abs(~p - ~p) =< ~p~n", [A1, B, Eps])
+  ; true
+  ).
 eps(p, Eps, point(X1, Y1), point(X2, Y2)) :-
   eps(Eps, X1, X2),
   eps(Eps, Y1, Y2).
