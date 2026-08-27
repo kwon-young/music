@@ -16,6 +16,10 @@ delay:mode(system:atom_concat(ground, ground, _)).
 delay:mode(system:atom_concat(ground, _, ground)).
 delay:mode(system:atom_concat(_, ground, ground)).
 
+delay:mode(system:atomic_list_concat(ground, ground, _)).
+delay:mode(system:atomic_list_concat(ground, _, ground)).
+delay:mode(system:atomic_list_concat(_, ground, ground)).
+
 delay:mode(system:downcase_atom(ground, _)).
 delay:mode(system:downcase_atom(_, ground)).
 
