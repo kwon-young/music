@@ -104,7 +104,9 @@ contour_('[|]', L, Box) :-
   foldl(union, Boxes, Box0, Box).
 contour_(seg, Seg, Box) :-
   segCorners(Seg, C1, C2, C3, C4),
-  union(box(C1, C3), box(C2, C4), Box).
+  contour(C1, C4, Box1),
+  contour(C2, C3, Box2),
+  union(Box1, Box2, Box).
 contour_(ccx, Ccx, Box) :-
   ccxLeftTopRightBottom(Ccx, LeftTop, RightBottom),
   boxLeftTopRightBottom(Box, LeftTop, RightBottom).
