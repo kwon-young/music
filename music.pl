@@ -395,15 +395,13 @@ beamSpan_(
        atomic_list_concat(PListOut, ' ', PListIn)),
   when(ground(End), once(last(PListOut, End))).
 dynam_(
-    element(dynam, ['xml:id'=Id, place=Place, staff=StaffIn, startid=StartId], [Etiq]),
-    element(dynam, ['xml:id'=Id, place=Place, staff=StaffOut, startid=StartId], [Etiq])
+    element(dynam, ['xml:id'=Id, ho=HOffsetAtom, place=Place, staff=StaffIn, startid=StartId], [Etiq]),
+    element(dynam, ['xml:id'=Id, ho=HOffset, place=Place, staff=StaffOut, startid=StartId], [Etiq])
   ) :-
   when((ground(StaffIn) ; ground(Atoms)), atomic_list_concat(Atoms, ' ', StaffIn)),
   when((ground(StaffOut) ; ground(Atoms)),
-       (  same_length(StaffOut, Atoms),
-          maplist(atom_number, Atoms, StaffOut)
-       )
-  ).
+       (same_length(StaffOut, Atoms), maplist(atom_number, Atoms, StaffOut))),
+  delay(vu(HOffsetAtom, HOffset)).
 
 measure(Id) -->
   state([element(measure, ['xml:id'=Id, n=NAtom], Childs)]:measures),
@@ -431,14 +429,19 @@ delay:mode(music:dynamCond(ground, _)).
 delay:mode(music:dynamCond(_, ground)).
 dynamCond(dynamicPP, pp).
 
-dynamCond(Dynam, Place, StaffNs, HPlace, Atom, Staffs, DynamSettings, TimestampAnchors,
-          Unit, Eps) :-
+dynamCond(Dynam, Place, StaffNs, HPlace, HOffset, Atom, Staffs, DynamSettings,
+          TimestampAnchors, Unit, Eps) :-
   etiqsCond(Dynam, Etiq),
-  freeze(Etiq, memberchk(Etiq-[Width, Height], DynamSettings)),
+  freeze(Etiq, memberchk(Etiq-[Width, Height, XOffset, YOffset, Advance], DynamSettings)),
   delay(dynamCond(Etiq, Atom)),
   ccxWidthHeightCond(Dynam, Width, Height, Unit, Eps),
+  ccxOrigin(Dynam, point(X, Y)),
+  ccxLeft(Dynam, Left),
+  eps(Eps, Left + XOffset*Unit, X),
+  ccxTop(Dynam, Top),
+  eps(Eps, Top + YOffset*Unit, Y),
   dynamPlaceCond(Place, Etiq, Dynam, StaffNs, Staffs, Unit, Eps),
-  dynamHPlace(HPlace, Dynam, TimestampAnchors, Eps).
+  dynamHPlace(HPlace, HOffset, Dynam, TimestampAnchors, Advance, Unit, Eps).
 dynamPlaceCond(between, dynamicPP, Dynam, [TopN, BottomN], Staffs, Unit, Eps) :-
   length(Staffs, MaxN),
   [TopN, BottomN]::integer(1, MaxN),
@@ -450,20 +453,19 @@ dynamPlaceCond(between, dynamicPP, Dynam, [TopN, BottomN], Staffs, Unit, Eps) :-
   ccxOrigin(Dynam, point(OriginX, OriginY)),
   segYAtX(TopStaffLine, TopY, OriginX),
   segYAtX(BottomStaffLine, BottomY, OriginX),
-  % dynamic 
   eps(Eps, (BottomY + TopY)/2, OriginY - Unit).
-dynamHPlace(startid=Id, Dynam, TimestampAnchors, Eps) :-
+dynamHPlace(startid=Id, HOffset, Dynam, TimestampAnchors, Advance, Unit, Eps) :-
   member(_Timestamp-Id-Notehead, TimestampAnchors),
-  ccxLeft(Dynam, DynamLeft),
-  ccxRight(Dynam, DynamRight),
+  ccxOrigin(Dynam, point(DynamOrigin, _)),
   ccxLeft(Notehead, NoteheadLeft),
   ccxRight(Notehead, NoteheadRight),
-  eps(Eps, (DynamLeft + DynamRight) / 2, (NoteheadLeft + NoteheadRight) / 2),
-  true.
+  ccxCenterX(Notehead, NoteheadCenter),
+  { NoteheadLeft =< DynamCenter, DynamCenter =< NoteheadRight },
+  eps(Eps, DynamOrigin + Advance*Unit/2 + HOffset*Unit, NoteheadCenter).
 
-dynam(element(dynam, ['xml:id'=Id, place=Place, staff=StaffNs, HPlace], [Atom]), Id) -->
+dynam(element(dynam, ['xml:id'=Id, ho=HOffset, place=Place, staff=StaffNs, HPlace], [Atom]), Id) -->
   add_id(Id),
-  statep(dynamCond(Dynam, Place, StaffNs, HPlace, Atom),
+  statep(dynamCond(Dynam, Place, StaffNs, HPlace, HOffset, Atom),
          [o(systemStaffLines), o(dynamSettings), o(timestampAnchors), o(unit), o(eps)]),
   termp(Dynam).
 

@@ -51,6 +51,7 @@
 :- setting(dynamicPPHeight, pair, real(1, 9)-3.4, 'The dynamic pp height in MEI units').
 :- setting(dynamicPPXOffset, pair, real(-1, 1)-0, 'The dynamic pp origin horizontal offset from the top in MEI units').
 :- setting(dynamicPPYOffset, pair, real(1, 3)-2, 'The dynamic pp origin vertical offset from the top in MEI units').
+:- setting(dynamicPPAdvance, pair, real(1, 9)-5.5, 'The dynamic pp horizontal advance from the origin in MEI units').
 :- setting(noteLeftMargin, pair, real(0, 2)-1, 'The left margin for note in MEI units').
 :- setting(noteRightMargin, pair, real(0, 2)-1, 'The right margin for note in MEI units').
 :- setting(noteheadWholeWidth, pair, real(1, 9)-2.5, 'The whole notehead width in MEI units').
@@ -111,7 +112,7 @@ memberchk_(List, Key, Value) :-
   memberchk(Key-Value, List).
 
 group_setting(ccx, Settings, Prefix, Prefix-GroupedSettings) :-
-  Suffixes = ['LeftMargin', 'RightMargin', 'Width', 'Height', 'XOffset', 'YOffset'],
+  Suffixes = ['LeftMargin', 'RightMargin', 'Width', 'Height', 'XOffset', 'YOffset', 'Advance'],
   maplist(atom_concat(Prefix), Suffixes, Names),
   convlist(memberchk_(Settings), Names, GroupedSettings).
 group_setting(stem, Settings, Prefix, Prefix-GroupedSettings) :-

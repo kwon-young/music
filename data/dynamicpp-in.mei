@@ -16,20 +16,30 @@
                <scoreDef>
                   <staffGrp>
                      <staffDef n="1" lines="5">
+                        <clef shape="G" line="2" />
+                        <keySig sig="0" />
+                        <meterSig count="4" unit="4" />
                      </staffDef>
                      <staffDef n="2" lines="5">
+                        <clef shape="F" line="4" />
+                        <keySig sig="0" />
+                        <meterSig count="4" unit="4" />
                      </staffDef>
                   </staffGrp>
                </scoreDef>
                <section>
-                  <measure n="1">
+                  <measure xml:id="measure1" n="1">
                      <staff n="1">
-                        <layer n="1" />
+                        <layer n="1">
+                           <note xml:id="note1" dur="1" oct="5" pname="e"/>
+                        </layer>
                      </staff>
                      <staff n="2">
-                        <layer n="1" />
+                        <layer n="1">
+                           <note dur="1" oct="3" pname="g"/>
+                        </layer>
                      </staff>
-                     <dynam place="between" staff="1 2" tstamp="0">pp</dynam>
+                     <dynam place="between" staff="1 2" startid="note1" ho="0vu">pp</dynam>
                   </measure>
                </section>
             </score>
