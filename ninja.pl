@@ -7,7 +7,7 @@ verovio -->
 swipl -->
   "LD_LIBRARY_PATH=/home/kwon-young/mambaforge/envs/dev/lib/ timeout 10 /home/kwon-young/prog/swipl-devel/install/bin/swipl -q -t halt ".
 
-stem_page(_, 1).
+stem_page(_, '').
 
 stem("stafflines").
 stem("double-stafflines").
@@ -46,8 +46,13 @@ ext(Ext) -->
 filename(Stem, Suffix, Ext) -->
    dir, "/", Stem, suffix(Suffix), ext(Ext).
 filename(Stem, Suffix, Page, Ext) -->
-   { format(string(PageStr), '~|~`0t~d~3+', [Page]) },
-   dir, "/", Stem, suffix(Suffix), "_", PageStr, ext(Ext).
+   dir, "/", Stem, suffix(Suffix),
+   (  { number(Page) }
+   -> { format(string(PageStr), '~|~`0t~d~3+', [Page]) },
+      "_", PageStr
+    ; ""
+    ),
+    ext(Ext).
 
 mei(Stem, Suffix) -->
    filename(Stem, Suffix, "mei").
@@ -109,7 +114,7 @@ graph -->
   build(["test"], phony, [
     foreach(stem(Stem), setting(Stem, "test"), " ")
   ]),
-  build(["dataset/IMSLP318757-partial-verovio_001.svg"], mei2svg,
+  build(["dataset/IMSLP318757-partial-verovio.svg"], mei2svg,
         ["dataset/IMSLP318757-partial.mei"], [variables([output-"dataset/IMSLP318757-partial-verovio.svg"])]),
   build(["dataset/IMSLP318757-partial-ids.mei"], mei_add_ids, ["dataset/IMSLP318757-partial.mei"]),
   build(["dataset/IMSLP318757.pl"], svg2pl,
