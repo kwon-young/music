@@ -22,6 +22,7 @@ stem("clef-staff").
 stem("meter-3-8").
 stem("dynamicpp").
 stem("accid-sharp").
+stem("accid-natural").
 stem("rest-8th").
 stem("rest-whole").
 stem("note-whole").

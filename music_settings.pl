@@ -66,6 +66,10 @@
 :- setting(accidentalSharpHeight, pair, real(1, 9)-6.6, 'The sharp accidental height in MEI units').
 :- setting(accidentalSharpXOffset, pair, real(-1, 1)-0, 'The sharp accidental origin horizontal offset from the top in MEI units').
 :- setting(accidentalSharpYOffset, pair, real(0, 4)-2, 'The sharp accidental origin vertical offset from the top in MEI units').
+:- setting(accidentalNaturalWidth, pair, real(1, 9)-5.5, 'The natural accidental width in MEI units').
+:- setting(accidentalNaturalHeight, pair, real(1, 9)-6.6, 'The natural accidental height in MEI units').
+:- setting(accidentalNaturalXOffset, pair, real(-1, 1)-0, 'The natural accidental origin horizontal offset from the top in MEI units').
+:- setting(accidentalNaturalYOffset, pair, real(0, 6)-3, 'The natural accidental origin vertical offset from the top in MEI units').
 :- setting(restLeftMargin, pair, real(0, 2)-1, 'The left margin for rest in MEI units').
 :- setting(restRightMargin, pair, real(0, 2)-1, 'The right margin for rest in MEI units').
 :- setting(rest8thWidth, pair, real(1, 9)-5.5, 'The 8th rest width in MEI units').
@@ -104,7 +108,7 @@ group_settings(Settings, [clefSettings-ClefSettings, timeSigSettings-TimeSigSett
   group_settings_by_prefix(Settings, ccx, [timeSig3, timeSig4, timeSig8], TimeSigSettings),
   group_settings_by_prefix(Settings, ccx, [noteheadWhole, noteheadBlack], NoteHeadSettings),
   group_settings_by_prefix(Settings, ccx, [rest8th, restWhole], RestSettings),
-  group_settings_by_prefix(Settings, ccx, [accidentalSharp], AccidentalSettings),
+  group_settings_by_prefix(Settings, ccx, [accidentalSharp, accidentalNatural], AccidentalSettings),
   group_settings_by_prefix(Settings, stem, [noteheadBlack], StemSettings),
   group_settings_by_prefix(Settings, ccx, [flag8thDown], FlagSettings),
   group_settings_by_prefix(Settings, ccx, [dynamicPP], DynamSettings).
