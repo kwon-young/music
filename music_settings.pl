@@ -72,6 +72,10 @@
 :- setting(rest8thHeight, pair, real(1, 9)-6.6, 'The 8th rest height in MEI units').
 :- setting(rest8thXOffset, pair, real(-1, 1)-0, 'The 8th rest origin horizontal offset from the top in MEI units').
 :- setting(rest8thYOffset, pair, real(0, 4)-2, 'The 8th rest origin vertical offset from the top in MEI units').
+:- setting(restWholeWidth, pair, real(1, 4)-2.5, 'The whole rest width in MEI units').
+:- setting(restWholeHeight, pair, real(1, 9)-1, 'The whole rest height in MEI units').
+:- setting(restWholeXOffset, pair, real(-1, 1)-0, 'The whole rest origin horizontal offset from the left in MEI units').
+:- setting(restWholeYOffset, pair, real(-1, 1)-0, 'The whole rest origin vertical offset from the top in MEI units').
 :- setting(ledgerlineThickness, pair, real(0, 1)-0.25, 'The ledger line thickness in MEI units').
 :- setting(ledgerlineExtension, pair, real(0, 1)-0.54, 'The amount by which a ledger line should extend either side of a notehead in MEI unit').
 :- setting(flag8thDownWidth, pair, real(1, 9)-5.5, 'The 8th flag down width in MEI units').
@@ -99,7 +103,7 @@ group_settings(Settings, [clefSettings-ClefSettings, timeSigSettings-TimeSigSett
   group_settings_by_prefix(Settings, ccx, [gClef, fClef], ClefSettings),
   group_settings_by_prefix(Settings, ccx, [timeSig3, timeSig4, timeSig8], TimeSigSettings),
   group_settings_by_prefix(Settings, ccx, [noteheadWhole, noteheadBlack], NoteHeadSettings),
-  group_settings_by_prefix(Settings, ccx, [rest8th], RestSettings),
+  group_settings_by_prefix(Settings, ccx, [rest8th, restWhole], RestSettings),
   group_settings_by_prefix(Settings, ccx, [accidentalSharp], AccidentalSettings),
   group_settings_by_prefix(Settings, stem, [noteheadBlack], StemSettings),
   group_settings_by_prefix(Settings, ccx, [flag8thDown], FlagSettings),

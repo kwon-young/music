@@ -633,16 +633,18 @@ layerChild(Child) -->
   ; scope(rest(Child))
   ).
 
-delay:mode(music:restCond(ground, _)).
-delay:mode(music:restCond(_, ground)).
-restCond(rest8th, '8').
+delay:mode(music:restCond(ground, _, _)).
+delay:mode(music:restCond(_, ground, _)).
+restCond(rest8th, '8', 3).
+restCond(restWhole, '1', 2).
 
-restCond(Rest, Dur, StaffLines,
+restCond(Rest, DurAtom, StaffLines,
          LeftAnchor, RightAnchor, RestSettings, LeftMargin, RightMargin,
          MeterSig, TstampIn, TstampOut, TstampIn-Rest, Unit, Eps) :-
   etiqsCond(Rest, Etiq),
   freeze(Etiq, memberchk(Etiq-[Width, Height, XOffset, YOffset], RestSettings)),
-  delay(restCond(Etiq, Dur)),
+  delay(restCond(Etiq, DurAtom, N)),
+  delay(atom_number(DurAtom, Dur)),
   timestampCond(Dur, TstampIn, TstampOut, MeterSig),
   ccxWidthHeightCond(Rest, Width, Height, Unit, Eps),
   ccxOrigin(Rest, point(X, Y)),
@@ -655,7 +657,7 @@ restCond(Rest, Dur, StaffLines,
   eps(Eps, Top + Unit * YOffset, Y),
   ccxLeft(Rest, Left),
   eps(Eps, Left + Unit * XOffset, X),
-  nth1(3, StaffLines, Line),
+  nth1(N, StaffLines, Line),
   segYAtX(Line, LineY, X),
   eps(Eps, LineY, Y).
 
