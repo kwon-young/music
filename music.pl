@@ -257,37 +257,55 @@ lineCond(PrevSystemStaffLines, SystemStaffLines, MinSpacing, Unit) :-
   SystemStaffLines = [StaffLines | _],
   systemCond(PrevStaffLines, StaffLines, MinSpacing, Unit).
 
-pop_nonvar([], _).
-pop_nonvar([H | T], El) :-
-  ( nonvar(H), H = [El | _]
-  -> true
-  ; pop_nonvar(T, El)
-  ).
 measureChilds(Childs, Staffs, Dynams, BeamSpans) :-
-  when((nonvar(Childs) ; nonvar(Staffs) ; nonvar(BeamSpans) ; nonvar(Dynams)),
-       measureChilds_(Childs, Staffs, Dynams, BeamSpans)).
-measureChilds_([Child | Childs], Staffs, Dynams, BeamSpans) :-
-  % TODO: this predicate can be entered with Staffs, Dynams or BeamSpans
-  % bound to [] (end of list) and this will break the predicate
-  pop_nonvar([Staffs, BeamSpans, Dynams], OtherChild),
-  when((nonvar(Child) ; nonvar(OtherChild)),
-       measureChilds_(Child, OtherChild, Childs, Staffs, Dynams, BeamSpans)).
-measureChilds_([], [], [], []).
-measureChilds_(Child, Child, Childs, [Child | Staffs], Dynams, BeamSpans) :-
-  Child = element(staff, _, _),
-  measureChilds(Childs, Staffs, Dynams, BeamSpans).
-measureChilds_(Child, Dynam, Childs, Staffs, [Dynam | Dynams], BeamSpans) :-
+  ( var(Childs)
+  -> measureChildsReco(Childs, Staffs, Dynams, BeamSpans)
+  ; measureChildsGen(Childs, Staffs, Dynams, BeamSpans)
+  ).
+measureChildsGen([], [], [], []).
+measureChildsGen([Staff | Childs], [Staff | Staffs], Dynams, BeamSpans) :-
+  Staff = element(staff, _, _),
+  measureChildsGen(Childs, Staffs, Dynams, BeamSpans).
+measureChildsGen([Child | Childs], Staffs, [Dynam | Dynams], BeamSpans) :-
   Child = element(dynam, _, _),
   Dynam = element(dynam, _, _),
   dynam_(Child, Dynam),
-  measureChilds(Childs, Staffs, Dynams, BeamSpans).
-measureChilds_(Child, BeamSpan, Childs, Staffs, Dynams, [BeamSpan | BeamSpans]) :-
+  measureChildsGen(Childs, Staffs, Dynams, BeamSpans).
+measureChildsGen([Child | Childs], Staffs, Dynams, [BeamSpan | BeamSpans]) :-
   Child = element(beamSpan, _, _),
   BeamSpan = element(beamSpan, _, _),
   beamSpan_(Child, BeamSpan),
-  measureChilds(Childs, Staffs, Dynams, BeamSpans).
+  measureChildsGen(Childs, Staffs, Dynams, BeamSpans).
+
+measureChildsReco(Childs, [Staff | Staffs], Dynams, BeamSpans) =>
+  Childs = [Staff | Rest],
+  measureChildsReco(Rest, Staffs, Dynams, BeamSpans).
+measureChildsReco(Childs, Staffs, [Dynam | Dynams], BeamSpans) =>
+  Childs = [Child | Rest],
+  dynam_(Child, Dynam),
+  measureChildsReco(Rest, Staffs, Dynams, BeamSpans).
+measureChildsReco(Childs, Staffs, Dynams, [BeamSpan | BeamSpans]) =>
+  Childs = [Child | Rest],
+  beamSpan_(Child, BeamSpan),
+  measureChildsReco(Rest, Staffs, Dynams, BeamSpans).
+measureChildsReco(Childs, Staffs, Dynams, BeamSpans) =>
+  ( include(var, [Staffs, Dynams, BeamSpans], [H | T])
+  -> foldl([Var, NonVar, (nonvar(Var) ; NonVar)]>>true,
+           T, nonvar(H), Expr),
+     when(Expr, measureChildsReco(Childs, Staffs, Dynams, BeamSpans))
+  ; Childs = []
+  ).
 
 :- begin_tests(measureChilds).
+
+test(lazyness, [nondet]) :-
+  measureChilds(Childs, Staffs, Dynams, _BeamSpans),
+  S1 = element(staff, _, _),
+  S2 = element(staff, _, _),
+  Staffs = [S1, S2],
+  D = element(dynam, _, _),
+  Dynams = [D],
+  Childs = [S1, S2, D | _].
 
 test(empty) :-
   measureChilds([], [], [], []).
@@ -314,7 +332,7 @@ test(backward_simple, [nondet]) :-
   measureChilds(Childs, Staffs, Dynams, BeamSpans),
   D_out = element(dynam, _, _),
   B_out = element(beamSpan, _, _),
-  Childs = [S, B_out, D_out].
+  Childs = [S, D_out, B_out].
 
 test(forward_complex, [nondet]) :-
   S1 = element(staff, _, _),
@@ -344,7 +362,7 @@ test(backward_complex, [nondet]) :-
   D1_out = element(dynam, _, _),
   D2_out = element(dynam, _, _),
   B1_out = element(beamSpan, _, _),
-  Childs = [S1, S2, B1_out, D1_out, D2_out].
+  Childs = [S1, S2, D1_out, D2_out, B1_out].
 
 test(forward_no_dynams, [nondet]) :-
   S = element(staff, _, _),
