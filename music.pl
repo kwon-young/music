@@ -52,26 +52,10 @@ mainReco(StructFile, TestSettingsFile, XmlFile, RecoSettingsFile) :-
   load_settings(TestSettingsFile),
   get_settings(domain, Settings, AllSettings),
   makeState(StateIn, AllSettings),
-  Rest = [],
-  phrase(mei(Xml), [StateIn, Struct], [StateOut, Rest]),
+  once(phrase(mei(Xml), [StateIn, Struct], [StateOut, Rest])),
   ground_all_ids(StateOut),
   print_term(Rest, []), nl,
-  % Rest == [],
   update_settings(Settings),
-  % memberchk(eps-Eps, Settings),
-  % upper_bound(Eps),
-  % memberchk(unit-Unit, Settings),
-  % midpoint(Unit, Unit),
-  % print_term(Xml, []),
-  % term_attvars(Xml, AttVars),
-  % include(interval, AttVars, Intervals),
-  % map_list_to_pairs(delta, Intervals, DeltaIntervals),
-  % keysort(DeltaIntervals, SortedDeltaIntervals),
-  % pairs_values(SortedDeltaIntervals, SortedIntervals),
-  % partition(small, Intervals, SmallIntervals, LargeIntervals),
-  % splitsolve(SortedIntervals),
-  % maplist(midpoint, SortedIntervals, SortedIntervals),
-  % print_term(Xml, []),
   open(XmlFile, write, XmlS),
   ( ground(Xml)
   -> xml_write(XmlS, Xml, [])
@@ -130,9 +114,9 @@ load_mei(Filename, Mei) :-
     close(S)
   ).
 
-mei([pi('xml-model href="https://music-encoding.org/schema/5.0/mei-all.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"'),
-     pi('xml-model href="https://music-encoding.org/schema/5.0/mei-all.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"'),
-     element(mei, [xmlns='http://www.music-encoding.org/ns/mei', meiversion='5.0'], [MeiHead, Music])]) -->
+mei([pi('xml-model href="https://music-encoding.org/schema/dev/mei-all.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"'),
+     pi('xml-model href="https://music-encoding.org/schema/dev/mei-all.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"'),
+     element(mei, [xmlns='http://www.music-encoding.org/ns/mei', meiversion='6.0-dev'], [MeiHead, Music])]) -->
   state([
     +(pageId, 0),
     +(measureN, 0),
@@ -474,6 +458,7 @@ staffDefChilds_(1, StaffDefChilds) -->
   staffDefChilds(StaffDefChilds).
 
 staffDefChilds(L) -->
+  state([o(staffN, StaffN), +(StaffN-meterSig)]),
   foldlg(optional,
          [scope(music:clef), scope(music:keySig), scope(music:meterSig)], L, []).
 
@@ -557,12 +542,12 @@ meterSigCond(N, Count, Ccx, Center, StaffLines, AllSettings, MeterSig, Unit, Eps
   eps(4*Eps, (Left + CcxRight) / 2, Center).
 
 meterSig_(Count, Unit) -->
-  state([o(staffN), +(staffN-meterSig)]),
+  state(o(staffN, StaffN)),
   statep(meterSigCond(2, Count, MeterSigUp, Center),
-         [o(stafflines), o(timeSigSettings), o(staffN-meterSig), o(unit), o(eps)]),
+         [o(stafflines), o(timeSigSettings), o(StaffN-meterSig), o(unit), o(eps)]),
   termp(MeterSigUp),
   statep(meterSigCond(4, Unit, MeterSigDown, Center),
-         [o(stafflines), o(timeSigSettings), o(staffN-meterSig), o(unit), o(eps)]),
+         [o(stafflines), o(timeSigSettings), o(StaffN-meterSig), o(unit), o(eps)]),
   termp(MeterSigDown).
 
 layer(element(layer, ['xml:id'=Id, n='1'], Childs), Id) -->
@@ -605,10 +590,10 @@ timestampCond(Dur, TstampIn, TstampOut, _Count-Unit) :-
 
 rest(element(rest, ['xml:id'=Id, dur=Dur], []), Id) -->
   add_id(Id),
-  state(o(staffN)),
+  state(o(staffN, StaffN)),
   statep(restCond(Rest, Dur),
          [o(stafflines), -(anchor), o(restSettings), o(restLeftMargin),
-          o(restRightMargin), o(staffN-meterSig), -(timestamp),
+          o(restRightMargin), o(StaffN-meterSig), -(timestamp),
           [_]:timestampAnchors, o(unit), o(eps)]),
   termp(Rest).
 
@@ -678,9 +663,10 @@ noteHeadCond(DurAtom, Oct, PName, NoteHead, Dur, Pitch, BasePitch-BaseN, StaffLi
 
 notehead(Dur, Oct, PName, Id) -->
   add_id(Id),
+  state(o(staffN, StaffN)),
   statep(noteHeadCond(Dur, Oct, PName),
          [+(notehead, NoteHead), +(duration), +(pitch), o(pitchAnchor), o(stafflines),
-          o(noteheadSettings), o(staffN-meterSig), -(timestamp), [_]:timestampAnchors,
+          o(noteheadSettings), o(StaffN-meterSig), -(timestamp), [_]:timestampAnchors,
           o(noteId), o(unit), o(eps)]),
   termp(NoteHead),
   pop_scope(pop_scope(pop_scope(scope(ledgerLines)))).
@@ -750,9 +736,9 @@ noStemCond(noStem, noDirection, NoteHead) :-
   
 stem([element(stem, ['xml:id'=Id, len=Len, dir=Dir], []) | NoteChilds], NoteChilds, Id) -->
   add_id(Id),
-  termp(Stem),
   statep(stemCond(Dir, Len),
          [+(stem, Stem), o(notehead), o(stemSettings), o(stemWidth), o(unit), o(eps)]),
+  termp(Stem),
   state(+(direction, Dir)),
   ( beam
   *-> []
