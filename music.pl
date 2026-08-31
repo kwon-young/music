@@ -1244,12 +1244,12 @@ grpSym(element(grpSym, ['xml:id'=DefId, symbol=brace], []),
        BracedStaffLines,
        OtherStaffDefs, OtherStaffLines, _RealId) -->
   add_id(DefId),
-  termp(Brace),
   statep(braceCond(Brace, StaffDefs, SystemStaffLines,
                    BracedStaffDefs, BracedStaffLines,
                    OtherStaffDefs, OtherStaffLines),
          [-(anchor-grpSym), o(braceWidth), o(braceVerticalMargin), o(braceMargin),
-          o(unit), o(eps)]).
+          o(unit), o(eps)]),
+  termp(Brace).
 grpSym(element(grpSym, ['xml:id'=DefId, symbol=bracket], []),
        StaffDefs, SystemStaffLines,
        GroupedStaffDefs, GroupedSystemStaffLines,
