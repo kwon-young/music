@@ -193,7 +193,61 @@ page(PageId) -->
          [-(pageId, _, PageId), +(bbox), o(pageWidth), o(pageHeight),
           o(topMargin), o(leftMargin), o(bottomMargin), o(rightMargin)]),
   terms(Page),
+  staffsPre,
   longuest_notempty_sequence(systemN, state:scope(music:system)).
+
+reco -->
+  select(X), {ground(X)}.
+
+:- det(staffsPre/2).
+staffsPre -->
+  stafflinesPre(5, AllStaffLines),
+  statep(staffsPre(Staffs, AllStaffLines, RestStaffLines), [o(eps)]),
+  { predsort(sortStaffs, Staffs, SortedStaffs),
+    flatten(SortedStaffs, Lines),
+    append(RestStaffLines, RestLines),
+    append(Lines, RestLines, AllLines),
+    reverse(AllLines, RLines)
+  },
+  sequence(add, RLines).
+
+stafflinesPre(NumLines, [StaffLines | Rest]) -->
+  reco,
+  statep(stafflinesCond(NumLines, StaffLines),
+         [o(unit), +(staffWidth), o(measureMinWidth), o(thickness), o(eps)]),
+  sequence(termp, StaffLines),
+  !,
+  stafflinesPre(NumLines, Rest).
+stafflinesPre(_, []) --> [].
+
+staffsPre([[StaffLines | Staff] | Staffs], [StaffLines | AllStaffLines], RRest, Eps) :-
+  staffPre(Staff, StaffLines, AllStaffLines, Rest, Eps),
+  !,
+  staffsPre(Staffs, Rest, RRest, Eps).
+staffsPre([], AllStaffLines, AllStaffLines, _).
+
+staffPre([StaffLines | Staff], PrevStaffLines, AllStaffLines, Rest, Eps) :-
+  lists:select(StaffLines, AllStaffLines, RestStaffLines),
+  measureLineCond(PrevStaffLines, StaffLines, Eps),
+  !,
+  staffPre(Staff, StaffLines, RestStaffLines, Rest, Eps).
+staffPre([], _, AllStaffLines, AllStaffLines, _).
+
+sortStaffs(<, Staff1, Staff2) :-
+  Staff1 = [StaffLines1 | _],
+  last(StaffLines1, Seg1),
+  Staff2 = [[Seg2 | _] | _],
+  segStartY(Seg1, Y1),
+  segStartY(Seg2, Y2),
+  Y1 =< Y2,
+  !.
+sortStaffs(>, Staff1, Staff2) :-
+  Staff1 = [StaffLines1 | _],
+  last(StaffLines1, Seg1),
+  Staff2 = [[Seg2 | _] | _],
+  segStartY(Seg1, Y1),
+  segStartY(Seg2, Y2),
+  Y1 > Y2.
 
 system(_Id) -->
   longuest_notempty_sequence(measureLineN, state:scope(music:measure)).
