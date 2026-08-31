@@ -29,6 +29,21 @@
 
 :- use_module(library(clpBNR)).
 
+:- nb_setval(mem, []).
+
+lookup(K, V) :-
+  b_getval(mem, L),
+  lookup(K, V, L).
+lookup(_, _, []) => fail.
+lookup(K, Value, [K-V | _]) =>
+  Value = V.
+lookup(K, Value, [_ | L]) =>
+  lookup(K, Value, L).
+
+insert(K, V) :-
+  b_getval(mem, L),
+  b_setval(mem, [K-V | L]).
+
 segArgs(seg(Start, End, Etiqs, Thickness), [Start, End, Etiqs, Thickness]).
 
 segStart(Seg, Start) :-
@@ -74,12 +89,16 @@ segLength(Seg, L) :-
   vecLength(Vec, L).
 
 segVec(Seg, vec(X, Y)) :-
-  segStart(Seg, point(StartX, StartY)),
-  segEnd(Seg, point(EndX, EndY)),
-  {
-    X == EndX - StartX,
-    Y == EndY - StartY
-  }.
+  ( lookup(segVec(Seg), vec(X, Y))
+  ->  true
+  ; segStart(Seg, point(StartX, StartY)),
+    segEnd(Seg, point(EndX, EndY)),
+    {
+      X == EndX - StartX,
+      Y == EndY - StartY
+    },
+    insert(segVec(Seg), vec(X, Y))
+  ).
 
 vecLength(vec(X, Y), L) :-
   { L == sqrt(X ** 2 + Y ** 2) }.
@@ -100,19 +119,29 @@ vecRotate(vec(X, Y), Angle, vec(XOut, YOut)) :-
     Y == XOut * sin(-Angle) + YOut * cos(-Angle)
   }.
 
-segNormal(Seg, Normal) :-
-  segVec(Seg, Vec),
-  vecNormalize(Vec, VecNorm),
-  vecRotate(VecNorm, -pi/2, Normal).
+segNormal(Seg, vec(NX, NY)) :-
+  ( lookup(segNormal(Seg), vec(NX, NY))
+  -> true
+  ; segVec(Seg, vec(X, Y)),
+    { L == sqrt(X**2 + Y**2),
+      NX == Y / L,
+      NY == -X / L
+    },
+    insert(segNormal(Seg), vec(NX, NY))
+  ).
 
 segCoeffOffset(Seg, Coeff, point(X, Y), point(XOut, YOut)) :-
-  segNormal(Seg, vec(XNorm, YNorm)),
-  segThickness(Seg, Thickness),
-  {
-    Coeff2 == (Coeff - 0.5) * Thickness,
-    XOut == X + XNorm * Coeff2,
-    YOut == Y + YNorm * Coeff2
-  }.
+  ( lookup(segCoeffOffset(Seg, Coeff, point(X, Y)), point(XOut, YOut))
+  -> true
+  ; segNormal(Seg, vec(XNorm, YNorm)),
+    segThickness(Seg, Thickness),
+    {
+      Coeff2 == (Coeff - 0.5) * Thickness,
+      XOut == X + XNorm * Coeff2,
+      YOut == Y + YNorm * Coeff2
+    },
+    insert(segCoeffOffset(Seg, Coeff, point(X, Y)), point(XOut, YOut))
+  ).
 
 segHDirCoeff(left, 0).
 segHDirCoeff(mid, 0.5).
